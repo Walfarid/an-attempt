@@ -1,0 +1,39 @@
+---
+version: '3'
+
+tasks:
+  run:
+    desc: Run an npm script (e.g. task npm:run -- build)
+    cmd: npm run {{.CLI_ARGS}}
+
+  install:
+    desc: Install npm dependencies
+    cmd: npm install
+
+  dev:
+    desc: Run the Vite dev server
+    cmd: npm run dev
+
+  build:
+    desc: Build frontend assets for production
+    cmd: npm run build
+
+  build_ssr:
+    desc: Build frontend assets including SSR bundle
+    cmd: npm run build:ssr
+
+  lint:
+    desc: Lint and fix frontend files (ESLint)
+    cmd: npm run lint
+
+  lint_check:
+    desc: Check frontend lint without changes (ESLint)
+    cmd: npm run lint:check
+
+  format_check:
+    desc: Check formatting (Prettier)
+    cmd: npm run format:check
+
+  types_check:
+    desc: Type-check the frontend (vue-tsc)
+    cmd: npm run types:check

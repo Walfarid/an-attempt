@@ -1,0 +1,39 @@
+---
+version: '3'
+
+tasks:
+  run:
+    desc: Run a composer command (e.g. task composer:run -- require foo/bar)
+    cmd: composer {{.CLI_ARGS}}
+
+  install:
+    desc: Install composer dependencies
+    cmd: composer install --no-interaction
+
+  key:
+    desc: Generate the application key
+    cmd: php artisan key:generate
+
+  lint:
+    desc: Fix PHP code style with Pint
+    cmd: php vendor/bin/pint --parallel
+
+  lint_check:
+    desc: Check PHP code style without changes (Pint dry-run)
+    cmd: php vendor/bin/pint --parallel --test
+
+  types_check:
+    desc: Run PHPStan static analysis
+    cmd: php vendor/bin/phpstan analyse
+
+  test:
+    desc: Run the PHP test suite
+    cmd: php artisan test {{.CLI_ARGS}}
+
+  ci_check:
+    desc: Run the full backend CI pipeline (composer ci:check)
+    cmd: composer ci:check
+
+  setup:
+    desc: Run the composer setup script (depends, .env, key, migrate, build)
+    cmd: composer setup

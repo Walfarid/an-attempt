@@ -1,0 +1,168 @@
+---
+# Taskfile.yml — development task runner for the walfa project.
+#
+# Requires: docker compose v2/v3 (for the backing services) and Task v3.x.
+# The Laravel app itself runs natively on the host (PHP 8.5 + Node 24 in PATH).
+#
+# Quick start:  task setup   → install deps, copy .env, generate key, migrate
+#               task up      → start MySQL/Redis/Mailpit, run the dev servers
+#               task dev     → run the dev servers only (composer dev)
+#               task test    → full test suite
+#               task ci      → all CI checks
+version: '3'
+
+vars:
+  # Database and cache switch between SQLite (default, zer-config local) and
+  # the MariaDB/Valkey service containers. Set DB=mariadb to use the compose stack.
+  DB: '{{ .DB | default "" }}'
+  MARIADB_PORT: '{{ .MARIADB_PORT | default "3306" }}'
+
+includes:
+  # Namespaced passthroughs for composer, npm, and php artisan.
+  composer: './tools/composer.Taskfile.yml'
+  npm: './tools/npm.Taskfile.yml'
+  artisan: './tools/artisan.Taskfile.yml'
+
+dotenv:
+  - .env
+
+tasks:
+  default:
+    desc: Show available tasks
+    silent: true
+    cmd: task --list-all
+
+  # ── Setup ────────────────────────────────────────────────────────────────
+
+  setup:
+    desc: Install dependencies and prepare the local environment
+    aliases: [install]
+    cmds:
+      - task: composer:install
+      - task: env:prepare
+      - task: composer:key
+      - task: docker:up
+      - task: migrate
+      - task: npm:install
+      - task: npm:build
+    sources:
+      - composer.lock
+      - package-lock.json
+
+  env:prepare:
+    desc: Copy .env from .env.example when .env is missing and add MariaDB/Valkey service config
+    silent: true
+    cmds:
+      - test -f .env || cp .env.example .env
+      - if [[ '{{ .DB }}' == 'mariadb' ]] && ! grep -q '^DB_HOST=127.0.0.1' .env; then printf '%s\n' 'DB_CONNECTION=mariadb' 'DB_HOST=127.0.0.1' 'DB_PORT={{ .MARIADB_PORT }}' 'DB_DATABASE=laravel' 'DB_USERNAME=laravel' 'DB_PASSWORD=secret' 'VALKEY_HOST=127.0.0.1' 'VALKEY_PORT=6379' 'CACHE_STORE=redis' 'SESSION_DRIVER=redis' 'QUEUE_CONNECTION=redis' 'MAIL_MAILER=smtp' 'MAIL_HOST=127.0.0.1' 'MAIL_PORT=1025' >> .env; fi
+      - task: artisan:key_check
+      - touch database/database.sqlite
+      - task: docker:up
+      - task: migrate
+
+  # ── Daily dev ────────────────────────────────────────────────────────────
+
+  up:
+    desc: Start Docker services and both dev servers (PHP + Vite)
+    cmds:
+      - task: docker:up
+      - task: dev
+
+  dev:
+    desc: Run the dev servers (Laravel + queue worker + Vite) via composer dev
+    cmd: composer dev
+
+  # ── Testing & quality ────────────────────────────────────────────────────
+
+  test:
+    desc: Run the PHP test suite
+    aliases: [tests]
+    deps:
+      - artisan:config_clear
+    cmd: php artisan test {{.CLI_ARGS}}
+
+  lint:
+    desc: Fix code style (Pint + ESLint)
+    deps:
+      - composer:lint
+      - npm:lint
+
+  lint:check:
+    desc: Verify code style without changes (Pint + ESLint + Prettier)
+    deps:
+      - composer:lint_check
+      - npm:lint_check
+      - npm:format_check
+
+  types:check:
+    desc: Run PHPStan (PHP) and vue-tsc (TypeScript)
+    deps:
+      - composer:types_check
+      - npm:types_check
+
+  rector:
+    desc: Upgrade/downgrade code to match a PHP or framework version
+    vars:
+      CMD: '{{ .CMD | default "process" }}'
+      ARGS: '{{ .ARGS | default "app/ --sprinkle octane-sprinkle,upgrade --no-progress-bar --annotate" }}'
+    cmds:
+      - php vendor/bin/rector {{ .CMD }} {{ .ARGS }} {{ .CLI_ARGS }}
+    silent: true
+
+  # When invoking bare binaries from vendor/bin (rector, phpstan, pint),
+  # always prefix with `php` — Task's default shell is cmd.exe on Windows,
+  # which cannot resolve POSIX-style `vendor/bin/<tool>` paths.
+
+  # ── CI ───────────────────────────────────────────────────────────────────
+
+  ci:
+    desc: Run the full CI pipeline (mirrors composer ci:check + frontend checks)
+    deps:
+      - composer:setup
+      - composer:lint_check
+      - composer:types_check
+      - npm:lint_check
+      - npm:format_check
+      - npm:types_check
+      - npm:build
+      - test
+
+  # ── Docker ───────────────────────────────────────────────────────────────
+
+  docker:up:
+    desc: Start the MariaDB, Valkey, and Mailpit containers
+    cmds:
+      - docker compose up -d --wait --remove-orphans
+
+  docker:down:
+    desc: Stop the containers (keeps data volumes)
+    cmds:
+      - docker compose down
+
+  docker:reset:
+    desc: Destroy the containers and their data volumes (destructive)
+    cmds:
+      - docker compose down -v
+
+  docker:ps:
+    desc: Show running containers and their health
+    cmds:
+      - docker compose ps
+
+  # ── Helpers ──────────────────────────────────────────────────────────────
+
+  migrate:
+    desc: Run database migrations
+    cmd: php artisan migrate
+
+  seed:
+    desc: Seed the database
+    cmd: php artisan db:seed
+
+  shell:
+    desc: Open a Laravel Tinker shell
+    cmd: php artisan tinker
+
+  routes:
+    desc: List application routes
+    cmd: php artisan route:list

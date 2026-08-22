@@ -1,0 +1,31 @@
+---
+version: '3'
+
+tasks:
+  run:
+    desc: Run an artisan command (e.g. task artisan:run -- make:model Foo)
+    cmd: php artisan {{.CLI_ARGS}}
+
+  migrate:
+    desc: Run database migrations
+    cmd: php artisan migrate
+
+  migrate_fresh:
+    desc: Drop all tables and re-run migrations (destructive)
+    cmd: php artisan migrate:fresh
+
+  seed:
+    desc: Seed the database
+    cmd: php artisan db:seed
+
+  key_check:
+    desc: Generate the application key when APP_KEY is empty
+    silent: true
+    status:
+      - test -n "$$(grep -E '^APP_KEY=.+' .env 2>/dev/null)"
+    cmds:
+      - php artisan key:generate
+
+  config_clear:
+    desc: Clear the cached configuration
+    cmd: php artisan config:clear

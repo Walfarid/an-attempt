@@ -1,0 +1,67 @@
+# Backing services for local development.
+#
+# The Laravel app itself runs natively (PHP + Node on the host via the
+# Taskfile): this file only provides MariaDB, Valkey, and Mailpit as local
+# infrastructure. Ports are bound to the loopback interface so nothing is
+# exposed to the network.
+#
+# Image tags: verified 2026-08-23 against the Docker Hub registry API
+# (hub.docker.com/v2/repositories/<repo>/tags). Per the project default of
+# LTS -> stable -> latest:
+#   - mariadb:12.3        current LTS series (12.3.2)
+#   - valkey:9.1          current stable line (9.1.1)
+#   - axllent/mailpit:v1.31.0  pinned full version (security-relevant SMTP)
+name: walfa
+
+services:
+  mariadb:
+    image: mariadb:12.3
+    container_name: walfa-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-laravel}
+      MARIADB_USER: ${MARIADB_USER:-laravel}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-secret}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-secret}
+    ports:
+      - "127.0.0.1:${MARIADB_PORT:-3306}:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --su-mysql --connect --innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  valkey:
+    image: valkey/valkey:9.1
+    container_name: walfa-valkey
+    restart: unless-stopped
+    command: ["valkey-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:${VALKEY_PORT:-6379}:6379"
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:v1.31.0
+    container_name: walfa-mailpit
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MAILPIT_WEB_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025/api/v1/info"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mariadb_data:
+  valkey_data:
