@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('posts', [BlogController::class, 'index'])->name('posts.index');
+Route::get('posts/{post:slug}', [BlogController::class, 'show'])->name('posts.show');
 
 Route::middleware([
     'auth',
