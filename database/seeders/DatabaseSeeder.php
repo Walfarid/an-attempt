@@ -13,6 +13,7 @@ use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,6 +33,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ], [
             'name' => 'Test User',
+            // users.workos_id and users.avatar are NOT NULL; seed accounts
+            // are not WorkOS-backed, mirroring the UserFactory placeholders.
+            'workos_id' => 'fake-'.Str::random(10),
+            'avatar' => '',
         ]);
 
         $this->seedProfile();

@@ -8,9 +8,23 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $slug
+ * @property string $title
+ * @property string|null $excerpt
+ * @property string $body
+ * @property string|null $cover_image_path
+ * @property Carbon|null $published_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property string $teaser_text list teaser, set before serialization by controllers
+ * @property string $body_html Markdown body rendered to HTML, set before serialization
+ */
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */
@@ -56,10 +70,12 @@ class Post extends Model
     /**
      * The public URL of the cover image, when one is set and the media
      * disk is configured. Null otherwise so pages degrade gracefully.
+     *
+     * @return Attribute<string|null, never>
      */
     protected function coverUrl(): Attribute
     {
-        return Attribute::get(function () {
+        return Attribute::make(get: function () {
             if ($this->cover_image_path === null || ! config('filesystems.disks.media.bucket')) {
                 return null;
             }
