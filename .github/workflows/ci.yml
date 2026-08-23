@@ -7,9 +7,9 @@
 #   sca-composer     Composer audit (known advisories in locked PHP deps)
 #   ci-ok            Aggregate gate for branch protection
 #
-# Versions verified 2026-08-23:
-#   actions/checkout v7 · actions/setup-node v7 · actions/upload-artifact v7
-#   shivammathur/setup-php v2 (rolling) · PHP 8.5 stable · Node 24
+# Versions verified 2026-08-23 (all refs pinned to immutable commit SHAs):
+#   actions/checkout v7 · actions/setup-node v7 · shivammathur/setup-php v2
+#   PHP 8.5 stable · Node 24
 
 name: CI
 
@@ -31,12 +31,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
         with:
           php-version: '8.5'
           extensions: mbstring, xml, zip, curl, intl, pdo_mysql
@@ -56,17 +56,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
 
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, zip, curl, intl
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # Frontend code imports Wayfinder route/action bindings, which are
+      # generated (and gitignored) — regenerate before any check or build.
+      - name: Generate Wayfinder bindings
+        run: php artisan wayfinder:generate --with-form --no-interaction
 
       - name: ESLint
         run: npm run lint:check
@@ -102,12 +117,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
         with:
           php-version: '8.5'
           extensions: mbstring, xml, zip, curl, intl, pdo_mysql
@@ -115,6 +130,21 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
+
+      # Feature tests render Inertia views through Blade, which resolves the
+      # Vite build manifest — without built assets every page returns 500.
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+
+      - name: Generate Wayfinder bindings
+        run: php artisan wayfinder:generate --with-form --no-interaction
+
+      - name: Install and build frontend assets
+        run: |
+          npm ci
+          npm run build
 
       - name: Prepare application environment
         run: |
@@ -129,12 +159,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@b604ade2a87db23f8871b7182e69ec5e75effb45 # v2
         with:
           php-version: '8.5'
           coverage: none
