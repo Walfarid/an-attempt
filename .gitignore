@@ -3,6 +3,7 @@
 /node_modules
 /.codegraph
 /.claude
+/.task
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot

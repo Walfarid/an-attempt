@@ -12,7 +12,7 @@
 version: '3'
 
 vars:
-  # Database and cache switch between SQLite (default, zer-config local) and
+  # Database and cache switch between SQLite (default, zero-config local) and
   # the MariaDB/Valkey service containers. Set DB=mariadb to use the compose stack.
   DB: '{{ .DB | default "" }}'
   MARIADB_PORT: '{{ .MARIADB_PORT | default "3306" }}'
@@ -34,20 +34,18 @@ tasks:
 
   # ── Setup ────────────────────────────────────────────────────────────────
 
+  # Every step is idempotent (conditional key generation, `cp` guarded by
+  # existence checks), so setup is safe to re-run at any time — deliberately
+  # no sources/generates here: a checksum-based up-to-date check would skip
+  # the whole chain whenever the lockfiles are unchanged.
   setup:
     desc: Install dependencies and prepare the local environment
     aliases: [install]
     cmds:
       - task: composer:install
       - task: env:prepare
-      - task: composer:key
-      - task: docker:up
-      - task: migrate
       - task: npm:install
       - task: npm:build
-    sources:
-      - composer.lock
-      - package-lock.json
 
   env:prepare:
     desc: Copy .env from .env.example when .env is missing and add MariaDB/Valkey service config
@@ -111,27 +109,26 @@ tasks:
     silent: true
 
   # When invoking bare binaries from vendor/bin (rector, phpstan, pint),
-  # always prefix with `php` — Task's default shell is cmd.exe on Windows,
-  # which cannot resolve POSIX-style `vendor/bin/<tool>` paths.
+  # prefix with `php` — `php vendor/bin/<tool>` works identically on Linux,
+  # macOS, and Windows, so the tasks stay portable across dev machines.
 
   # ── CI ───────────────────────────────────────────────────────────────────
 
+  # Sequential on purpose: deps would run these concurrently, and the checks
+  # must not start before composer:setup has vendor/ and node_modules ready.
   ci:
     desc: Run the full CI pipeline (mirrors composer ci:check + frontend checks)
-    deps:
-      - composer:setup
-      - composer:lint_check
-      - composer:types_check
-      - npm:lint_check
-      - npm:format_check
-      - npm:types_check
-      - npm:build
-      - test
+    cmds:
+      - task: composer:setup
+      - task: lint:check
+      - task: types:check
+      - task: npm:build
+      - task: test
 
   # ── Docker ───────────────────────────────────────────────────────────────
 
   docker:up:
-    desc: Start the MariaDB, Valkey, and Mailpit containers
+    desc: Start the MariaDB, Valkey, Mailpit, and Garage containers
     cmds:
       - docker compose up -d --wait --remove-orphans
 
