@@ -1,0 +1,18 @@
+title = "walfa gitleaks configuration"
+
+# The Garage S3 credentials committed in .env.example and compose.yaml are
+# intentional dev-only placeholders (auto-provisioning for the local Docker
+# container, see `task setup`). Real credentials live only in the gitignored
+# .env — rotate for anything beyond local development.
+[[rules.allowlists]]
+description = "Local Garage S3 dev placeholders"
+paths = [
+    '''(^|/)\.env\.example$''',
+    '''(^|/)compose\.yaml$''',
+]
+regexTarget = "line"
+regexes = [
+    '''GK6f3a9c1e8d2b4a7f0c5e9d1b3a6f8c20''',
+    '''1d4c7b0a93e85f2164ab30dc95e71f082b5ad6c39e04f17ba82c5d60931ef74b''',
+]
+condition = "AND"

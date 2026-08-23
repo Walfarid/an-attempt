@@ -1,0 +1,129 @@
+# Security scanning suite for walfa.
+#
+# Jobs:
+#   secret-scan            gitleaks — hardcoded secrets across full git history
+#   actions-security       zizmor — GitHub Actions workflow misconfigurations
+#   sast-codeql            CodeQL SAST (PHP + JavaScript/TypeScript)
+#   sca-dependency-review  PR dependency diff review (SCA gate)
+#   osv-scan-pr / -full    OSV-Scanner against the OSV.dev database (SCA deep)
+#
+# Versions verified 2026-08-23:
+#   actions/checkout v7 · gitleaks-action v3 · zizmor-action v0.6.2
+#   codeql-action v4 · dependency-review-action v5 · osv-scanner-action v2.5.1
+#
+# Placeholder Garage credentials in .env.example / compose.yaml are dev-only
+# and allowlisted in .gitleaks.toml.
+
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  secret-scan:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # full history so existing commits are scanned too
+          persist-credentials: false
+
+      - name: Scan for hardcoded secrets
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  actions-security:
+    name: Actions security (zizmor)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Audit GitHub Actions workflows
+        uses: zizmorcore/zizmor-action@v0.6.2
+        with:
+          advanced-security: false # report in the job log; flip to true for Code Scanning UI
+
+  sast-codeql:
+    name: SAST (CodeQL · ${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # required by codeql-action to upload SARIF results
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, php]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: '/language:${{ matrix.language }}'
+
+  sca-dependency-review:
+    name: SCA (Dependency review)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Review pull-request dependency changes
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+
+  osv-scan-pr:
+    name: SCA (OSV-Scanner · PR diff)
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      security-events: write # reusable workflow uploads findings to Code Scanning
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.5.1
+    with:
+      scan-args: |-
+        --recursive
+        ./
+
+  osv-scan-full:
+    name: SCA (OSV-Scanner · full)
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      security-events: write # reusable workflow uploads findings to Code Scanning
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.5.1
+    with:
+      scan-args: |-
+        --recursive
+        ./
