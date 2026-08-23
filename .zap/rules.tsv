@@ -1,0 +1,13 @@
+# OWASP ZAP baseline scan policy for walfa (tab-separated).
+# Columns: ruleId<TAB>action<TAB>comment
+# Actions: IGNORE | WARN | FAIL
+#
+# The baseline profile is passive-only; WARN alerts do not fail the run
+# (-I). Rules set to IGNORE below are documented, accepted findings.
+
+# Laravel does not emit a CSP header yet; the portfolio site loads no
+# third-party scripts. Revisit when adding analytics/ads.
+10038	IGNORE	Content-Security-Policy header not set
+
+# The DAST target is plain HTTP on localhost; HSTS is not applicable there.
+10035	IGNORE	Strict-Transport-Security header not set (HTTP target)
