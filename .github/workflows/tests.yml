@@ -13,6 +13,24 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    # phpunit.xml points the suite at MariaDB (walfa_testing); without this
+    # service every feature test fails on connection refused.
+    services:
+      mariadb:
+        image: mariadb:12.3
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: walfa_testing
+          MARIADB_USER: laravel
+          MARIADB_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --su-mysql --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -3,7 +3,8 @@
 # Jobs:
 #   secret-scan            gitleaks — hardcoded secrets across full git history
 #   actions-security       zizmor — GitHub Actions workflow misconfigurations
-#   sast-codeql            CodeQL SAST (PHP + JavaScript/TypeScript)
+#   sast-codeql            CodeQL SAST (JavaScript/TypeScript)
+#   sast-php               Semgrep SAST for PHP (CodeQL dropped PHP support)
 #   sca-dependency-review  PR dependency diff review (SCA gate)
 #   osv-scan-pr / -full    OSV-Scanner against the OSV.dev database (SCA deep)
 #
@@ -64,7 +65,7 @@ jobs:
           advanced-security: false # report in the job log; flip to true for Code Scanning UI
 
   sast-codeql:
-    name: SAST (CodeQL · ${{ matrix.language }})
+    name: SAST (CodeQL · javascript-typescript)
     runs-on: ubuntu-latest
     permissions:
       security-events: write # required by codeql-action to upload SARIF results
@@ -72,7 +73,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [javascript-typescript, php]
+        # CodeQL dropped PHP support ("Did not recognize the following
+        # languages: php"); PHP is covered by the Semgrep job below.
+        language: [javascript-typescript]
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -89,6 +92,35 @@ jobs:
         uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
         with:
           category: '/language:${{ matrix.language }}'
+
+  # Semgrep CE replaces the PHP leg CodeQL dropped. Registry rulesets run
+  # token-less; findings land in Code Scanning via upload-sarif.
+  sast-php:
+    name: SAST (Semgrep · PHP)
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read # required by codeql-action/upload-sarif
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Scan PHP sources
+        run: >
+          docker run --rm --volume "$PWD:/src" --workdir /src
+          semgrep/semgrep@sha256:67319956da3dcb58baf5b322899c15458e3963e7018a86aeeb5cd224e69cb77a
+          semgrep scan --metrics=off
+          --config=p/php --config=p/security-audit --config=p/secrets
+          --sarif --output=semgrep.sarif app/ resources/views/
+
+      - name: Upload SARIF to Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        with:
+          sarif_file: semgrep.sarif
 
   sca-dependency-review:
     name: SCA (Dependency review)
