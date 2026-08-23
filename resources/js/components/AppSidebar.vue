@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from '@lucide/vue';
+import {
+    ArrowUpRight,
+    Briefcase,
+    FileText,
+    FolderGit2,
+    GraduationCap,
+    LayoutGrid,
+    PenLine,
+    UserRoundPen,
+    Wrench,
+} from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -14,7 +23,14 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, home } from '@/routes';
+import educations from '@/routes/dashboard/educations';
+import experience from '@/routes/dashboard/experience';
+import posts from '@/routes/dashboard/posts';
+import profile from '@/routes/dashboard/profile';
+import projects from '@/routes/dashboard/projects';
+import publications from '@/routes/dashboard/publications';
+import skills from '@/routes/dashboard/skills';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -23,18 +39,40 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
+        title: 'Projects',
+        href: projects.index.url(),
         icon: FolderGit2,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Posts',
+        href: posts.index.url(),
+        icon: PenLine,
+    },
+    {
+        title: 'Experience',
+        href: experience.index.url(),
+        icon: Briefcase,
+    },
+    {
+        title: 'Education',
+        href: educations.index.url(),
+        icon: GraduationCap,
+    },
+    {
+        title: 'Publications',
+        href: publications.index.url(),
+        icon: FileText,
+    },
+    {
+        title: 'Skills',
+        href: skills.index.url(),
+        icon: Wrench,
+    },
+    {
+        title: 'Profile',
+        href: profile.edit.url(),
+        icon: UserRoundPen,
     },
 ];
 </script>
@@ -58,7 +96,16 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton as-child :tooltip="'View homepage'">
+                        <Link :href="home()">
+                            <ArrowUpRight />
+                            <span>View homepage</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
             <NavUser />
         </SidebarFooter>
     </Sidebar>
