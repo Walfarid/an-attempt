@@ -5,7 +5,7 @@
 # The Laravel app itself runs natively on the host (PHP 8.5 + Node 24 in PATH).
 #
 # Quick start:  task setup   → install deps, copy .env, generate key, migrate
-#               task up      → start MySQL/Redis/Mailpit, run the dev servers
+#               task up      → start MariaDB/Valkey/Mailpit/Garage, run dev servers
 #               task dev     → run the dev servers only (composer dev)
 #               task test    → full test suite
 #               task ci      → all CI checks
@@ -75,9 +75,10 @@ tasks:
   # ── Testing & quality ────────────────────────────────────────────────────
 
   test:
-    desc: Run the PHP test suite
+    desc: Run the PHP test suite (needs Docker services — tests hit MariaDB)
     aliases: [tests]
     deps:
+      - docker:up
       - artisan:config_clear
     cmd: php artisan test {{.CLI_ARGS}}
 
