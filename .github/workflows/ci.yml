@@ -1,0 +1,151 @@
+# Multi-stage CI pipeline for walfa.
+#
+# Stages (parallel where possible):
+#   backend-static   Pint code style + PHPStan/Larastan static analysis
+#   frontend         ESLint + Prettier + vue-tsc + Vite production build
+#   tests            Pest suite (unit + feature) against MariaDB 12.3
+#   sca-composer     Composer audit (known advisories in locked PHP deps)
+#   ci-ok            Aggregate gate for branch protection
+#
+# Versions verified 2026-08-23:
+#   actions/checkout v7 · actions/setup-node v7 · actions/upload-artifact v7
+#   shivammathur/setup-php v2 (rolling) · PHP 8.5 stable · Node 24
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend-static:
+    name: Static analysis (Pint + PHPStan)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, zip, curl, intl, pdo_mysql
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Pint (code style)
+        run: vendor/bin/pint --test --parallel
+
+      - name: PHPStan / Larastan
+        run: vendor/bin/phpstan analyse --no-progress
+
+  frontend:
+    name: Frontend checks and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint:check
+
+      - name: Prettier
+        run: npm run format:check
+
+      - name: vue-tsc (TypeScript)
+        run: npm run types:check
+
+      - name: Vite production build
+        run: npm run build
+
+  tests:
+    name: Tests (Pest unit + feature)
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:12.3
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: walfa_testing
+          MARIADB_USER: laravel
+          MARIADB_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --su-mysql --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, zip, curl, intl, pdo_mysql
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare application environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Run test suite
+        run: php artisan config:clear --ansi && php artisan test
+
+  sca-composer:
+    name: SCA (Composer audit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Audit locked dependencies against advisory DBs
+        run: composer audit --locked
+
+  ci-ok:
+    name: CI gate
+    needs: [backend-static, frontend, tests, sca-composer]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All CI stages passed
+        run: echo "Backend static analysis, frontend checks, tests, and dependency audit passed."
