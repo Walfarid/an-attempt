@@ -12,6 +12,14 @@ use Illuminate\Support\Str;
 class PostFactory extends Factory
 {
     /**
+     * Slugs handed out by this factory instance, so a single
+     * count(N)->create() batch cannot collide with itself.
+     *
+     * @var array<string, true>
+     */
+    protected array $usedSlugs = [];
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -37,12 +45,24 @@ class PostFactory extends Factory
 
     /**
      * Derive the slug from the final title unless one was given
-     * explicitly — the definition's title may be overridden.
+     * explicitly — the definition's title may be overridden. The
+     * title pool is small, so guard against collisions under the
+     * unique posts.slug index: instance memory catches siblings
+     * made before their batch is saved, the DB query catches rows
+     * from earlier runs.
      */
     public function configure(): static
     {
         return $this->afterMaking(function (Post $post) {
-            $post->slug ??= Str::slug((string) $post->title);
+            $base = Str::slug((string) $post->title);
+            $slug = $post->slug ?? $base;
+
+            while (isset($this->usedSlugs[$slug]) || Post::where('slug', $slug)->exists()) {
+                $slug = $base.'-'.Str::lower(Str::random(6));
+            }
+
+            $this->usedSlugs[$slug] = true;
+            $post->slug = $slug;
         });
     }
 

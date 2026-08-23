@@ -23,7 +23,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { NavItem } from '@/types';
 import { dashboard, home } from '@/routes';
 import educations from '@/routes/dashboard/educations';
 import experience from '@/routes/dashboard/experience';
@@ -32,6 +31,7 @@ import profile from '@/routes/dashboard/profile';
 import projects from '@/routes/dashboard/projects';
 import publications from '@/routes/dashboard/publications';
 import skills from '@/routes/dashboard/skills';
+import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
