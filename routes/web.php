@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -18,6 +19,10 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('posts', [BlogController::class, 'index'])->name('posts.index');
 Route::get('posts/{post:slug}', [BlogController::class, 'show'])->name('posts.show');
+
+Route::post('contact', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('contact.store');
 
 Route::middleware([
     'auth',
