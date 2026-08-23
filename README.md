@@ -45,6 +45,7 @@ Built on the official **Laravel Vue starter kit** — no framework reinvention, 
 | Auth | **WorkOS** (Laravel WorkOS package) |
 | Database | **SQLite** by default; **MariaDB 12.3** (LTS) via Docker for production-like parity |
 | Cache/Queue | Database default; **Valkey 9.1** (Redis-compatible) via Docker |
+| Object storage | **Garage** (S3-compatible, Docker dev) on the `media` disk → Oracle Cloud S3-compatible endpoint in production |
 | Local mail | **Mailpit** via Docker |
 
 All image tags are verified LTS/stable/anchor as of 2026-08-23.
@@ -152,7 +153,10 @@ This mirrors (and extends) the repo's GitHub Actions workflow (`.github/workflow
 |---------|------------------------------|---------|
 | MariaDB | `mariadb:12.3` | current LTS — primary MySQL-compatible database |
 | Valkey | `valkey/valkey:9.1` | current stable — Redis-compatible cache/queue/session |
+| Garage | `dxflrs/garage:5b6d138035db7c8b036136921c478f217a61f4e3` | pinned commit build — S3-compatible object storage (media disk) |
 | Mailpit | `axllent/mailpit:v1.31.0` | pinned — SMTP testing + web UI |
+
+Garage ports: S3 API **3900**, Admin API **3903**. Config: `docker/garage/garage.toml`; the default bucket + access key are auto-provisioned from `.env` (`GARAGE_*`).
 
 Ports bind to the **loopback** interface only (`127.0.0.1`) — nothing is exposed to the network.
 

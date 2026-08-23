@@ -11,6 +11,13 @@
 #   - mariadb:12.3        current LTS series (12.3.2)
 #   - valkey:9.1          current stable line (9.1.1)
 #   - axllent/mailpit:v1.31.0  pinned full version (security-relevant SMTP)
+#
+# Garage is pinned to a commit build chosen by the user (MinIO is stale):
+#   - dxflrs/garage:5b6d138035db7c8b036136921c478f217a61f4e3
+#     verified on Docker Hub 2026-08-23 (active, multi-arch); maps to a
+#     2026-08-19 main-branch commit, i.e. >= v2.3.0, so the
+#     `--single-node --default-bucket` auto-provisioning applies.
+#     Swap to Oracle Cloud's S3-compatible endpoint later = .env change only.
 name: walfa
 
 services:
@@ -27,6 +34,7 @@ services:
       - "127.0.0.1:${MARIADB_PORT:-3306}:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "healthcheck.sh --su-mysql --connect --innodb_initialized"]
       interval: 5s
@@ -49,6 +57,30 @@ services:
       timeout: 3s
       retries: 20
 
+  garage:
+    image: dxflrs/garage:5b6d138035db7c8b036136921c478f217a61f4e3
+    container_name: walfa-garage
+    restart: unless-stopped
+    # >= v2.3.0: auto-creates a single-node layout, the default bucket, and
+    # an access key from the GARAGE_DEFAULT_* env vars below.
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_ACCESS_KEY_ID:-GK6f3a9c1e8d2b4a7f0c5e9d1b3a6f8c20}
+      GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_SECRET_ACCESS_KEY:-1d4c7b0a93e85f2164ab30dc95e71f082b5ad6c39e04f17ba82c5d60931ef74b}
+      GARAGE_DEFAULT_BUCKET: ${GARAGE_BUCKET:-walfa}
+    ports:
+      - "127.0.0.1:${GARAGE_S3_PORT:-3900}:3900"
+      - "127.0.0.1:${GARAGE_ADMIN_PORT:-3903}:3903"
+    volumes:
+      - ./docker/garage/garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
   mailpit:
     image: axllent/mailpit:v1.31.0
     container_name: walfa-mailpit
@@ -65,3 +97,4 @@ services:
 volumes:
   mariadb_data:
   valkey_data:
+  garage_data:

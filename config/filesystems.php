@@ -60,6 +60,29 @@ return [
             'report' => false,
         ],
 
+        /*
+        |----------------------------------------------------------------------
+        | Media (portfolio images: project screenshots, post covers)
+        |----------------------------------------------------------------------
+        |
+        | S3-compatible disk. Locally this is Garage in Docker; in production
+        | it targets Oracle Cloud's S3-compatible endpoint — switching is an
+        | AWS_* .env change only, no code changes.
+        |
+        */
+
+        'media' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => true,
+        ],
+
     ],
 
     /*

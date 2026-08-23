@@ -1,0 +1,40 @@
+# Garage (S3-compatible object storage) — single-node development config.
+#
+# Mounted read-only into the walfa-garage container at /etc/garage.toml.
+# The container starts with: /garage server --single-node --default-bucket
+# which auto-creates the default bucket and access key from the
+# GARAGE_DEFAULT_* environment variables declared in compose.yaml/.env.
+#
+# Ports (bound to 127.0.0.1 in compose.yaml):
+#   3900  S3 API          <- what Laravel's S3 filesystem disk talks to
+#   3901  RPC             internal cluster traffic (not exposed)
+#   3902  S3 web hosting  not used yet (not exposed)
+#   3903  Admin API       health checks + garage CLI over HTTP
+#
+# Values below are local-development placeholders, same convention as the
+# MariaDB credentials in compose.yaml. Never reuse them anywhere public.
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+rpc_secret = "6c4b19a8e2d34f5a90b7c8d1e6f3a2b54c8d7e9f0a1b2c3d4e5f60718293a4b5"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+root_domain = ".s3.walfa.localhost"
+
+[s3_web]
+bind_addr = "[::]:3902"
+root_domain = ".web.walfa.localhost"
+index = "index.html"
+
+[admin]
+api_bind_addr = "[::]:3903"
+admin_token = "dev-admin-token-4f7a2b9c8e1d5f30a6b4c2e8d70913fa"
+metrics_token = "dev-metrics-token-b81e4c2f9a6d30517c8be4f20ad57396"
