@@ -9,8 +9,11 @@ use App\Http\Controllers\Dashboard\ProjectController;
 use App\Http\Controllers\Dashboard\PublicationController;
 use App\Http\Controllers\Dashboard\ScreenshotController;
 use App\Http\Controllers\Dashboard\SkillController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware([
     'auth',

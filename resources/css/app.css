@@ -13,6 +13,10 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    --font-mono:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -37,6 +41,9 @@
 
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
+
+    --color-accent-primary: var(--accent-primary);
+    --color-accent-secondary: var(--accent-secondary);
 
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
@@ -104,6 +111,8 @@
     --muted-foreground: hsl(0 0% 45.1%);
     --accent: hsl(0 0% 96.1%);
     --accent-foreground: hsl(0 0% 9%);
+    --accent-primary: #19594a;
+    --accent-secondary: #3b7a57;
     --destructive: hsl(0 84.2% 60.2%);
     --destructive-foreground: hsl(0 0% 98%);
     --border: hsl(0 0% 92.8%);
@@ -141,6 +150,8 @@
     --muted-foreground: hsl(0 0% 63.9%);
     --accent: hsl(0 0% 14.9%);
     --accent-foreground: hsl(0 0% 98%);
+    --accent-primary: #5bb89a;
+    --accent-secondary: #6fbf8d;
     --destructive: hsl(0 84% 60%);
     --destructive-foreground: hsl(0 0% 98%);
     --border: hsl(0 0% 14.9%);
@@ -169,4 +180,204 @@
     body {
         @apply bg-background text-foreground;
     }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Public site · "Forest Brutalism × Bento"
+|--------------------------------------------------------------------------
+| Scoped to the public landing page (.site wrapper) so the dashboard
+| theme stays untouched. :root-level defaults are light; .dark overrides
+| follow the global appearance composable.
+*/
+.site {
+    /* Typography (scoped override of theme fonts) */
+    --site-font-sans:
+        'Space Grotesk', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+    --site-font-mono:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Surfaces · light (paper with a green cast) */
+    --site-bg: #eef2ea;
+    --site-panel: #fbfcf9;
+    --site-panel-raised: #ffffff;
+    --site-panel-inset: #e3eade;
+
+    /* Ink & structure */
+    --site-ink: #0d1a11;
+    --site-text: #131f16;
+    --site-text-secondary: #46554a;
+
+    /* Forest accents */
+    --site-accent: #175339;
+    --site-accent-strong: #0f3d29;
+    --site-accent-soft: #dbebe0;
+    --site-on-accent: #f6faf6;
+
+    /* Brutalism */
+    --site-border-width: 2px;
+    --site-shadow: #0d1a11;
+
+    /* Focus */
+    --site-focus: #175339;
+
+    /* Re-map Tailwind font tokens for this subtree */
+    --font-sans: var(--site-font-sans);
+    --font-mono: var(--site-font-mono);
+    --font-display: var(--site-font-sans);
+
+    font-family: var(--site-font-sans);
+    background-color: var(--site-bg);
+    color: var(--site-text);
+}
+
+.dark .site {
+    /* Surfaces · dark (deep forest) */
+    --site-bg: #0a110c;
+    --site-panel: #111c13;
+    --site-panel-raised: #16231a;
+    --site-panel-inset: #0d1710;
+
+    /* Ink & structure */
+    --site-ink: #9fd8b4;
+    --site-text: #e7f1e8;
+    --site-text-secondary: #a3baa9;
+
+    /* Forest accents */
+    --site-accent: #8fdfae;
+    --site-accent-strong: #b4ebc9;
+    --site-accent-soft: #1c2f22;
+    --site-on-accent: #06110a;
+
+    /* Brutalism */
+    --site-shadow: #050a06;
+
+    /* Focus */
+    --site-focus: #8fdfae;
+}
+
+/* ---- Brutalist primitives ---------------------------------------- */
+
+.site .b-panel {
+    border: var(--site-border-width) solid var(--site-ink);
+    background-color: var(--site-panel);
+}
+
+.site .b-shadow-sm {
+    box-shadow: 3px 3px 0 0 var(--site-shadow);
+}
+
+.site .b-shadow-md {
+    box-shadow: 5px 5px 0 0 var(--site-shadow);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .site .b-lift {
+        transition:
+            transform 140ms ease-out,
+            box-shadow 140ms ease-out;
+    }
+
+    .site .b-lift:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: 7px 7px 0 0 var(--site-shadow);
+    }
+
+    .site .b-lift:active {
+        transform: translate(2px, 2px);
+        box-shadow: 0 0 0 0 var(--site-shadow);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site .b-lift:hover {
+        box-shadow: 7px 7px 0 0 var(--site-shadow);
+    }
+}
+
+.site :focus-visible {
+    outline: 3px solid var(--site-focus);
+    outline-offset: 2px;
+}
+
+.site .b-label {
+    font-family: var(--site-font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.site .prose-site > * + * {
+    margin-top: 0.75em;
+}
+
+.site .prose-site strong {
+    color: var(--site-text);
+    font-weight: 700;
+}
+
+.site .prose-site a {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.site .prose-site h1,
+.site .prose-site h2,
+.site .prose-site h3,
+.site .prose-site h4 {
+    color: var(--site-text);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.site .prose-site h2 {
+    margin-top: 2em;
+    font-size: 1.5rem;
+    line-height: 1.25;
+}
+
+.site .prose-site h3 {
+    margin-top: 1.6em;
+    font-size: 1.22rem;
+    line-height: 1.3;
+}
+
+.site .prose-site ul,
+.site .prose-site ol {
+    padding-left: 1.4em;
+    list-style: revert;
+}
+
+.site .prose-site li + li {
+    margin-top: 0.35em;
+}
+
+.site .prose-site blockquote {
+    border-left: var(--site-border-width) solid var(--site-accent);
+    padding-left: 1em;
+    font-style: italic;
+}
+
+.site .prose-site code {
+    background-color: var(--site-panel-inset);
+    border: 1px solid var(--site-ink);
+    padding: 0.1em 0.35em;
+    font-family: var(--site-font-mono);
+    font-size: 0.875em;
+}
+
+.site .prose-site pre {
+    background-color: var(--site-panel-inset);
+    border: var(--site-border-width) solid var(--site-ink);
+    padding: 1em;
+    overflow-x: auto;
+}
+
+.site .prose-site pre code {
+    border: 0;
+    padding: 0;
+    background-color: transparent;
 }
