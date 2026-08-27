@@ -94,7 +94,7 @@ class Post extends Model
 
     /**
      * The list teaser: the excerpt when set, otherwise a plain-text
-     * summary of the rendered body.
+     * summary stripped of common Markdown syntax (avoids a full render).
      */
     public function teaser(int $words = 30): string
     {
@@ -102,6 +102,13 @@ class Post extends Model
             return $this->excerpt;
         }
 
-        return Str::words(strip_tags($this->bodyHtml()), $words);
+        $text = (string) preg_replace([
+            '/^#{1,6}\s+/',
+            '/[*_`]{1,3}/',
+            '/!\[.*?\]\(.+?\)/',
+            '/\[(.+?)\]\(.+?\)/',
+        ], ['$1', '', '', ''], $this->body);
+
+        return Str::words(trim($text), $words);
     }
 }
