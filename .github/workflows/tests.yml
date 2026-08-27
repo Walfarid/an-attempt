@@ -57,5 +57,31 @@ jobs:
       - name: Generate Wayfinder bindings
         run: php artisan wayfinder:generate --with-form --no-interaction
 
+      # Media tests upload/delete through the S3-compatible "media" disk
+      # (Garage in dev). Docker-in-job starts the same Garage image used by
+      # compose.yaml; credentials and bucket are sourced from .env (created
+      # by composer setup), so no secrets live in this workflow. Garage
+      # auto-provisions the bucket + key via --single-node --default-bucket.
+      - name: Start Garage (S3 for media tests)
+        run: |
+          set -a
+          . ./.env
+          set +a
+          docker run -d --name walfa-garage-ci \
+            -p 127.0.0.1:3900:3900 \
+            -e GARAGE_DEFAULT_ACCESS_KEY="$GARAGE_ACCESS_KEY_ID" \
+            -e GARAGE_DEFAULT_SECRET_KEY="$GARAGE_SECRET_ACCESS_KEY" \
+            -e GARAGE_DEFAULT_BUCKET="$GARAGE_BUCKET" \
+            -v "${{ github.workspace }}/docker/garage/garage.toml:/etc/garage.toml:ro" \
+            -v walfa-garage-ci:/var/lib/garage \
+            dxflrs/garage:5b6d138035db7c8b036136921c478f217a61f4e3 \
+            /garage server --single-node --default-bucket
+          for i in $(seq 1 30); do
+            docker exec walfa-garage-ci /garage status >/dev/null 2>&1 && exit 0
+            sleep 1
+          done
+          docker logs walfa-garage-ci
+          exit 1
+
       - name: Run CI Checks
         run: composer ci:check
