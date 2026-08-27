@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from '@lucide/vue';
+import { Pencil, Plus, Trash2, LoaderCircle } from '@lucide/vue';
 import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -73,9 +83,30 @@ function save() {
     }
 }
 
-function onDelete(id: number) {
-    form.delete(publicationsRoute.destroy.url(id), {
-        onBefore: () => window.confirm('Delete this publication?'),
+function onDelete(publication: Publication) {
+    deleteTarget.value = publication;
+    deleteOpen.value = true;
+}
+
+/* Optimistic delete: the row leaves immediately, rolls back on error. */
+const deleteTarget = ref<Publication | null>(null);
+const deleteOpen = ref(false);
+
+function confirmDelete() {
+    const publication = deleteTarget.value;
+
+    if (!publication) {
+        return;
+    }
+
+    deleteOpen.value = false;
+    form.delete(publicationsRoute.destroy.url(publication.id), {
+        preserveScroll: true,
+        optimistic: (props) => ({
+            publications: (
+                (props.publications as Publication[] | undefined) ?? []
+            ).filter((x) => x.id !== publication.id),
+        }),
     });
 }
 </script>
@@ -170,14 +201,44 @@ function onDelete(id: number) {
                                     >Cancel</Button
                                 >
                             </DialogClose>
-                            <Button type="submit" :disabled="form.processing">{{
-                                editingId ? 'Save changes' : 'Add publication'
-                            }}</Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <LoaderCircle
+                                    v-if="form.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                {{
+                                    editingId
+                                        ? 'Save changes'
+                                        : 'Add publication'
+                                }}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
         </div>
+
+        <!-- Delete publication confirm -->
+        <AlertDialog v-model:open="deleteOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete publication?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This publication will be permanently removed.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        @click="confirmDelete"
+                    >
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- Publications Table -->
         <div class="d-surface">
@@ -229,7 +290,7 @@ function onDelete(id: number) {
                                     variant="ghost"
                                     size="sm"
                                     class="hover:bg-destructive/10 hover:text-destructive"
-                                    @click="onDelete(publication.id)"
+                                    @click="onDelete(publication)"
                                 >
                                     <Trash2 class="size-4" />
                                     <span class="sr-only"

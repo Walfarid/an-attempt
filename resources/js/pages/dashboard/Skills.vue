@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from '@lucide/vue';
+import { Pencil, Plus, Trash2, LoaderCircle } from '@lucide/vue';
 import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -83,9 +93,30 @@ function save() {
     }
 }
 
-function onDelete(id: number) {
-    form.delete(skillsRoute.destroy.url(id), {
-        onBefore: () => window.confirm('Delete this skill?'),
+function onDelete(skill: Skill) {
+    deleteTarget.value = skill;
+    deleteOpen.value = true;
+}
+
+/* Optimistic delete: the row leaves immediately, rolls back on error. */
+const deleteTarget = ref<Skill | null>(null);
+const deleteOpen = ref(false);
+
+function confirmDelete() {
+    const skill = deleteTarget.value;
+
+    if (!skill) {
+        return;
+    }
+
+    deleteOpen.value = false;
+    form.delete(skillsRoute.destroy.url(skill.id), {
+        preserveScroll: true,
+        optimistic: (props) => ({
+            skills: ((props.skills as Skill[] | undefined) ?? []).filter(
+                (x) => x.id !== skill.id,
+            ),
+        }),
     });
 }
 </script>
@@ -161,14 +192,40 @@ function onDelete(id: number) {
                                     >Cancel</Button
                                 >
                             </DialogClose>
-                            <Button type="submit" :disabled="form.processing">{{
-                                editingId ? 'Save changes' : 'Add skill'
-                            }}</Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <LoaderCircle
+                                    v-if="form.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                {{ editingId ? 'Save changes' : 'Add skill' }}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
         </div>
+
+        <!-- Delete skill confirm -->
+        <AlertDialog v-model:open="deleteOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete skill?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This skill will be permanently removed.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        @click="confirmDelete"
+                    >
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- Skills Table -->
         <div class="d-surface">
@@ -184,6 +241,13 @@ function onDelete(id: number) {
                     </tr>
                 </thead>
                 <tbody>
+                    <tr v-if="!skills.length">
+                        <td colspan="3" class="py-10 text-center">
+                            <p class="d-ink-soft text-sm">
+                                No skills yet — add your first one.
+                            </p>
+                        </td>
+                    </tr>
                     <tr v-for="skill in skills" :key="skill.id">
                         <td class="d-ink font-medium">
                             {{ skill.name }}
@@ -212,7 +276,7 @@ function onDelete(id: number) {
                                     variant="ghost"
                                     size="sm"
                                     class="hover:bg-destructive/10 hover:text-destructive"
-                                    @click="onDelete(skill.id)"
+                                    @click="onDelete(skill)"
                                 >
                                     <Trash2 class="size-4" />
                                     <span class="sr-only"

@@ -8,7 +8,7 @@ import {
     BarChart3,
     Eye,
 } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
 import { dashboard } from '@/routes';
@@ -119,6 +119,54 @@ const totalCtr = computed(() => {
 });
 
 useScrollAnimations();
+
+/* One-time chart draw-in -------------------------------------------------- */
+
+let chartMm: gsap.MatchMedia | null = null;
+
+onMounted(async () => {
+    const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+        import('gsap'),
+        import('gsap/ScrollTrigger'),
+    ]);
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    chartMm = gsap.matchMedia();
+
+    chartMm.add('(prefers-reduced-motion: no-preference)', () => {
+        const lines = Array.from(
+            document.querySelectorAll<SVGPathElement>('.chart-line'),
+        );
+
+        if (!lines.length) {
+            return;
+        }
+
+        lines.forEach((el) => {
+            const length = el.getTotalLength();
+
+            gsap.set(el, { strokeDasharray: length, strokeDashoffset: length });
+        });
+
+        gsap.to(lines, {
+            strokeDashoffset: 0,
+            duration: 1,
+            stagger: 0.15,
+            ease: 'power2.inOut',
+            scrollTrigger: {
+                trigger: lines[0],
+                start: 'top 88%',
+                once: true,
+            },
+        });
+    });
+});
+
+onUnmounted(() => {
+    chartMm?.revert();
+    chartMm = null;
+});
 </script>
 
 <template>
@@ -154,7 +202,7 @@ useScrollAnimations();
                         {{ kpiText(kpi) }}
                     </p>
                     <span
-                        class="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums"
+                        class="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs font-medium tabular-nums"
                         :class="
                             kpi.delta >= 0
                                 ? 'bg-(--accent-soft) text-(--accent)'
@@ -223,6 +271,7 @@ useScrollAnimations();
                     />
                     <path
                         :d="visitorPath"
+                        class="chart-line"
                         fill="none"
                         stroke="var(--accent)"
                         stroke-width="2"
@@ -231,6 +280,7 @@ useScrollAnimations();
                     />
                     <path
                         :d="clickPath"
+                        class="chart-line"
                         fill="none"
                         stroke="var(--accent-secondary)"
                         stroke-width="2"
@@ -300,9 +350,9 @@ useScrollAnimations();
                                 {{ totalCtr.toFixed(1) }}%
                             </span>
                         </div>
-                        <div class="h-2 rounded-full bg-(--accent-soft)">
+                        <div class="h-2 bg-(--accent-soft)">
                             <div
-                                class="h-full rounded-full bg-(--accent) transition-all"
+                                class="h-full bg-(--accent) transition-all"
                                 :style="{
                                     width: `${Math.min(totalCtr, 100)}%`,
                                 }"
@@ -310,7 +360,7 @@ useScrollAnimations();
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="rounded-lg bg-(--accent-soft) p-3">
+                        <div class="bg-(--accent-soft) p-3">
                             <p
                                 class="font-display text-lg font-semibold tabular-nums"
                             >
@@ -322,7 +372,7 @@ useScrollAnimations();
                             </p>
                             <p class="text-xs text-(--ink-soft)">Visitors</p>
                         </div>
-                        <div class="rounded-lg bg-(--accent-soft) p-3">
+                        <div class="bg-(--accent-soft) p-3">
                             <p
                                 class="font-display text-lg font-semibold tabular-nums"
                             >

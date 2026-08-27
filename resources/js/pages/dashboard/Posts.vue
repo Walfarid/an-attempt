@@ -1,9 +1,26 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { ImageUp, Pencil, Plus, SquarePen, Trash2 } from '@lucide/vue';
+import {
+    ImageUp,
+    LoaderCircle,
+    Pencil,
+    Plus,
+    SquarePen,
+    Trash2,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -87,9 +104,31 @@ function save() {
     }
 }
 
-function onDelete(id: number) {
-    form.delete(postsRoute.destroy.url(id), {
-        onBefore: () => window.confirm('Delete this post and its cover?'),
+function onDelete(post: Post) {
+    deleteTarget.value = post;
+    deleteOpen.value = true;
+}
+
+/* Optimistic delete: the row leaves immediately, rolls back on error. */
+
+const deleteTarget = ref<Post | null>(null);
+const deleteOpen = ref(false);
+
+function confirmDelete() {
+    const post = deleteTarget.value;
+
+    if (!post) {
+        return;
+    }
+
+    deleteOpen.value = false;
+    form.delete(postsRoute.destroy.url(post.id), {
+        preserveScroll: true,
+        optimistic: (props) => ({
+            posts: ((props.posts as Post[] | undefined) ?? []).filter(
+                (p) => p.id !== post.id,
+            ),
+        }),
     });
 }
 
@@ -112,17 +151,20 @@ function saveCover() {
     });
 }
 
-function removeCover() {
+function confirmRemoveCover() {
     const postId = coverPostId.value;
 
     if (!postId) {
         return;
     }
 
+    coverDeleteOpen.value = false;
     coverForm.delete(coverRoute.destroy.url({ post: postId }), {
-        onBefore: () => window.confirm('Remove this cover image?'),
+        preserveScroll: true,
     });
 }
+
+const coverDeleteOpen = ref(false);
 
 function publishLabel(post: Post): string {
     if (post.published_at === null) {
@@ -246,9 +288,14 @@ function publishLabel(post: Post): string {
                                     >Cancel</Button
                                 >
                             </DialogClose>
-                            <Button type="submit" :disabled="form.processing">{{
-                                editingId ? 'Save changes' : 'Create post'
-                            }}</Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <LoaderCircle
+                                    v-if="form.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                {{ editingId ? 'Save changes' : 'Create post' }}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -296,7 +343,12 @@ function publishLabel(post: Post): string {
                                 :disabled="coverForm.processing"
                                 class="flex-1"
                             >
-                                <ImageUp class="size-4" />
+                                <LoaderCircle
+                                    v-if="coverForm.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                <ImageUp v-else class="size-4" />
                                 Upload / replace
                             </Button>
                             <Button
@@ -304,16 +356,64 @@ function publishLabel(post: Post): string {
                                 type="button"
                                 variant="destructive"
                                 :disabled="coverForm.processing"
-                                @click="removeCover"
+                                @click="coverDeleteOpen = true"
                             >
                                 <Trash2 class="size-4" />
                                 Remove
                             </Button>
+
+                            <AlertDialog v-model:open="coverDeleteOpen">
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            Remove cover image?
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            The cover of “{{
+                                                coverPost?.title
+                                            }}” will be permanently removed.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel
+                                            >Cancel</AlertDialogCancel
+                                        >
+                                        <AlertDialogAction
+                                            variant="destructive"
+                                            @click="confirmRemoveCover"
+                                        >
+                                            Remove
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </div>
                     </form>
                 </DialogContent>
             </Dialog>
         </div>
+
+        <!-- Delete post confirm -->
+        <AlertDialog v-model:open="deleteOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete post?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        “{{ deleteTarget?.title }}” and its cover image will be
+                        permanently removed.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        @click="confirmDelete"
+                    >
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- Posts Table -->
         <div class="d-surface">
@@ -372,7 +472,7 @@ function publishLabel(post: Post): string {
                                     variant="ghost"
                                     size="sm"
                                     class="hover:bg-destructive/10 hover:text-destructive"
-                                    @click="onDelete(post.id)"
+                                    @click="onDelete(post)"
                                 >
                                     <Trash2 class="size-4" />
                                     <span class="sr-only"

@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from '@lucide/vue';
+import { Pencil, Plus, Trash2, LoaderCircle } from '@lucide/vue';
 import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -89,9 +99,30 @@ function save() {
     }
 }
 
-function onDelete(id: number) {
-    form.delete(experienceRoute.destroy.url(id), {
-        onBefore: () => window.confirm('Delete this role?'),
+function onDelete(experience: ExperienceType) {
+    deleteTarget.value = experience;
+    deleteOpen.value = true;
+}
+
+/* Optimistic delete: the row leaves immediately, rolls back on error. */
+const deleteTarget = ref<ExperienceType | null>(null);
+const deleteOpen = ref(false);
+
+function confirmDelete() {
+    const experience = deleteTarget.value;
+
+    if (!experience) {
+        return;
+    }
+
+    deleteOpen.value = false;
+    form.delete(experienceRoute.destroy.url(experience.id), {
+        preserveScroll: true,
+        optimistic: (props) => ({
+            experiences: (
+                (props.experiences as ExperienceType[] | undefined) ?? []
+            ).filter((x) => x.id !== experience.id),
+        }),
     });
 }
 </script>
@@ -222,14 +253,40 @@ function onDelete(id: number) {
                                     >Cancel</Button
                                 >
                             </DialogClose>
-                            <Button type="submit" :disabled="form.processing">{{
-                                editingId ? 'Save changes' : 'Add role'
-                            }}</Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <LoaderCircle
+                                    v-if="form.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                {{ editingId ? 'Save changes' : 'Add role' }}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
         </div>
+
+        <!-- Delete role confirm -->
+        <AlertDialog v-model:open="deleteOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete role?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This role will be permanently removed.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        @click="confirmDelete"
+                    >
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- Experience Table -->
         <div class="d-surface">
@@ -243,6 +300,13 @@ function onDelete(id: number) {
                     </tr>
                 </thead>
                 <tbody>
+                    <tr v-if="!experiences.length">
+                        <td colspan="4" class="py-10 text-center">
+                            <p class="d-ink-soft text-sm">
+                                No experience entries yet — add your first one.
+                            </p>
+                        </td>
+                    </tr>
                     <tr v-for="experience in experiences" :key="experience.id">
                         <td>
                             <p class="d-ink font-medium">
@@ -282,7 +346,7 @@ function onDelete(id: number) {
                                     variant="ghost"
                                     size="sm"
                                     class="hover:bg-destructive/10 hover:text-destructive"
-                                    @click="onDelete(experience.id)"
+                                    @click="onDelete(experience)"
                                 >
                                     <Trash2 class="size-4" />
                                     <span class="sr-only"

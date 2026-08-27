@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
+import { LoaderCircle } from '@lucide/vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -144,6 +145,11 @@ function save() {
                 <!-- Actions -->
                 <div class="flex items-center gap-3 pt-2">
                     <Button type="submit" :disabled="form.processing">
+                        <LoaderCircle
+                            v-if="form.processing"
+                            class="size-4 animate-spin"
+                            aria-hidden="true"
+                        />
                         Save profile
                     </Button>
                 </div>

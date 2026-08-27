@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { ImagePlus, Pencil, Plus, Trash2 } from '@lucide/vue';
+import { ImagePlus, LoaderCircle, Pencil, Plus, Trash2 } from '@lucide/vue';
 import { reactive, ref, computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -100,10 +110,31 @@ function save() {
     }
 }
 
-function onDelete(id: number) {
-    form.delete(projectsRoute.destroy.url(id), {
-        onBefore: () =>
-            window.confirm('Delete this project and its screenshots?'),
+function onDelete(project: Project) {
+    deleteTarget.value = project;
+    deleteOpen.value = true;
+}
+
+/* Optimistic delete: the row leaves immediately, rolls back on error. */
+
+const deleteTarget = ref<Project | null>(null);
+const deleteOpen = ref(false);
+
+function confirmDelete() {
+    const project = deleteTarget.value;
+
+    if (!project) {
+        return;
+    }
+
+    deleteOpen.value = false;
+    form.delete(projectsRoute.destroy.url(project.id), {
+        preserveScroll: true,
+        optimistic: (props) => ({
+            projects: ((props.projects as Project[] | undefined) ?? []).filter(
+                (p) => p.id !== project.id,
+            ),
+        }),
     });
 }
 
@@ -144,19 +175,42 @@ function uploadShot() {
 }
 
 function removeShot(screenshotId: number) {
-    const projectId = shotProjectId.value;
+    shotDeleteTarget.value = screenshotId;
+    shotDeleteOpen.value = true;
+}
 
-    if (!projectId) {
+const shotDeleteTarget = ref<number | null>(null);
+const shotDeleteOpen = ref(false);
+
+function confirmShotDelete() {
+    const projectId = shotProjectId.value;
+    const screenshotId = shotDeleteTarget.value;
+
+    if (!projectId || screenshotId === null) {
         return;
     }
 
+    shotDeleteOpen.value = false;
     upload.delete(
         screenshotsRoute.destroy.url({
             project: projectId,
             screenshot: screenshotId,
         }),
         {
-            onBefore: () => window.confirm('Delete this screenshot?'),
+            preserveScroll: true,
+            optimistic: (props) => ({
+                projects: ((props.projects as Project[] | undefined) ?? []).map(
+                    (project) =>
+                        project.id === projectId
+                            ? {
+                                  ...project,
+                                  screenshots: project.screenshots.filter(
+                                      (s) => s.id !== screenshotId,
+                                  ),
+                              }
+                            : project,
+                ),
+            }),
         },
     );
 }
@@ -328,9 +382,14 @@ function removeShot(screenshotId: number) {
                                     >Cancel</Button
                                 >
                             </DialogClose>
-                            <Button type="submit" :disabled="form.processing">{{
-                                editingId ? 'Save changes' : 'Add project'
-                            }}</Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <LoaderCircle
+                                    v-if="form.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                {{ editingId ? 'Save changes' : 'Add project' }}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -377,6 +436,29 @@ function removeShot(screenshotId: number) {
                     </ul>
                     <p v-else class="d-ink-soft text-sm">No screenshots yet.</p>
 
+                    <AlertDialog v-model:open="shotDeleteOpen">
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    Delete screenshot?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This screenshot will be permanently removed
+                                    from the project.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    variant="destructive"
+                                    @click="confirmShotDelete"
+                                >
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
                     <form class="mt-2 space-y-3" @submit.prevent="uploadShot">
                         <div class="grid gap-2">
                             <Label for="shot-image" class="d-label"
@@ -414,13 +496,40 @@ function removeShot(screenshotId: number) {
                             :disabled="upload.processing"
                             class="w-full"
                         >
-                            <ImagePlus class="size-4" />
+                            <LoaderCircle
+                                v-if="upload.processing"
+                                class="size-4 animate-spin"
+                                aria-hidden="true"
+                            />
+                            <ImagePlus v-else class="size-4" />
                             Upload
                         </Button>
                     </form>
                 </DialogContent>
             </Dialog>
         </div>
+
+        <!-- Delete project confirm -->
+        <AlertDialog v-model:open="deleteOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Delete project?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        “{{ deleteTarget?.title }}” and its screenshots will be
+                        permanently removed.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        @click="confirmDelete"
+                    >
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- Projects Table -->
         <div class="d-surface">
@@ -437,6 +546,13 @@ function removeShot(screenshotId: number) {
                     </tr>
                 </thead>
                 <tbody>
+                    <tr v-if="!projects.length">
+                        <td colspan="4" class="py-10 text-center">
+                            <p class="d-ink-soft text-sm">
+                                No projects yet — add your first one.
+                            </p>
+                        </td>
+                    </tr>
                     <tr v-for="project in projects" :key="project.id">
                         <td>
                             <div class="flex items-center gap-2">
@@ -510,7 +626,7 @@ function removeShot(screenshotId: number) {
                                     variant="ghost"
                                     size="sm"
                                     class="hover:bg-destructive/10 hover:text-destructive"
-                                    @click="onDelete(project.id)"
+                                    @click="onDelete(project)"
                                 >
                                     <Trash2 class="size-4" />
                                     <span class="sr-only"

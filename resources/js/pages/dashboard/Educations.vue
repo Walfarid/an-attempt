@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from '@lucide/vue';
+import { Pencil, Plus, Trash2, LoaderCircle } from '@lucide/vue';
 import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -85,9 +95,30 @@ function save() {
     }
 }
 
-function onDelete(id: number) {
-    form.delete(educationsRoute.destroy.url(id), {
-        onBefore: () => window.confirm('Delete this education record?'),
+function onDelete(education: Education) {
+    deleteTarget.value = education;
+    deleteOpen.value = true;
+}
+
+/* Optimistic delete: the row leaves immediately, rolls back on error. */
+const deleteTarget = ref<Education | null>(null);
+const deleteOpen = ref(false);
+
+function confirmDelete() {
+    const education = deleteTarget.value;
+
+    if (!education) {
+        return;
+    }
+
+    deleteOpen.value = false;
+    form.delete(educationsRoute.destroy.url(education.id), {
+        preserveScroll: true,
+        optimistic: (props) => ({
+            educations: (
+                (props.educations as Education[] | undefined) ?? []
+            ).filter((x) => x.id !== education.id),
+        }),
     });
 }
 </script>
@@ -197,14 +228,44 @@ function onDelete(id: number) {
                                     >Cancel</Button
                                 >
                             </DialogClose>
-                            <Button type="submit" :disabled="form.processing">{{
-                                editingId ? 'Save changes' : 'Add education'
-                            }}</Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <LoaderCircle
+                                    v-if="form.processing"
+                                    class="size-4 animate-spin"
+                                    aria-hidden="true"
+                                />
+                                {{
+                                    editingId ? 'Save changes' : 'Add education'
+                                }}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
             </Dialog>
         </div>
+
+        <!-- Delete education confirm -->
+        <AlertDialog v-model:open="deleteOpen">
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle
+                        >Delete education record?</AlertDialogTitle
+                    >
+                    <AlertDialogDescription>
+                        This education record will be permanently removed.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        variant="destructive"
+                        @click="confirmDelete"
+                    >
+                        Delete
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <!-- Education Table -->
         <div class="d-surface">
@@ -253,7 +314,7 @@ function onDelete(id: number) {
                                     variant="ghost"
                                     size="sm"
                                     class="hover:bg-destructive/10 hover:text-destructive"
-                                    @click="onDelete(education.id)"
+                                    @click="onDelete(education)"
                                 >
                                     <Trash2 class="size-4" />
                                     <span class="sr-only"
