@@ -194,3 +194,67 @@ Vue components must have a single root element.
 - IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
 
 </laravel-boost-guidelines>
+
+# Walfa — project notes
+
+## Overview
+
+Personal portfolio app: public site (home + blog) and an authenticated content dashboard.
+Laravel 13 (PHP 8.5) + Inertia v3 + Vue 3 SPA + Tailwind 4 + TypeScript. Tests are Pest;
+code style Pint; static analysis PHPStan + vue-tsc. Auth is WorkOS. Backing services run in
+Docker (compose.yaml): MariaDB 12.3, Valkey 9.1, Garage (S3-compatible), Mailpit. Production
+image is FrankenPHP + Octane deployed to an OCI VM via .github/workflows/deploy.yml.
+
+## Repository rules
+
+- `.ai/rules/index.md` maps globs to rule files. Read every rule file covering a path
+  before planning or editing there, and `grep -rin keyword .ai/rules` for what a path
+  match misses. Record new settled decisions with `record-rule`.
+- Do NOT commit local artifacts: the `C:\Users\...\lighthouse.*` profile dirs,
+  `walfa_testing` (local SQLite test DB), `.playwright-mcp/`, `hero-*.png`,
+  `homepage-*.png`, `post(s)-*.png`, `review-*.png`, and `.ai/goals/`. Stage explicit
+  paths only — never `git add -A`/`git add .` (there is intentionally no .gitignore
+  entry for them).
+- Commit in small, single-purpose semantic commits (`feat|fix|ci|docs|test|chore(scope): ...`)
+  and push to `main`; workflows run on every push, so expect one CI round per push.
+
+## Content model
+
+`Profile` (bio), `Project` + `ProjectScreenshot`, `Post` (slug, cover on media disk,
+`published_at`, teaser), `Skill`, `Experience`, `Education`, `Publication`, `ContactMessage`,
+`PageView`/`Click` (analytics). Dashboard CRUD is scope-bound under `dashboard/{entity}`
+with controllers in `app/Http/Controllers/Dashboard`.
+
+## Frontend conventions
+
+- Components live in `resources/js/pages`, shared chrome in `components/`, ui primitives in
+  `components/ui/` (e.g. `alert-dialog`), behavior in `composables/`. Single root element,
+  PascalCase files.
+- Home page hero + stats + contact ship eagerly; skills/experiences/projects/educations/
+  publications/posts are `Inertia::defer(...)->once()`; frontend shows `HomeSkeleton` and
+  calls `useScrollAnimations.refresh()` when deferred props land. Tests assert deferred
+  content via `assertInertia(...)->loadDeferredProps('default', ...)` — never on the
+  initial response.
+- Dashboard destructive actions: `ui/alert-dialog` confirm, then
+  `router.delete(url, { preserveScroll: true, optimistic: ... })`; Inertia v3 rolls back
+  on failure. Success toasts arrive via `Inertia::flash('toast', ...)`.
+- Wayfinder generates gitignored route/action bindings (`@/actions`, `@/routes`) before
+  any frontend check or build (`php artisan wayfinder:generate --with-form`).
+
+## Media (S3) & tests
+
+- The `media` disk is S3-compatible: Garage in dev (port 3900, keys in `.env`), Oracle
+  Cloud bucket in production — swap is an `AWS_*`/`GARAGE_*` env change only. Dev creds in
+  `.env.example` are gitleaks-allowlisted; never write real ones into files or workflows.
+- The Pest suite requires MariaDB (db `walfa_testing`, phpunit.xml) AND Garage running —
+  `task docker:up` first. Run `php artisan test --compact` or with `--filter=`.
+- CI runs Garage as a docker-in-job step sourcing creds from `.env`; keep `ci.yml`,
+  `tests.yml`, and `docker/garage/garage.toml` in sync.
+
+## CI/CD
+
+Five workflows: `ci.yml` (lint/static/build/tests/audit gate), `tests.yml` (composer
+setup + ci:check), `security.yml` (gitleaks, zizmor, CodeQL, Semgrep, dep-review, OSV),
+`dast.yml` (nightly ZAP), `deploy.yml` (buildx multi-arch → OCIR → VM + octane:reload).
+Action pins must be immutable SHAs whose comment matches the exact tag (zizmor fails
+otherwise). Verify version changes against current sources before pinning.

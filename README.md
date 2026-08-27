@@ -1,6 +1,7 @@
-# Portfolio
+# Walfa — Portfolio
 
-> **Status:** early-stage portfolio project, built on the Laravel 13 + Inertia v3 + Vue 3 starter kit.
+> Full-stack portfolio: public site (home + blog) with an authenticated content dashboard,
+> contact form, and first-party analytics. Laravel 13 + Inertia v3 + Vue 3.
 
 [![Laravel](https://img.shields.io/badge/Laravel-13-F5325C?logo=laravel&logoColor=white)](https://laravel.com/docs/13.x)
 [![Vue](https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
@@ -9,46 +10,84 @@
 [![Tailwind](https://img.shields.io/badge/Tailwind-4-06b6d4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A **[Your Name]** — **Full-stack / Backend / Frontend Developer** (set your focus below) portfolio built on the Laravel + Vue starter kit. Full-stack engineer generalist exploring Laravel, Vue, and beyond.
-
-> **Note:** this project is a work in progress. It currently runs the stock starter kit; the portfolio itself is defined by the roadmap below.
-
 ---
 
 ## Table of Contents
 
+- [What's here](#whats-here)
 - [Stack](#stack)
+- [Repository layout](#repository-layout)
 - [Getting started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
 - [Development](#development)
 - [Testing](#testing)
 - [Quality checks](#quality-checks)
 - [Docker backing services](#docker-backing-services)
+- [CI/CD](#cicd)
+- [Deployment](#deployment)
 - [Linting / formatting](#linting--formatting)
-- [Roadmap](#roadmap)
 - [License](#license)
+
+---
+
+## What's here
+
+**Public site**
+
+- Home page with hero, animated stats, and below-the-fold sections
+  (skills, experience, projects, education, publications, latest posts)
+- Blog index + post pages (`/posts`, `/posts/{slug}`)
+- Contact form with Cloudflare Turnstile protection (skipped when no secret is configured)
+- `sitemap.xml` and security headers (CSP, HSTS, etc.) applied globally
+- First-party analytics: page-view tracking middleware + outbound-click endpoint,
+  plus Microsoft Clarity and Google Analytics 4 via env keys
+
+**Dashboard** (auth via WorkOS)
+
+- CRUD management for projects (+ screenshots), posts (+ cover image), skills,
+  experiences, educations, publications, and the profile bio
+- Confirm-before-delete dialogs with optimistic rollback (`ui/alert-dialog`)
+- Analytics overview page
 
 ---
 
 ## Stack
 
-Built on the official **Laravel Vue starter kit** — no framework reinvention, just a clean baseline to grow from.
-
 | Layer | Choice |
 |-------|--------|
 | Framework | **Laravel 13** (PHP 8.5) |
 | Frontend | **Vue 3** + **Inertia v3** (SPA, no SSR) |
-| Styling | **Tailwind CSS 4** |
+| Styling | **Tailwind CSS 4**, custom design tokens in `resources/css/app.css` |
 | Language | **TypeScript** (Vue components) + PHP 8.5 |
-| Tooling | **Vite 8**, ESLint + Prettier, Laravel Pint, PHPStan, Pest |
-| Auth | **WorkOS** (Laravel WorkOS package) |
-| Database | **SQLite** by default; **MariaDB 12.3** (LTS) via Docker for production-like parity |
-| Cache/Queue | Database default; **Valkey 9.1** (Redis-compatible) via Docker |
+| Tooling | **Vite 8**, ESLint + Prettier, Laravel Pint, PHPStan/Larastan, Pest |
+| Auth | **WorkOS** (`laravel/workos`) |
+| Database | **SQLite** for local default; **MariaDB 12.3** (LTS) via Docker for parity |
+| Cache/Queue | Database or **Valkey 9.1** (Redis-compatible) via Docker |
 | Object storage | **Garage** (S3-compatible, Docker dev) on the `media` disk → Oracle Cloud S3-compatible endpoint in production |
 | Local mail | **Mailpit** via Docker |
+| Production runtime | **FrankenPHP + Laravel Octane** worker mode (`Dockerfile`) |
 
-All image tags are verified LTS/stable/anchor as of 2026-08-23.
+Image tags are verified against LTS/stable lines at the time of writing
+(see the "verified" dates in `compose.yaml` and the CI workflow headers).
+
+---
+
+## Repository layout
+
+```
+app/
+  Http/Controllers/          public site + Dashboard/* and Settings/* controllers
+  Mail/                      contact-form notification
+  Models/                    Profile, Project (+Screenshot), Post, Skill, Experience,
+                             Education, Publication, ContactMessage, PageView, Click, User
+  Middleware/                SecurityHeaders, TrackPageView, HandleInertiaRequests
+routes/web.php               all public + authenticated routes
+resources/js/pages/          Inertia pages: Welcome, posts/, dashboard/
+resources/js/components/     shared chrome + ui/ (alert-dialog) + site/ (hero, header, skeleton)
+resources/js/composables/    useHeroScene, useCountUp, useScrollAnimations, useRouteTransition, ...
+docker/                      garage.toml (S3 config) and mariadb init scripts
+.github/workflows/           CI, tests, Security, DAST, Deploy pipelines
+.ai/rules/                   area-grouped conventions read by AI tooling (see index.md)
+```
 
 ---
 
@@ -56,92 +95,61 @@ All image tags are verified LTS/stable/anchor as of 2026-08-23.
 
 ### Prerequisites
 
-- **PHP 8.5+** (CLI + required extensions incl. `pdo_sqlite`)
+- **PHP 8.5+** (CLI + extensions used by the app, incl. `pdo_mysql`/`pdo_sqlite`)
 - **Composer** 2.x
-- **Node.js** 20+ (npm)
-- **Docker** + **Docker Compose v2** (only for the backing services — MariaDB, Valkey, Mailpit)
+- **Node.js** 24 (matches CI and the production image)
+- **Docker** + **Docker Compose v2** (backing services only)
 - **Task** ([go-task/task](https://taskfile.dev)) — the project's task runner
-
-> **Windows note:** install [Tailwind](https://tailwindcss.com/docs/installation) and [Laravel](https://laravel.com/docs/13.x/installation) tooling per their docs; the Taskfile is configured so all long-running commands work on Windows `cmd`, Git Bash, and WSL.
 
 ### Installation
 
 ```bash
-# 1. Install dependencies and prepare the environment
-task setup
+task setup          # composer install, .env from .env.example, key, migrations, npm install + build
+task setup DB=mariadb   # same, and point .env at the MariaDB/Valkey/Mailpit compose stack
+task docker:up      # start backing services (MariaDB, Valkey, Garage, Mailpit)
 ```
-
-`task setup` runs, in order:
-
-1. `composer install`
-2. Create `.env` from `.env.example` (if missing)
-3. Generate the application key
-4. Start the Docker backing services (MariaDB, Valkey, Mailpit)
-5. Run database migrations
-6. `npm install`
-7. `npm run build`
-
-> **Use MariaDB + Valkey instead of SQLite?** The app defaults to SQLite (zero-config). To use the compose stack:
->
-> ```bash
-> task setup DB=mariadb
-> ```
->
-> This appends the MariaDB/Valkey connection + cache/queue/session config to `.env`.
 
 ---
 
 ## Development
 
 ```bash
-# Start Docker services + both dev servers (Laravel + Vite)
-task up
-
-# …or run just the dev servers (composer dev): Laravel server + queue worker + Vite
-task dev
+task up             # Docker services + Laravel server + queue worker + Vite (HMR)
+task dev            # just the dev servers: Laravel + queue worker + Vite
 ```
 
 - Backend server: **http://localhost:8000**
-- Vite dev server: HMR-enabled
-- Mailpit web UI (if using SMTP): **http://localhost:8025**
+- Mailpit web UI: **http://localhost:8025**
+- Garage S3 API: **http://127.0.0.1:3900**
 
-### Common artisan shortcuts
+Common shortcuts: `task artisan:run -- make:model Foo`, `task migrate`, `task seed`,
+`task routes`, `task shell`, `task artisan:key_check`.
 
-```bash
-task artisan:run -- make:model Project        # run any artisan command
-task artisan:migrate                          # run migrations
-task artisan:migrate_fresh                    # drop + re-migrate (destructive)
-task artisan:seed                             # seed the database
-task artisan:key_check                        # generate a key when APP_KEY is empty
-task migrate / task seed / task shell / task routes
-```
+Frontend route bindings are generated by **Wayfinder** (`php artisan wayfinder:generate --with-form`)
+and imported in TS as `@/actions/...` / `@/routes/...`; they are gitignored and
+regenerated automatically by `npm run dev` / `npm run build` (Vite plugin).
 
 ---
 
 ## Testing
 
 ```bash
-# Run the PHP test suite (Pest)
-task test
-
-# Filter by test name
-task test -- --filter=DashboardTest
+task test                   # Pest suite — needs the Docker services (MariaDB + Garage)
+php artisan test --compact --filter=PostManagementTest
 ```
+
+The suite runs against a dedicated `walfa_testing` MariaDB database and exercises the
+S3-compatible `media` disk against the local Garage instance, mirroring CI exactly.
 
 ---
 
 ## Quality checks
 
 ```bash
-# Full CI pipeline: composer setup, lints, type checks, frontend build, tests
-task ci
-
-# Individual checks
-task lint:check        # Pint + ESLint + Prettier (no changes)
-task types:check       # PHPStan + vue-tsc
+task ci             # everything CI runs locally: lint, types, build, full backend checks
+task lint:check     # Pint + ESLint + Prettier (no changes)
+task types:check    # PHPStan + vue-tsc
 ```
-
-This mirrors (and extends) the repo's GitHub Actions workflow (`.github/workflows/tests.yml`).
 
 ---
 
@@ -149,25 +157,55 @@ This mirrors (and extends) the repo's GitHub Actions workflow (`.github/workflow
 
 `compose.yaml` provides **infrastructure only** — the app runs natively on the host.
 
-| Service | Image (verified 2026-08-23) | Purpose |
-|---------|------------------------------|---------|
-| MariaDB | `mariadb:12.3` | current LTS — primary MySQL-compatible database |
-| Valkey | `valkey/valkey:9.1` | current stable — Redis-compatible cache/queue/session |
-| Garage | `dxflrs/garage:5b6d138035db7c8b036136921c478f217a61f4e3` | pinned commit build — S3-compatible object storage (media disk) |
-| Mailpit | `axllent/mailpit:v1.31.0` | pinned — SMTP testing + web UI |
+| Service | Image | Purpose |
+|---------|-------|---------|
+| MariaDB | `mariadb:12.3` | LTS database for production parity |
+| Valkey | `valkey/valkey:9.1` | Redis-compatible cache/queue/session |
+| Garage | `dxflrs/garage:5b6d138035db7c8b036136921c478f217a61f4e3` | S3-compatible object storage (`media` disk) |
+| Mailpit | `axllent/mailpit:v1.31.0` | SMTP testing + web UI |
 
-Garage ports: S3 API **3900**, Admin API **3903**. Config: `docker/garage/garage.toml`; the default bucket + access key are auto-provisioned from `.env` (`GARAGE_*`).
+Garage ports: S3 API **3900**, Admin API **3903**. Config lives in `docker/garage/garage.toml`;
+the default bucket and access key are auto-provisioned from `.env` (`GARAGE_*`).
 
-Ports bind to the **loopback** interface only (`127.0.0.1`) — nothing is exposed to the network.
+All ports bind to **127.0.0.1** only — nothing is exposed to the network.
 
 ```bash
-task docker:up      # start (with --wait: healthy before returning)
-task docker:down    # stop (keeps data volumes)
+task docker:up      # start (waits for healthy)
 task docker:ps      # status + health
+task docker:down    # stop, keep data volumes
 task docker:reset   # stop + delete volumes (destructive)
 ```
 
-Drivers switch via env: `task setup DB=mariadb` configures `.env` with `DB_CONNECTION=mariadb`, Valkey host/port, and SMTP/Mailpit.
+---
+
+## CI/CD
+
+All pipelines live in `.github/workflows/` and run on push to `main` (and PRs where noted).
+
+| Workflow | What it does |
+|----------|--------------|
+| `ci.yml` | Multi-stage gate: Pint + PHPStan, ESLint + Prettier + vue-tsc + Vite build, Pest suite (MariaDB + Garage services), `composer audit`, aggregate `ci-ok` job |
+| `tests.yml` | `composer setup` + `composer ci:check` (lint, types, PHPStan, full Pest suite) with MariaDB + Garage |
+| `security.yml` | gitleaks secret scan, zizmor workflow audit, CodeQL (JS/TS), Semgrep (PHP), dependency review (PRs), OSV-Scanner (PR diff + full) |
+| `dast.yml` | Nightly OWASP ZAP baseline scan against a seeded app instance |
+| `deploy.yml` | Build multi-arch image (amd64 + arm64) with buildx, push to OCIR, roll out on the app VM via docker compose + `octane:reload` |
+
+Action versions are pinned to immutable commit SHAs with matching version comments
+(zizmor enforces this in CI). Dev-only Garage credentials are keep out of the workflows —
+they are sourced from `.env` at runtime by the "Start Garage" step.
+
+---
+
+## Deployment
+
+Production runs as a container on an Oracle Cloud VM:
+
+- **Image**: multi-stage `Dockerfile` → FrankenPHP (PHP 8.5) + Laravel Octane worker mode
+- **Registry**: OCIR (secrets: `OCIR_*`, `DEPLOY_*` in the repo settings)
+- **Rollout**: `docker compose pull && up -d`, `migrate --force`, caches, then `octane:reload`
+- **Storage**: S3-compatible Oracle Cloud bucket (swap the `AWS_*`/`GARAGE_*` env block)
+
+Secrets are never committed; dev placeholders in `.env.example` are allowlisted in `.gitleaks.toml`.
 
 ---
 
@@ -184,27 +222,6 @@ Drivers switch via env: `task setup DB=mariadb` configures `.env` with `DB_CONNE
 
 ---
 
-## Roadmap
-
-The portfolio is at the **idea → scaffold** stage. Planned sections (each becomes its own page/route in this app):
-
-- **Home / Hero** — name, tagline, one-liner, CTA links
-- **Projects** — featured work: screenshots, stack badges, links (live + repo)
-- **About** — bio, timeline, tools/skills
-- **Contact / Socials** — form (Mailpit for testing), email, GitHub, LinkedIn
-- **Blog / Writing** *(optional)* — ramblings, powered by the same stack
-- **Resume / CV** — downloadable copy
-
-### Roadmap milestones
-
-- [ ] Replace stock `<Welcome>`/`<Dashboard>` with real portfolio layout (frontend)
-- [ ] Seed data: `projects` table + factory/seeder (backend)
-- [ ] Wire links in the hero/contact sections
-- [ ] Auth (WorkOS) behind the scenes for editing content
-- [ ] Deploy: Laravel + Vite build + MariaDB (production weave)
-
----
-
 ## License
 
-This project is licensed under the **MIT License** (`composer.json`). See [`LICENSE.md`](https://opensource.org/licenses/MIT) (Laravel starter kit).
+MIT (`composer.json`) — base from the [Laravel Vue starter kit](https://laravel.com/docs/13.x/starter-kits).
