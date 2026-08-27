@@ -3,16 +3,15 @@ import { createApp, defineComponent, h } from 'vue';
 import CookieConsentBanner from '@/components/CookieConsentBanner.vue';
 import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
+import { useConsent } from '@/composables/useConsent';
 import { initAutoClickTracker } from '@/composables/useClickTracker';
 import { initRouteTransition } from '@/composables/useRouteTransition';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    serverHead: true,
     layout: (name) => {
         switch (true) {
             case name === 'Welcome':
