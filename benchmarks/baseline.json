@@ -1,0 +1,103 @@
+{
+    "timestamp": "2026-08-27T23:49:26+00:00",
+    "routes": {
+        "/": {
+            "method": "GET",
+            "avg_ms": 21.92,
+            "min_ms": 10.55,
+            "max_ms": 65.52,
+            "avg_queries": 6.2,
+            "queries": [
+                7,
+                6,
+                6,
+                6,
+                6
+            ]
+        },
+        "/posts": {
+            "method": "GET",
+            "avg_ms": 22.38,
+            "min_ms": 10.23,
+            "max_ms": 69.85,
+            "avg_queries": 3,
+            "queries": [
+                3,
+                3,
+                3,
+                3,
+                3
+            ]
+        },
+        "/posts/what-clean-architecture-means-in-practice": {
+            "method": "GET",
+            "avg_ms": 12.01,
+            "min_ms": 10.53,
+            "max_ms": 14.23,
+            "avg_queries": 4,
+            "queries": [
+                4,
+                4,
+                4,
+                4,
+                4
+            ]
+        },
+        "/sitemap.xml": {
+            "method": "GET",
+            "avg_ms": 8.47,
+            "min_ms": 7.87,
+            "max_ms": 9.5,
+            "avg_queries": 3,
+            "queries": [
+                3,
+                3,
+                3,
+                3,
+                3
+            ]
+        }
+    },
+    "bundle": {
+        "total_kb": 881.8,
+        "files": {
+            "assets/InputError-DLlSAc8q.js": 363,
+            "assets/Privacy-CDWNJgyk.js": 1770,
+            "assets/alert-dialog-Bgia6obr.js": 7162,
+            "assets/Projects-BZYGOz-4.js": 12858,
+            "assets/dialog-DkQcKsqO.js": 5116,
+            "assets/chevron-down-DUVF3d5G.js": 128,
+            "assets/SiteHeader-dKcGFmyG.js": 7528,
+            "assets/app-2nVy9UdO.css": 126454,
+            "assets/Dashboard-BsV1iTed.js": 8106,
+            "assets/ScrollTrigger-BXR6Gh-7.js": 42760,
+            "assets/rolldown-runtime-DK3Fl9T5.js": 158,
+            "assets/app-Cklp8t89.js": 241335,
+            "assets/Skills-tMw2MXbb.js": 38625,
+            "assets/shared-DWkHoDWq.js": 36876,
+            "assets/Welcome-BMK9H7n3.js": 31451,
+            "assets/Appearance-B147Vmk5.js": 1718,
+            "assets/Profile-CDIuISql.js": 5808,
+            "assets/sun-TUuxPMIn.js": 636,
+            "assets/Educations-Bfc7M-nB.js": 6593,
+            "assets/Label-Dx8tcMyk.js": 1007,
+            "assets/useScrollAnimations-CuXU6INV.js": 1571,
+            "assets/fonts-DMTc6bNq.css": 3246,
+            "assets/posts-CvDzvhGf.js": 1294,
+            "assets/Profile-CjvIO1Fz.js": 4033,
+            "assets/app-Ds1aFT64.css": 14910,
+            "assets/badge-SUPQC5SE.js": 1410,
+            "assets/Posts-Cq-mrLNV.js": 9906,
+            "assets/portfolio-CzseIob3.js": 150,
+            "assets/Index-BjIXCcd1.js": 2488,
+            "assets/PrivacyPolicy-CWEKhNkS.js": 1531,
+            "assets/DialogTitle-bM8vUUfg.js": 30403,
+            "assets/Publications-8gOpSTgh.js": 6168,
+            "assets/arrow-left-D5gOMm4H.js": 165,
+            "assets/createLucideIcon-BJoZ3OVb.js": 237442,
+            "assets/Input-Ca2GZt9J.js": 1186,
+            "assets/Show-DTGRBNiw.js": 3137,
+            "assets/Experience-D-iRggI6.js": 7474
+        }
+    }
+}
