@@ -23,7 +23,7 @@ const { profile } = defineProps<{ profile: ProfileType }>();
 const form = useForm({
     name: profile.name,
     headline: profile.headline,
-    bio: profile.bio,
+    bio: profile.bio ?? '',
     location: profile.location ?? '',
     github_url: profile.github_url ?? '',
     linkedin_url: profile.linkedin_url ?? '',

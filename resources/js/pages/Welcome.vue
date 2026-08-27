@@ -80,22 +80,21 @@ const categoryMeta: Record<
 };
 
 const skillsByCategory = computed(() => {
-    const groups: { category: SkillCategory; skills: Skill[] }[] = [];
-    const seen = new Set<SkillCategory>();
+    const map = new Map<SkillCategory, Skill[]>();
 
     for (const skill of sections.value.skills) {
-        if (!seen.has(skill.category)) {
-            seen.add(skill.category);
-            groups.push({
-                category: skill.category,
-                skills: sections.value.skills.filter(
-                    (s) => s.category === skill.category,
-                ),
-            });
+        const group = map.get(skill.category);
+        if (group) {
+            group.push(skill);
+        } else {
+            map.set(skill.category, [skill]);
         }
     }
 
-    return groups;
+    return Array.from(map.entries()).map(([category, skills]) => ({
+        category,
+        skills,
+    }));
 });
 
 const expandedCategories = ref<Set<string>>(new Set());

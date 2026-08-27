@@ -87,7 +87,7 @@ function startEdit(project: Project) {
         year: project.year,
         live_url: project.live_url ?? '',
         repo_url: project.repo_url ?? '',
-        featured: project.featured,
+        featured: project.featured ?? false,
         published_at: project.published_at?.slice(0, 10) ?? '',
         skills: project.skills.map((s) => s.id),
     });

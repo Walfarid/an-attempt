@@ -32,27 +32,25 @@ export type Experience = {
 
 export type ProjectScreenshot = {
     id: number;
-    project_id: number;
-    path: string;
     alt: string | null;
-    sort_order: number;
     url: string | null;
 };
 
 export type Project = {
     id: number;
-    slug: string;
     title: string;
     description: string;
     year: number;
     live_url: string | null;
     repo_url: string | null;
-    image_tone: string | null;
-    featured: boolean;
-    sort_order: number;
-    published_at: string | null;
     skills: Skill[];
     screenshots: ProjectScreenshot[];
+    /** Present on dashboard responses, absent on public homepage. */
+    slug?: string;
+    image_tone?: string | null;
+    featured?: boolean;
+    sort_order?: number;
+    published_at?: string | null;
 };
 
 export type Education = {
@@ -60,9 +58,8 @@ export type Education = {
     school: string;
     degree: string;
     started_at: string | null;
-    ended_at: string | null; // null = present
+    ended_at: string | null;
     details: string[];
-    sort_order: number;
 };
 
 export type Publication = {
@@ -71,19 +68,19 @@ export type Publication = {
     venue: string;
     year: number;
     doi_url: string;
-    sort_order: number;
 };
 
 export type Profile = {
     id: number;
     name: string;
     headline: string;
-    bio: string;
     bio_html?: string;
     location: string | null;
     github_url: string | null;
     linkedin_url: string | null;
-    avatar_path: string | null;
+    /** Present on dashboard responses, absent on public homepage. */
+    bio?: string;
+    avatar_path?: string | null;
 };
 
 /** A post as listed on the dashboard (full fields). */
