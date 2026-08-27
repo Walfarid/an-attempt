@@ -20,7 +20,7 @@ class ExperienceRequest extends FormRequest
             'location' => ['nullable', 'string', 'max:255'],
             'started_at' => ['required', 'date'],
             'ended_at' => ['nullable', 'date', 'after_or_equal:started_at'],
-            'summary' => ['required', 'string'],
+            'summary' => ['required', 'string', 'max:5000'],
             'highlights' => ['nullable', 'array'],
             'highlights.*' => ['required', 'string'],
         ];

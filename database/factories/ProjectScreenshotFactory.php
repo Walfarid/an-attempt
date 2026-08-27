@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Project;
 use App\Models\ProjectScreenshot;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,6 +19,7 @@ class ProjectScreenshotFactory extends Factory
     public function definition(): array
     {
         return [
+            'project_id' => Project::factory(),
             'path' => 'projects/'.fake()->uuid().'.png',
             'alt' => fake()->sentence(4),
             'sort_order' => 0,

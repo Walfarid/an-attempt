@@ -23,8 +23,7 @@ includes:
   npm: './tools/npm.Taskfile.yml'
   artisan: './tools/artisan.Taskfile.yml'
 
-dotenv:
-  - .env
+dotenv: []
 
 tasks:
   default:

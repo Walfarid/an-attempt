@@ -6,7 +6,6 @@ import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogClose,
@@ -141,13 +140,14 @@ function publishLabel(post: Post): string {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-6 p-4 sm:p-6">
+    <div class="d-dots-bg flex flex-1 flex-col gap-6 p-4 sm:p-6">
         <Head title="Posts" />
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <Heading
                 title="Posts"
                 description="Your writing — drafts and published ramblings."
+                section-number="04"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>
@@ -170,34 +170,43 @@ function publishLabel(post: Post): string {
                             class="grid max-h-[60vh] gap-4 overflow-y-auto py-4 sm:grid-cols-2"
                         >
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="post-title">Title</Label>
+                                <Label for="post-title" class="d-label"
+                                    >Title</Label
+                                >
                                 <Input
                                     id="post-title"
                                     v-model="form.title"
                                     placeholder="Why I keep coming back to Laravel"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.title" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="post-slug">Slug</Label>
+                                <Label for="post-slug" class="d-label"
+                                    >Slug</Label
+                                >
                                 <Input
                                     id="post-slug"
                                     v-model="form.slug"
                                     placeholder="Auto-generated from title"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.slug" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="post-published">Publish at</Label>
+                                <Label for="post-published" class="d-label"
+                                    >Publish at</Label
+                                >
                                 <Input
                                     id="post-published"
                                     v-model="form.published_at"
                                     type="datetime-local"
                                     aria-describedby="post-published-help"
+                                    class="d-sharp"
                                 />
                                 <p
                                     id="post-published-help"
-                                    class="text-xs text-muted-foreground"
+                                    class="d-ink-soft text-xs"
                                 >
                                     Empty = draft.
                                 </p>
@@ -206,22 +215,27 @@ function publishLabel(post: Post): string {
                                 />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="post-excerpt">Excerpt</Label>
+                                <Label for="post-excerpt" class="d-label"
+                                    >Excerpt</Label
+                                >
                                 <Input
                                     id="post-excerpt"
                                     v-model="form.excerpt"
                                     placeholder="Optional teaser; falls back to the body."
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.excerpt" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="post-body">Body (Markdown)</Label>
+                                <Label for="post-body" class="d-label"
+                                    >Body (Markdown)</Label
+                                >
                                 <textarea
                                     id="post-body"
                                     v-model="form.body"
                                     rows="12"
                                     placeholder="## A heading&#10;&#10;Some *thoughts*…"
-                                    class="block w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="d-textarea w-full"
                                 />
                                 <InputError :message="form.errors.body" />
                             </div>
@@ -254,12 +268,14 @@ function publishLabel(post: Post): string {
                         v-if="coverPost?.cover_url"
                         :src="coverPost.cover_url"
                         alt=""
-                        class="w-full rounded-md border border-border object-cover"
+                        class="w-full border border-[var(--rule)] object-cover"
                     />
 
                     <form class="space-y-3" @submit.prevent="saveCover">
                         <div class="grid gap-2">
-                            <Label for="post-cover">Image</Label>
+                            <Label for="post-cover" class="d-label"
+                                >Image</Label
+                            >
                             <Input
                                 id="post-cover"
                                 type="file"
@@ -269,6 +285,7 @@ function publishLabel(post: Post): string {
                                         ($event.target as HTMLInputElement)
                                             .files?.[0] ?? null
                                 "
+                                class="d-sharp"
                             />
                             <InputError :message="coverForm.errors.cover" />
                         </div>
@@ -298,97 +315,84 @@ function publishLabel(post: Post): string {
             </Dialog>
         </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle class="text-sm font-medium"
-                    >{{ posts.length }} posts</CardTitle
-                >
-            </CardHeader>
-            <CardContent class="p-0">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr
-                            class="border-b border-border text-left font-mono text-xs tracking-wide text-muted-foreground uppercase"
-                        >
-                            <th class="px-4 py-2 font-medium">Title</th>
-                            <th class="px-4 py-2 font-medium">Status</th>
-                            <th class="px-4 py-2 font-medium"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="post in posts"
-                            :key="post.id"
-                            class="border-b border-border/60 last:border-0"
-                        >
-                            <td class="px-4 py-3">
-                                <p class="font-medium">{{ post.title }}</p>
-                                <p
-                                    class="line-clamp-1 font-mono text-xs text-muted-foreground"
-                                >
-                                    /posts/{{ post.slug }}
-                                </p>
-                            </td>
-                            <td class="px-4 py-3">
-                                <Badge
-                                    :variant="
-                                        post.published_at
-                                            ? 'outline'
-                                            : 'secondary'
-                                    "
-                                    class="text-[10px]"
-                                >
-                                    {{ publishLabel(post) }}
-                                </Badge>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="openCover(post)"
-                                    >
-                                        <ImageUp class="size-4" />
-                                        <span class="sr-only"
-                                            >Cover of {{ post.title }}</span
-                                        >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="startEdit(post)"
-                                    >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit {{ post.title }}</span
-                                        >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        class="hover:bg-destructive/10 hover:text-destructive"
-                                        @click="onDelete(post.id)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete {{ post.title }}</span
-                                        >
-                                    </Button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="!posts.length">
-                            <td
-                                colspan="3"
-                                class="px-4 py-8 text-center text-sm text-muted-foreground"
+        <!-- Posts Table -->
+        <div class="d-surface">
+            <div class="d-rule-b px-4 py-3">
+                <h3 class="d-label">{{ posts.length }} posts</h3>
+            </div>
+            <table class="d-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="post in posts" :key="post.id">
+                        <td>
+                            <p class="d-ink font-medium">{{ post.title }}</p>
+                            <p class="d-ink-soft line-clamp-1 text-xs">
+                                /posts/{{ post.slug }}
+                            </p>
+                        </td>
+                        <td>
+                            <Badge
+                                :variant="
+                                    post.published_at ? 'outline' : 'secondary'
+                                "
+                                class="text-[10px]"
                             >
-                                Nothing written yet.
-                                <SquarePen class="inline size-4" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </CardContent>
-        </Card>
+                                {{ publishLabel(post) }}
+                            </Badge>
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="openCover(post)"
+                                >
+                                    <ImageUp class="size-4" />
+                                    <span class="sr-only"
+                                        >Cover of {{ post.title }}</span
+                                    >
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="startEdit(post)"
+                                >
+                                    <Pencil class="size-4" />
+                                    <span class="sr-only"
+                                        >Edit {{ post.title }}</span
+                                    >
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="hover:bg-destructive/10 hover:text-destructive"
+                                    @click="onDelete(post.id)"
+                                >
+                                    <Trash2 class="size-4" />
+                                    <span class="sr-only"
+                                        >Delete {{ post.title }}</span
+                                    >
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!posts.length">
+                        <td
+                            colspan="3"
+                            class="d-ink-soft px-4 py-8 text-center text-sm"
+                        >
+                            Nothing written yet.
+                            <SquarePen class="inline size-4" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

@@ -6,6 +6,7 @@ use App\Enums\SkillCategory;
 use Database\Factories\SkillFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Skill extends Model
 {
@@ -25,5 +26,15 @@ class Skill extends Model
         return [
             'category' => SkillCategory::class,
         ];
+    }
+
+    /**
+     * The projects that use this skill.
+     *
+     * @return BelongsToMany<Project, $this>
+     */
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class);
     }
 }

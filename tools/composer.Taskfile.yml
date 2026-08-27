@@ -24,7 +24,7 @@ tasks:
 
   types_check:
     desc: Run PHPStan static analysis
-    cmd: php vendor/bin/phpstan analyse
+    cmd: php vendor/bin/phpstan analyse --memory-limit=512M
 
   test:
     desc: Run the PHP test suite

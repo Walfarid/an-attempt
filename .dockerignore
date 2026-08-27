@@ -1,0 +1,46 @@
+# Keep build context lean and reproducible.
+.git
+.github
+.ai
+.vscode
+.idea
+.editorconfig
+.pre-commit-config.yaml
+.gitattributes
+.gitignore
+
+# Local runtime artifacts
+.env
+.env.*
+!.env.example
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+storage/logs
+storage/framework/cache/data
+storage/framework/sessions
+storage/framework/views
+bootstrap/cache/*.php
+.phpunit.cache
+.codegraph
+.claude
+.playwright-mcp
+
+# Screenshots / scratch
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Local binaries
+frankenphp
+frankenphp-worker.php
+**/caddy
+
+# Docs and workflows are not needed in the image
+*.md
+docker/
+compose.yaml
+compose.prod.yaml

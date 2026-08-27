@@ -12,18 +12,17 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
-                bunny('Space Grotesk', {
-                    weights: [400, 500, 600, 700],
+                bunny('Bricolage Grotesque', {
+                    weights: [400, 700],
                 }),
                 bunny('JetBrains Mono', {
-                    weights: [400, 500, 600],
+                    weights: [400, 600],
                 }),
             ],
         }),
-        inertia(),
+        inertia({
+            ssr: false,
+        }),
         tailwindcss(),
         vue({
             template: {

@@ -36,52 +36,68 @@ const user = computed(() => page.props.auth.user);
 
     <h1 class="sr-only">Profile settings</h1>
 
-    <div class="flex flex-col space-y-6">
+    <div class="flex flex-col space-y-6 p-4 sm:p-6">
         <Heading
             variant="small"
             title="Profile"
             description="Update your name and email address"
+            section-number="01"
         />
 
         <Form
             v-bind="ProfileController.update.form()"
-            class="space-y-6"
+            class="space-y-0"
             v-slot="{ errors, processing }"
         >
-            <div class="grid gap-2">
-                <Label for="name">Name</Label>
-                <Input
-                    id="name"
-                    class="mt-1 block w-full"
-                    name="name"
-                    :default-value="user.name"
-                    required
-                    autocomplete="name"
-                    placeholder="Full name"
-                />
-                <InputError class="mt-2" :message="errors.name" />
-            </div>
+            <div class="d-surface divide-y divide-(--rule)">
+                <div class="grid gap-0 p-4">
+                    <div class="flex items-start justify-between">
+                        <Label for="name" class="d-label pt-2"> Name </Label>
+                        <div class="w-2/3">
+                            <Input
+                                id="name"
+                                class="rounded-none border-0 border-b border-(--rule) bg-transparent px-0 font-mono text-sm focus:border-(--accent) focus:ring-0"
+                                name="name"
+                                :default-value="user.name"
+                                required
+                                autocomplete="name"
+                                placeholder="Full name"
+                            />
+                            <InputError class="mt-1" :message="errors.name" />
+                        </div>
+                    </div>
+                </div>
 
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    name="email"
-                    :default-value="user.email"
-                    required
-                    autocomplete="username"
-                    placeholder="Email address"
-                    disabled
-                />
-                <InputError class="mt-2" :message="errors.email" />
-            </div>
+                <div class="grid gap-0 p-4">
+                    <div class="flex items-start justify-between">
+                        <Label for="email" class="d-label pt-2">
+                            Email address
+                        </Label>
+                        <div class="w-2/3">
+                            <Input
+                                id="email"
+                                type="email"
+                                class="rounded-none border-0 border-b border-(--rule) bg-transparent px-0 font-mono text-sm focus:border-(--accent) focus:ring-0 disabled:opacity-50"
+                                name="email"
+                                :default-value="user.email"
+                                required
+                                autocomplete="username"
+                                placeholder="Email address"
+                                disabled
+                            />
+                            <InputError class="mt-1" :message="errors.email" />
+                        </div>
+                    </div>
+                </div>
 
-            <div class="flex items-center gap-4">
-                <Button :disabled="processing" data-test="update-profile-button"
-                    >Save</Button
-                >
+                <div class="flex justify-end p-4">
+                    <Button
+                        :disabled="processing"
+                        data-test="update-profile-button"
+                    >
+                        Save
+                    </Button>
+                </div>
             </div>
         </Form>
     </div>

@@ -1,0 +1,61 @@
+# Production stack for the walfa app VM.
+#
+# Deployed to /opt/walfa/compose.yaml on the VM. The image is built in CI and
+# pushed to OCIR; `docker compose pull && up -d` rolls it out.
+#
+# The app image is self-contained (FrankenPHP + Octane worker + built assets);
+# only stateful/sensitive paths are mounted from the host:
+#   /opt/walfa/storage        persistent Laravel storage (logs, uploads)
+#   /opt/walfa/.env           production environment (env_file)
+#   /opt/walfa/secrets/certs  Cloudflare Origin CA cert/key
+#   /opt/walfa/secrets/mysql-ca.pem  MySQL TLS CA bundle
+
+name: walfa
+
+services:
+  app:
+    image: sin.ocir.io/axcrmi3rzxfh/walfa-app:latest
+    restart: unless-stopped
+    env_file: /opt/walfa/.env
+    ports:
+      - "80:80"
+      - "443:443/tcp"
+      - "443:443/udp"
+    volumes:
+      - /opt/walfa/storage:/app/storage
+      - /opt/walfa/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /opt/walfa/secrets/certs:/certs:ro
+      - /opt/walfa/secrets/mysql-ca.pem:/opt/walfa/secrets/mysql-ca.pem:ro
+    depends_on:
+      - valkey
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-H", "Host: walfa.my.id", "http://127.0.0.1/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  queue:
+    image: sin.ocir.io/axcrmi3rzxfh/walfa-app:latest
+    restart: unless-stopped
+    env_file: /opt/walfa/.env
+    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+    volumes:
+      - /opt/walfa/storage:/app/storage
+    depends_on:
+      - valkey
+
+  valkey:
+    image: valkey/valkey:9.1
+    restart: unless-stopped
+    command: ["valkey-server", "--appendonly", "yes"]
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  valkey_data:

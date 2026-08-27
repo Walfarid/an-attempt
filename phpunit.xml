@@ -36,5 +36,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="WORKOS_CLIENT_ID" value="client_01M0JPABV2V01ZPBW4WTNK4GGA"/>
+        <env name="WORKOS_API_KEY" value="sk_test_REPLACE_ME"/>
+        <env name="WORKOS_REDIRECT_URL" value="http://localhost/authenticate"/>
     </php>
 </phpunit>

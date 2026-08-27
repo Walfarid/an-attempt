@@ -21,12 +21,18 @@ defineOptions({
 
     <h1 class="sr-only">Appearance settings</h1>
 
-    <div class="space-y-6">
+    <div class="space-y-6 p-4 sm:p-6">
         <Heading
             variant="small"
             title="Appearance settings"
             description="Update the appearance settings for your account"
+            section-number="01"
         />
-        <AppearanceTabs />
+        <div class="d-surface p-4">
+            <div class="space-y-3">
+                <p class="d-label">Select your preferred theme</p>
+                <AppearanceTabs />
+            </div>
+        </div>
     </div>
 </template>

@@ -5,7 +5,6 @@ import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
     Dialog,
     DialogClose,
@@ -82,13 +81,14 @@ function onDelete(id: number) {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-6 p-4 sm:p-6">
+    <div class="d-dots-bg flex flex-1 flex-col gap-6 p-4 sm:p-6">
         <Head title="Publications" />
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <Heading
                 title="Publications"
                 description="Papers and articles with their DOI links."
+                section-number="08"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>
@@ -111,44 +111,55 @@ function onDelete(id: number) {
                         </DialogHeader>
                         <div class="grid gap-4 py-4">
                             <div class="grid gap-2">
-                                <Label for="pub-citation">Citation</Label>
+                                <Label for="pub-citation" class="d-label"
+                                    >Citation</Label
+                                >
                                 <textarea
                                     id="pub-citation"
                                     v-model="form.citation"
                                     rows="3"
                                     placeholder='Waworundeng, J. "AirQMon…"'
-                                    class="block w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="d-textarea w-full"
                                 />
                                 <InputError :message="form.errors.citation" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="pub-venue">Venue</Label>
+                                <Label for="pub-venue" class="d-label"
+                                    >Venue</Label
+                                >
                                 <Input
                                     id="pub-venue"
                                     v-model="form.venue"
                                     placeholder="Cogito Smart Journal, 6(2)"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.venue" />
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="grid gap-2">
-                                    <Label for="pub-year">Year</Label>
+                                    <Label for="pub-year" class="d-label"
+                                        >Year</Label
+                                    >
                                     <Input
                                         id="pub-year"
                                         v-model.number="form.year"
                                         type="number"
+                                        class="d-sharp"
                                     />
                                     <InputError :message="form.errors.year" />
                                 </div>
                                 <div class="grid gap-2"></div>
                             </div>
                             <div class="grid gap-2">
-                                <Label for="pub-doi">DOI URL</Label>
+                                <Label for="pub-doi" class="d-label"
+                                    >DOI URL</Label
+                                >
                                 <Input
                                     id="pub-doi"
                                     v-model="form.doi_url"
                                     type="url"
                                     placeholder="https://doi.org/10.…"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.doi_url" />
                             </div>
@@ -168,85 +179,76 @@ function onDelete(id: number) {
             </Dialog>
         </div>
 
-        <Card>
-            <CardContent class="p-0">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr
-                            class="border-b border-border text-left font-mono text-xs tracking-wide text-muted-foreground uppercase"
-                        >
-                            <th class="px-4 py-2 font-medium">Citation</th>
-                            <th class="px-4 py-2 font-medium">Venue</th>
-                            <th class="px-4 py-2 text-right font-medium">
-                                Year
-                            </th>
-                            <th class="px-4 py-2 font-medium"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="publication in publications"
-                            :key="publication.id"
-                            class="border-b border-border/60 last:border-0"
-                        >
-                            <td class="max-w-sm px-4 py-3">
-                                <p class="line-clamp-2 font-medium">
-                                    {{ publication.citation }}
-                                </p>
-                                <a
-                                    :href="publication.doi_url"
-                                    target="_blank"
-                                    rel="noreferrer noopener"
-                                    class="line-clamp-1 font-mono text-xs text-muted-foreground underline-offset-2 hover:underline"
-                                    >{{ publication.doi_url }}</a
+        <!-- Publications Table -->
+        <div class="d-surface">
+            <table class="d-table">
+                <thead>
+                    <tr>
+                        <th>Citation</th>
+                        <th>Venue</th>
+                        <th class="text-right">Year</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="publication in publications"
+                        :key="publication.id"
+                    >
+                        <td class="max-w-sm">
+                            <p class="d-ink line-clamp-2 font-medium">
+                                {{ publication.citation }}
+                            </p>
+                            <a
+                                :href="publication.doi_url"
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                class="d-ink-soft line-clamp-1 text-xs underline-offset-2 hover:text-[var(--accent)] hover:underline"
+                                >{{ publication.doi_url }}</a
+                            >
+                        </td>
+                        <td class="d-ink-soft">
+                            {{ publication.venue }}
+                        </td>
+                        <td class="text-right tabular-nums">
+                            {{ publication.year }}
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="startEdit(publication)"
                                 >
-                            </td>
-                            <td class="px-4 py-3 text-muted-foreground">
-                                {{ publication.venue }}
-                            </td>
-                            <td
-                                class="px-4 py-3 text-right font-mono tabular-nums"
-                            >
-                                {{ publication.year }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="startEdit(publication)"
+                                    <Pencil class="size-4" />
+                                    <span class="sr-only"
+                                        >Edit {{ publication.venue }}</span
                                     >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit {{ publication.venue }}</span
-                                        >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        class="hover:bg-destructive/10 hover:text-destructive"
-                                        @click="onDelete(publication.id)"
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="hover:bg-destructive/10 hover:text-destructive"
+                                    @click="onDelete(publication.id)"
+                                >
+                                    <Trash2 class="size-4" />
+                                    <span class="sr-only"
+                                        >Delete {{ publication.venue }}</span
                                     >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete
-                                            {{ publication.venue }}</span
-                                        >
-                                    </Button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="!publications.length">
-                            <td
-                                colspan="4"
-                                class="px-4 py-8 text-center text-sm text-muted-foreground"
-                            >
-                                No publications yet.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </CardContent>
-        </Card>
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!publications.length">
+                        <td
+                            colspan="4"
+                            class="d-ink-soft px-4 py-8 text-center text-sm"
+                        >
+                            No publications yet.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

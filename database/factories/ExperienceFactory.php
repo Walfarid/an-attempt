@@ -26,9 +26,7 @@ class ExperienceFactory extends Factory
             'company' => fake()->company(),
             'location' => fake()->city().', '.fake()->country(),
             'started_at' => $start,
-            'ended_at' => fake()->boolean(70)
-                ? fake()->dateTimeBetween($start, 'now')
-                : null,
+            'ended_at' => fake()->dateTimeBetween($start, 'now'),
             'summary' => fake()->paragraph(),
             'highlights' => [
                 fake()->sentence(),

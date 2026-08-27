@@ -6,7 +6,6 @@ import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogClose,
@@ -164,13 +163,14 @@ function removeShot(screenshotId: number) {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-6 p-4 sm:p-6">
+    <div class="d-dots-bg flex flex-1 flex-col gap-6 p-4 sm:p-6">
         <Head title="Projects" />
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <Heading
                 title="Projects"
                 description="Manage the projects shown on your public site."
+                section-number="03"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>
@@ -195,38 +195,46 @@ function removeShot(screenshotId: number) {
                         </DialogHeader>
                         <div class="grid gap-4 py-4 sm:grid-cols-2">
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="project-title">Title</Label>
+                                <Label for="project-title" class="d-label"
+                                    >Title</Label
+                                >
                                 <Input
                                     id="project-title"
                                     v-model="form.title"
                                     placeholder="Ledger · accounting"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.title" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label for="project-desc">Description</Label>
+                                <Label for="project-desc" class="d-label"
+                                    >Description</Label
+                                >
                                 <textarea
                                     id="project-desc"
                                     v-model="form.description"
                                     rows="3"
                                     placeholder="Short, punchy summary."
-                                    class="block w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="d-textarea w-full"
                                 />
                                 <InputError
                                     :message="form.errors.description"
                                 />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="project-year">Year</Label>
+                                <Label for="project-year" class="d-label"
+                                    >Year</Label
+                                >
                                 <Input
                                     id="project-year"
                                     v-model.number="form.year"
                                     type="number"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.year" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="project-published"
+                                <Label for="project-published" class="d-label"
                                     >Publish date</Label
                                 >
                                 <Input
@@ -234,10 +242,11 @@ function removeShot(screenshotId: number) {
                                     v-model="form.published_at"
                                     type="date"
                                     aria-describedby="project-published-help"
+                                    class="d-sharp"
                                 />
                                 <p
                                     id="project-published-help"
-                                    class="text-xs text-muted-foreground"
+                                    class="d-ink-soft text-xs"
                                 >
                                     Empty = draft. Set to make it public.
                                 </p>
@@ -246,7 +255,9 @@ function removeShot(screenshotId: number) {
                                 />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="featured-toggle">Featured</Label>
+                                <Label for="featured-toggle" class="d-label"
+                                    >Featured</Label
+                                >
                                 <div class="flex h-9 items-center gap-2">
                                     <input
                                         id="featured-toggle"
@@ -263,27 +274,33 @@ function removeShot(screenshotId: number) {
                             </div>
                             <div class="grid gap-2"></div>
                             <div class="grid gap-2">
-                                <Label for="project-live">Live URL</Label>
+                                <Label for="project-live" class="d-label"
+                                    >Live URL</Label
+                                >
                                 <Input
                                     id="project-live"
                                     v-model="form.live_url"
                                     placeholder="https://…"
                                     type="url"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.live_url" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="project-repo">Repo URL</Label>
+                                <Label for="project-repo" class="d-label"
+                                    >Repo URL</Label
+                                >
                                 <Input
                                     id="project-repo"
                                     v-model="form.repo_url"
                                     placeholder="https://github.com/…"
                                     type="url"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.repo_url" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
-                                <Label>Skills</Label>
+                                <Label class="d-label">Skills</Label>
                                 <div class="flex flex-wrap gap-2">
                                     <button
                                         v-for="skill in skills"
@@ -294,10 +311,10 @@ function removeShot(screenshotId: number) {
                                         "
                                         :class="
                                             form.skills.includes(skill.id)
-                                                ? 'bg-accent-primary text-primary-foreground'
-                                                : 'bg-secondary text-secondary-foreground hover:bg-secondary/70'
+                                                ? 'bg-[var(--accent)] text-[var(--paper)]'
+                                                : 'bg-[var(--accent-soft)] text-[var(--ink)] hover:bg-[var(--accent-soft)]/70'
                                         "
-                                        class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                        class="inline-flex items-center px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
                                         @click="toggleSkill(skill.id)"
                                     >
                                         {{ skill.name }}
@@ -339,7 +356,7 @@ function removeShot(screenshotId: number) {
                         <li
                             v-for="screenshot in shotProject.screenshots"
                             :key="screenshot.id"
-                            class="group relative overflow-hidden rounded-md border border-border"
+                            class="group relative overflow-hidden border border-[var(--rule)]"
                         >
                             <img
                                 v-if="screenshot.url"
@@ -358,13 +375,13 @@ function removeShot(screenshotId: number) {
                             </Button>
                         </li>
                     </ul>
-                    <p v-else class="text-sm text-muted-foreground">
-                        No screenshots yet.
-                    </p>
+                    <p v-else class="d-ink-soft text-sm">No screenshots yet.</p>
 
                     <form class="mt-2 space-y-3" @submit.prevent="uploadShot">
                         <div class="grid gap-2">
-                            <Label for="shot-image">New screenshot</Label>
+                            <Label for="shot-image" class="d-label"
+                                >New screenshot</Label
+                            >
                             <Input
                                 id="shot-image"
                                 type="file"
@@ -374,17 +391,21 @@ function removeShot(screenshotId: number) {
                                         ($event.target as HTMLInputElement)
                                             .files?.[0] ?? null
                                 "
+                                class="d-sharp"
                             />
                             <InputError
                                 :message="errors.image ?? upload.errors.image"
                             />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="shot-alt">Alt text</Label>
+                            <Label for="shot-alt" class="d-label"
+                                >Alt text</Label
+                            >
                             <Input
                                 id="shot-alt"
                                 v-model="upload.alt"
                                 placeholder="Describe the screenshot"
+                                class="d-sharp"
                             />
                         </div>
                         <Button
@@ -401,118 +422,106 @@ function removeShot(screenshotId: number) {
             </Dialog>
         </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle class="text-sm font-medium">
-                    {{ projects.length }} projects
-                </CardTitle>
-            </CardHeader>
-            <CardContent class="p-0">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr
-                            class="border-b border-border text-left font-mono text-xs tracking-wide text-muted-foreground uppercase"
-                        >
-                            <th class="px-4 py-2 font-medium">Project</th>
-                            <th class="px-4 py-2 font-medium">Skills</th>
-                            <th class="px-4 py-2 font-medium">Status</th>
-                            <th class="px-4 py-2 font-medium"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="project in projects"
-                            :key="project.id"
-                            class="border-b border-border/60 last:border-0"
-                        >
-                            <td class="px-4 py-3">
-                                <div class="flex items-center gap-2">
-                                    <p class="font-medium">
-                                        {{ project.title }}
-                                    </p>
-                                    <Badge
-                                        v-if="project.featured"
-                                        variant="secondary"
-                                        class="text-[10px]"
-                                    >
-                                        Featured
-                                    </Badge>
-                                </div>
-                                <p
-                                    class="line-clamp-1 text-xs text-muted-foreground"
-                                >
-                                    {{ project.description }}
+        <!-- Projects Table -->
+        <div class="d-surface">
+            <div class="d-rule-b px-4 py-3">
+                <h3 class="d-label">{{ projects.length }} projects</h3>
+            </div>
+            <table class="d-table">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Skills</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="project in projects" :key="project.id">
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <p class="d-ink font-medium">
+                                    {{ project.title }}
                                 </p>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex flex-wrap gap-1">
-                                    <Badge
-                                        v-for="skill in project.skills"
-                                        :key="skill.id"
-                                        variant="outline"
-                                        class="text-[10px]"
-                                    >
-                                        {{ skill.name }}
-                                    </Badge>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
                                 <Badge
-                                    v-if="project.published_at"
-                                    variant="outline"
-                                    class="text-[10px]"
-                                >
-                                    Published
-                                </Badge>
-                                <Badge
-                                    v-else
+                                    v-if="project.featured"
                                     variant="secondary"
                                     class="text-[10px]"
                                 >
-                                    Draft
+                                    Featured
                                 </Badge>
+                            </div>
+                            <p class="d-ink-soft line-clamp-1 text-xs">
+                                {{ project.description }}
+                            </p>
+                        </td>
+                        <td>
+                            <div class="flex flex-wrap gap-1">
+                                <Badge
+                                    v-for="skill in project.skills"
+                                    :key="skill.id"
+                                    variant="outline"
+                                    class="text-[10px]"
+                                >
+                                    {{ skill.name }}
+                                </Badge>
+                            </div>
+                        </td>
+                        <td>
+                            <Badge
+                                v-if="project.published_at"
+                                variant="outline"
+                                class="text-[10px]"
+                            >
+                                Published
+                            </Badge>
+                            <Badge
+                                v-else
+                                variant="secondary"
+                                class="text-[10px]"
+                            >
+                                Draft
+                            </Badge>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                class="ml-1"
+                                @click="openShots(project)"
+                            >
+                                <ImagePlus class="size-4" />
+                                <span class="sr-only"
+                                    >Screenshots of {{ project.title }}</span
+                                >
+                            </Button>
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-1">
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    class="ml-1"
-                                    @click="openShots(project)"
+                                    @click="startEdit(project)"
                                 >
-                                    <ImagePlus class="size-4" />
+                                    <Pencil class="size-4" />
                                     <span class="sr-only"
-                                        >Screenshots of
-                                        {{ project.title }}</span
+                                        >Edit {{ project.title }}</span
                                     >
                                 </Button>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="startEdit(project)"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="hover:bg-destructive/10 hover:text-destructive"
+                                    @click="onDelete(project.id)"
+                                >
+                                    <Trash2 class="size-4" />
+                                    <span class="sr-only"
+                                        >Delete {{ project.title }}</span
                                     >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit {{ project.title }}</span
-                                        >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        class="hover:bg-destructive/10 hover:text-destructive"
-                                        @click="onDelete(project.id)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete {{ project.title }}</span
-                                        >
-                                    </Button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </CardContent>
-        </Card>
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

@@ -1,5 +1,8 @@
 import { createInertiaApp } from '@inertiajs/vue3';
+import { createApp, defineComponent, h } from 'vue';
+import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
+import { initAutoClickTracker } from '@/composables/useClickTracker';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
@@ -19,13 +22,36 @@ createInertiaApp({
                 return AppLayout;
         }
     },
-    progress: {
-        color: '#4B5563',
+    // Enable progress events for the self-drawing page loader.
+    progress: { color: '#17594a', showSpinner: false },
+    setup({ el, App, props, plugin }) {
+        if (!el) {
+            return;
+        }
+
+        const app = createApp({ render: () => h(App, props) });
+        app.use(plugin);
+        app.mount(el);
+
+        // The page is now rendered; tell the loader to draw it and reveal.
+        window.dispatchEvent(new CustomEvent('page-loader:boot-complete'));
+
+        return app;
     },
 });
+
+// Mount the self-drawing page loader. It lives outside the Inertia root
+// so it survives SPA navigation and listens to Inertia progress events.
+const loaderEl = document.createElement('div');
+loaderEl.id = 'page-loader-root';
+document.body.appendChild(loaderEl);
+createApp(defineComponent({ render: () => h(PageDrawLoader) })).mount(loaderEl);
 
 // This will set light / dark mode on page load...
 initializeTheme();
 
 // This will listen for flash toast data from the server...
 initializeFlashToast();
+
+// Auto-track clicks on elements with data-track attribute...
+initAutoClickTracker();

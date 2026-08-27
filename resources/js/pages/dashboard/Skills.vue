@@ -6,7 +6,6 @@ import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogClose,
@@ -92,13 +91,14 @@ function onDelete(id: number) {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-6 p-4 sm:p-6">
+    <div class="d-dots-bg flex flex-1 flex-col gap-6 p-4 sm:p-6">
         <Head title="Skills" />
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <Heading
                 title="Skills"
                 description="Manage the skills you list in your toolset."
+                section-number="05"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>
@@ -123,18 +123,21 @@ function onDelete(id: number) {
                         </DialogHeader>
                         <div class="grid gap-4 py-4">
                             <div class="grid gap-2">
-                                <Label for="skill-name">Name</Label>
+                                <Label for="skill-name" class="d-label"
+                                    >Name</Label
+                                >
                                 <Input
                                     id="skill-name"
                                     v-model="form.name"
                                     placeholder="Vue"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.name" />
                             </div>
                             <div class="grid gap-2">
-                                <Label>Category</Label>
+                                <Label class="d-label">Category</Label>
                                 <Select v-model="form.category">
-                                    <SelectTrigger>
+                                    <SelectTrigger class="d-sharp">
                                         <SelectValue placeholder="Category" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -167,69 +170,60 @@ function onDelete(id: number) {
             </Dialog>
         </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle class="text-sm font-medium"
-                    >{{ skills.length }} skills</CardTitle
-                >
-            </CardHeader>
-            <CardContent class="p-0">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr
-                            class="border-b border-border text-left font-mono text-xs tracking-wide text-muted-foreground uppercase"
-                        >
-                            <th class="px-4 py-2 font-medium">Skill</th>
-                            <th class="px-4 py-2 font-medium">Category</th>
-                            <th class="px-4 py-2 font-medium"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="skill in skills"
-                            :key="skill.id"
-                            class="border-b border-border/60 last:border-0"
-                        >
-                            <td class="px-4 py-3 font-medium">
-                                {{ skill.name }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <Badge
-                                    variant="outline"
-                                    class="text-[10px] capitalize"
+        <!-- Skills Table -->
+        <div class="d-surface">
+            <div class="d-rule-b px-4 py-3">
+                <h3 class="d-label">{{ skills.length }} skills</h3>
+            </div>
+            <table class="d-table">
+                <thead>
+                    <tr>
+                        <th>Skill</th>
+                        <th>Category</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="skill in skills" :key="skill.id">
+                        <td class="d-ink font-medium">
+                            {{ skill.name }}
+                        </td>
+                        <td>
+                            <Badge
+                                variant="outline"
+                                class="text-[10px] capitalize"
+                            >
+                                {{ skill.category }}
+                            </Badge>
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="startEdit(skill)"
                                 >
-                                    {{ skill.category }}
-                                </Badge>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="startEdit(skill)"
+                                    <Pencil class="size-4" />
+                                    <span class="sr-only"
+                                        >Edit {{ skill.name }}</span
                                     >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit {{ skill.name }}</span
-                                        >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        class="hover:bg-destructive/10 hover:text-destructive"
-                                        @click="onDelete(skill.id)"
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="hover:bg-destructive/10 hover:text-destructive"
+                                    @click="onDelete(skill.id)"
+                                >
+                                    <Trash2 class="size-4" />
+                                    <span class="sr-only"
+                                        >Delete {{ skill.name }}</span
                                     >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete {{ skill.name }}</span
-                                        >
-                                    </Button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </CardContent>
-        </Card>
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

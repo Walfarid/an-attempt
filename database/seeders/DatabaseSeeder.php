@@ -46,14 +46,19 @@ class DatabaseSeeder extends Seeder
         $this->seedEducation();
         $this->seedPublication();
 
-        if (Post::count() === 0) {
-            Post::factory()->count(3)->create();
-            Post::factory()->draft()->count(1)->create();
-        }
+        // Placeholder content only outside production: a live site should not
+        // be seeded with fake posts or messages (and the factory requires the
+        // faker dev dependency, which the production image does not ship).
+        if (app()->environment('local', 'staging')) {
+            if (Post::count() === 0) {
+                Post::factory()->count(3)->create();
+                Post::factory()->draft()->count(1)->create();
+            }
 
-        if (ContactMessage::count() === 0) {
-            ContactMessage::factory()->count(2)->create();
-            ContactMessage::factory()->read()->count(1)->create();
+            if (ContactMessage::count() === 0) {
+                ContactMessage::factory()->count(2)->create();
+                ContactMessage::factory()->read()->count(1)->create();
+            }
         }
     }
 

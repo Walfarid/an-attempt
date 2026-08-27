@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Dashboard\AnalyticsController;
 use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -17,6 +18,8 @@ use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+Route::get('sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
+
 Route::get('posts', [BlogController::class, 'index'])->name('posts.index');
 Route::get('posts/{post:slug}', [BlogController::class, 'show'])->name('posts.show');
 
@@ -28,7 +31,10 @@ Route::middleware([
     'auth',
     ValidateSessionWithWorkOS::class,
 ])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', [AnalyticsController::class, 'index'])->name('dashboard');
+    Route::post('analytics/clicks', [AnalyticsController::class, 'storeClick'])
+        ->middleware('throttle:60,1')
+        ->name('analytics.clicks.store');
 
     Route::resource('dashboard/projects', ProjectController::class)
         ->only(['index', 'store', 'update', 'destroy'])

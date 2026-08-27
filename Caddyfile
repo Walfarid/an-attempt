@@ -1,0 +1,61 @@
+# FrankenPHP / Caddy config for the walfa production container.
+#
+# TLS terminates on the origin with a Cloudflare Origin CA certificate
+# (mounted from /certs), so Cloudflare can use Full (strict) mode and
+# visitors get HTTP/3 (QUIC) through the proxy to the origin.
+# HTTP/3 is enabled automatically on the 443 UDP listener.
+#
+# Mounted from the host (/opt/walfa/Caddyfile) so Caddy config changes
+# do not require an image rebuild.
+
+{
+	auto_https disable_redirects
+	admin off
+
+	frankenphp {
+		worker {
+			file /app/public/frankenphp-worker.php
+			num 4
+		}
+	}
+}
+
+https://walfa.my.id {
+	tls /certs/origin.pem /certs/origin.key
+
+	log {
+		output stdout
+		format json
+	}
+
+	route {
+		root * /app/public
+		encode zstd br gzip
+
+		# Hashed Vite assets under /build are immutable once published.
+		@assets {
+			path /build/*
+		}
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@nocache {
+			not path /build/*
+		}
+		header @nocache Cache-Control "no-cache"
+		header X-Content-Type-Options "nosniff"
+		header X-Frame-Options "SAMEORIGIN"
+		header Referrer-Policy "strict-origin-when-cross-origin"
+		header Permissions-Policy "camera=(), microphone=(), geolocation=()"
+
+		php_server {
+			# No "index" subdirective: resolving "/" to an index file rewrites
+			# the URI to /frankenphp-worker.php, which Laravel then 404s on.
+			# try_files falls through to the worker with the original URI.
+			try_files {path} frankenphp-worker.php
+			resolve_root_symlink
+		}
+	}
+}
+
+http://walfa.my.id {
+	redir https://walfa.my.id{uri} permanent
+}

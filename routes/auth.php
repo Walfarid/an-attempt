@@ -5,7 +5,7 @@ use Laravel\WorkOS\Http\Requests\AuthKitAuthenticationRequest;
 use Laravel\WorkOS\Http\Requests\AuthKitLoginRequest;
 use Laravel\WorkOS\Http\Requests\AuthKitLogoutRequest;
 
-Route::middleware(['guest'])->group(function () {
+Route::middleware(['guest', 'throttle:10,1'])->group(function () {
     Route::get('login', fn (AuthKitLoginRequest $request) => $request->redirect())->name('login');
 
     Route::get('authenticate', fn (AuthKitAuthenticationRequest $request) => tap(

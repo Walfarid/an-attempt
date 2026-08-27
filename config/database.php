@@ -61,7 +61,13 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+                // OCI managed MySQL serves a certificate without a SAN, so
+                // hostname verification cannot pass against the private IP;
+                // verify the CA chain only (see MYSQL_ATTR_SSL_CA).
+                Mysql::ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT') !== null
+                    ? filter_var(env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT'), FILTER_VALIDATE_BOOLEAN)
+                    : null,
+            ], fn ($value) => $value !== null) : [],
         ],
 
         'mariadb' => [
@@ -81,7 +87,11 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+                // See note on the 'mysql' connection: OCI certs have no SAN.
+                Mysql::ATTR_SSL_VERIFY_SERVER_CERT => env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT') !== null
+                    ? filter_var(env('MYSQL_ATTR_SSL_VERIFY_SERVER_CERT'), FILTER_VALIDATE_BOOLEAN)
+                    : null,
+            ], fn ($value) => $value !== null) : [],
         ],
 
         'pgsql' => [

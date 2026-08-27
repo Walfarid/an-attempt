@@ -41,4 +41,12 @@ return [
         'redirect_url' => env('WORKOS_REDIRECT_URL'),
     ],
 
+    'clarity' => [
+        'id' => env('CLARITY_PROJECT_ID'),
+    ],
+
+    'google' => [
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
+    ],
+
 ];

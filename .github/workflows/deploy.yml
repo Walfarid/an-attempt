@@ -1,0 +1,91 @@
+# Build and deploy walfa to the OCI app VM.
+#
+# Triggered on push to main (and manually). Builds a multi-arch image
+# (linux/amd64 for CI, linux/arm64 for the VM) with buildx, pushes it to OCIR,
+# then rolls it out on the VM with docker compose.
+#
+# Deploy requires these repository secrets:
+#   OCIR_REGISTRY, OCIR_USERNAME, OCIR_AUTH_TOKEN (from infra bootstrap)
+#   OCIR_IMAGE                                  (full image ref, :latest)
+#   DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH       (VM SSH target)
+#   DEPLOY_SSH_KEY                              (private key authorized on VM)
+#
+# Action versions pinned to immutable commit SHAs, verified 2026-08-27.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      - name: Log in to OCIR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ${{ secrets.OCIR_REGISTRY }}
+          username: ${{ secrets.OCIR_USERNAME }}
+          password: ${{ secrets.OCIR_AUTH_TOKEN }}
+
+      - name: Compute image tags
+        id: meta
+        run: |
+          IMAGE="${{ secrets.OCIR_IMAGE }}"
+          IMAGE="${IMAGE%:*}"
+          echo "tags=${IMAGE}:sha-${GITHUB_SHA::8},${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push (amd64 + arm64)
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=registry,ref=${{ secrets.OCIR_IMAGE }}
+          cache-to: type=inline
+
+  deploy:
+    name: Roll out on VM
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            cd ${{ secrets.DEPLOY_PATH }}
+            docker compose pull app queue
+            docker compose up -d --remove-orphans
+            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan view:cache
+            # Octane workers boot once; reload them so the fresh config cache
+            # and routes take effect without a container restart.
+            docker compose exec -T app php artisan octane:reload || true
+            docker image prune -f

@@ -5,7 +5,6 @@ import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
     Dialog,
     DialogClose,
@@ -94,13 +93,14 @@ function onDelete(id: number) {
 </script>
 
 <template>
-    <div class="flex flex-1 flex-col gap-6 p-4 sm:p-6">
+    <div class="d-dots-bg flex flex-1 flex-col gap-6 p-4 sm:p-6">
         <Head title="Education" />
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <Heading
                 title="Education"
                 description="Academic records shown on your public site."
+                section-number="07"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>
@@ -121,45 +121,55 @@ function onDelete(id: number) {
                         </DialogHeader>
                         <div class="grid gap-4 py-4">
                             <div class="grid gap-2">
-                                <Label for="edu-school">School</Label>
+                                <Label for="edu-school" class="d-label"
+                                    >School</Label
+                                >
                                 <Input
                                     id="edu-school"
                                     v-model="form.school"
                                     placeholder="National University of Singapore"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.school" />
                             </div>
                             <div class="grid gap-2">
-                                <Label for="edu-degree">Degree</Label>
+                                <Label for="edu-degree" class="d-label"
+                                    >Degree</Label
+                                >
                                 <Input
                                     id="edu-degree"
                                     v-model="form.degree"
                                     placeholder="M.Tech in Software Engineering"
+                                    class="d-sharp"
                                 />
                                 <InputError :message="form.errors.degree" />
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="grid gap-2">
-                                    <Label for="edu-started-at"
+                                    <Label for="edu-started-at" class="d-label"
                                         >Start date</Label
                                     >
                                     <Input
                                         id="edu-started-at"
                                         v-model="form.started_at"
                                         type="date"
+                                        class="d-sharp"
                                     />
                                     <InputError
                                         :message="form.errors.started_at"
                                     />
                                 </div>
                                 <div class="grid gap-2">
-                                    <Label for="edu-ended-at">End date</Label>
+                                    <Label for="edu-ended-at" class="d-label"
+                                        >End date</Label
+                                    >
                                     <Input
                                         id="edu-ended-at"
                                         v-model="form.ended_at"
                                         type="date"
+                                        class="d-sharp"
                                     />
-                                    <p class="text-xs text-muted-foreground">
+                                    <p class="d-ink-soft text-xs">
                                         Empty = present.
                                     </p>
                                     <InputError
@@ -168,7 +178,7 @@ function onDelete(id: number) {
                                 </div>
                             </div>
                             <div class="grid gap-2">
-                                <Label for="edu-details"
+                                <Label for="edu-details" class="d-label"
                                     >Details (one per line)</Label
                                 >
                                 <textarea
@@ -176,7 +186,7 @@ function onDelete(id: number) {
                                     v-model="form.details"
                                     rows="4"
                                     placeholder="GPA 3.5 / 4.0&#10;Thesis title"
-                                    class="block w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    class="d-textarea w-full"
                                 />
                                 <InputError :message="form.errors.details" />
                             </div>
@@ -196,82 +206,73 @@ function onDelete(id: number) {
             </Dialog>
         </div>
 
-        <Card>
-            <CardContent class="p-0">
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr
-                            class="border-b border-border text-left font-mono text-xs tracking-wide text-muted-foreground uppercase"
-                        >
-                            <th class="px-4 py-2 font-medium">School</th>
-                            <th class="px-4 py-2 font-medium">Degree</th>
-                            <th class="px-4 py-2 font-medium">Period</th>
-                            <th class="px-4 py-2 font-medium"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="education in educations"
-                            :key="education.id"
-                            class="border-b border-border/60 last:border-0"
-                        >
-                            <td class="px-4 py-3 font-medium">
-                                {{ education.school }}
-                            </td>
-                            <td class="max-w-xs px-4 py-3">
-                                <p class="line-clamp-1">
-                                    {{ education.degree }}
-                                </p>
-                            </td>
-                            <td
-                                class="px-4 py-3 font-mono text-xs text-muted-foreground tabular-nums"
-                            >
-                                {{
-                                    education.started_at
-                                        ? formatDateRange(
-                                              education.started_at,
-                                              education.ended_at,
-                                          )
-                                        : '?'
-                                }}
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        @click="startEdit(education)"
+        <!-- Education Table -->
+        <div class="d-surface">
+            <table class="d-table">
+                <thead>
+                    <tr>
+                        <th>School</th>
+                        <th>Degree</th>
+                        <th>Period</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="education in educations" :key="education.id">
+                        <td class="d-ink font-medium">
+                            {{ education.school }}
+                        </td>
+                        <td class="max-w-xs">
+                            <p class="line-clamp-1">
+                                {{ education.degree }}
+                            </p>
+                        </td>
+                        <td class="d-ink-soft text-xs tabular-nums">
+                            {{
+                                education.started_at
+                                    ? formatDateRange(
+                                          education.started_at,
+                                          education.ended_at,
+                                      )
+                                    : '?'
+                            }}
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="startEdit(education)"
+                                >
+                                    <Pencil class="size-4" />
+                                    <span class="sr-only"
+                                        >Edit {{ education.school }}</span
                                     >
-                                        <Pencil class="size-4" />
-                                        <span class="sr-only"
-                                            >Edit {{ education.school }}</span
-                                        >
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        class="hover:bg-destructive/10 hover:text-destructive"
-                                        @click="onDelete(education.id)"
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    class="hover:bg-destructive/10 hover:text-destructive"
+                                    @click="onDelete(education.id)"
+                                >
+                                    <Trash2 class="size-4" />
+                                    <span class="sr-only"
+                                        >Delete {{ education.school }}</span
                                     >
-                                        <Trash2 class="size-4" />
-                                        <span class="sr-only"
-                                            >Delete {{ education.school }}</span
-                                        >
-                                    </Button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="!educations.length">
-                            <td
-                                colspan="4"
-                                class="px-4 py-8 text-center text-sm text-muted-foreground"
-                            >
-                                No education records yet.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </CardContent>
-        </Card>
+                                </Button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="!educations.length">
+                        <td
+                            colspan="4"
+                            class="d-ink-soft px-4 py-8 text-center text-sm"
+                        >
+                            No education records yet.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>

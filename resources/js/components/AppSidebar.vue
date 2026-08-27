@@ -78,7 +78,7 @@ const mainNavItems: NavItem[] = [
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon" variant="sidebar">
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
@@ -91,11 +91,11 @@ const mainNavItems: NavItem[] = [
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent class="d-rule-t border-t border-(--rule)">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter>
+        <SidebarFooter class="d-rule-t border-t border-(--rule)">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton as-child :tooltip="'View homepage'">

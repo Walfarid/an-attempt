@@ -21,4 +21,15 @@ class Publication extends Model
         'doi_url',
         'sort_order',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'year' => 'integer',
+            'sort_order' => 'integer',
+        ];
+    }
 }

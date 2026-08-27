@@ -60,9 +60,6 @@ const page = usePage();
 const auth = computed(() => page.props.auth);
 const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
-const activeItemStyles =
-    'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
-
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -91,7 +88,7 @@ const rightNavItems: NavItem[] = [];
 
 <template>
     <div>
-        <div class="border-b border-sidebar-border/80">
+        <div class="border-b border-(--rule) bg-(--surface)">
             <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
@@ -105,13 +102,18 @@ const rightNavItems: NavItem[] = [];
                                 <Menu class="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" class="w-[300px] p-6">
+                        <SheetContent
+                            side="left"
+                            class="w-[300px] bg-(--surface) p-6"
+                        >
                             <SheetTitle class="sr-only"
                                 >Navigation menu</SheetTitle
                             >
-                            <SheetHeader class="flex justify-start text-left">
+                            <SheetHeader
+                                class="flex justify-start border-b border-(--rule) pb-4 text-left"
+                            >
                                 <AppLogoIcon
-                                    class="size-6 fill-current text-black dark:text-white"
+                                    class="size-6 fill-current text-(--accent)"
                                 />
                             </SheetHeader>
                             <div
@@ -119,17 +121,20 @@ const rightNavItems: NavItem[] = [];
                             >
                                 <nav class="-mx-3 space-y-1">
                                     <Link
-                                        v-for="item in mainNavItems"
+                                        v-for="(item, index) in mainNavItems"
                                         :key="item.title"
                                         :href="item.href"
-                                        class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
+                                        class="flex items-center gap-x-3 px-3 py-2 font-mono text-sm font-medium hover:bg-(--accent-soft)"
                                         :class="
                                             whenCurrentUrl(
                                                 item.href,
-                                                activeItemStyles,
+                                                'bg-(--accent-soft) text-(--ink)',
                                             )
                                         "
                                     >
+                                        <span class="d-section text-[10px]">{{
+                                            String(index + 1).padStart(2, '0')
+                                        }}</span>
                                         <component
                                             v-if="item.icon"
                                             :is="item.icon"
@@ -145,7 +150,7 @@ const rightNavItems: NavItem[] = [];
                                         :href="toUrl(item.href)"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="flex items-center space-x-2 text-sm font-medium"
+                                        class="flex items-center space-x-2 font-mono text-sm"
                                     >
                                         <component
                                             v-if="item.icon"
@@ -168,7 +173,7 @@ const rightNavItems: NavItem[] = [];
                 <div class="hidden h-full lg:flex lg:flex-1">
                     <NavigationMenu class="ml-10 flex h-full items-stretch">
                         <NavigationMenuList
-                            class="flex h-full items-stretch space-x-2"
+                            class="flex h-full items-stretch space-x-1"
                         >
                             <NavigationMenuItem
                                 v-for="(item, index) in mainNavItems"
@@ -180,12 +185,15 @@ const rightNavItems: NavItem[] = [];
                                         navigationMenuTriggerStyle(),
                                         whenCurrentUrl(
                                             item.href,
-                                            activeItemStyles,
+                                            'bg-(--accent-soft)',
                                         ),
-                                        'h-9 cursor-pointer px-3',
+                                        'h-9 cursor-pointer px-3 font-mono text-[13px]',
                                     ]"
                                     :href="item.href"
                                 >
+                                    <span class="d-section mr-2 text-[10px]">{{
+                                        String(index + 1).padStart(2, '0')
+                                    }}</span>
                                     <component
                                         v-if="item.icon"
                                         :is="item.icon"
@@ -195,7 +203,7 @@ const rightNavItems: NavItem[] = [];
                                 </Link>
                                 <div
                                     v-if="isCurrentUrl(item.href)"
-                                    class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
+                                    class="absolute bottom-0 left-0 h-0.5 w-full bg-(--accent)"
                                 ></div>
                             </NavigationMenuItem>
                         </NavigationMenuList>
@@ -244,7 +252,9 @@ const rightNavItems: NavItem[] = [];
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>{{ item.title }}</p>
+                                            <p class="font-mono text-[11px]">
+                                                {{ item.title }}
+                                            </p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -257,18 +267,16 @@ const rightNavItems: NavItem[] = [];
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                class="relative size-10 w-auto rounded-full p-1 focus-within:ring-2 focus-within:ring-primary"
+                                class="relative size-10 w-auto border border-(--rule) p-1 hover:border-(--accent)"
                             >
-                                <Avatar
-                                    class="size-8 overflow-hidden rounded-full"
-                                >
+                                <Avatar class="size-8 overflow-hidden">
                                     <AvatarImage
                                         v-if="auth.user.avatar"
                                         :src="auth.user.avatar"
                                         :alt="auth.user.name"
                                     />
                                     <AvatarFallback
-                                        class="rounded-lg bg-neutral-200 font-semibold text-black dark:bg-neutral-700 dark:text-white"
+                                        class="bg-(--accent-soft) font-mono text-xs text-(--ink)"
                                     >
                                         {{ getInitials(auth.user?.name) }}
                                     </AvatarFallback>
@@ -285,10 +293,10 @@ const rightNavItems: NavItem[] = [];
 
         <div
             v-if="props.breadcrumbs.length > 1"
-            class="flex w-full border-b border-sidebar-border/70"
+            class="flex w-full border-b border-(--rule) bg-(--paper)"
         >
             <div
-                class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl"
+                class="mx-auto flex h-12 w-full items-center justify-start px-4 text-(--ink-soft) md:max-w-7xl"
             >
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </div>

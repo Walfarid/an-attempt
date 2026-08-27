@@ -37,7 +37,7 @@ class PostRequest extends FormRequest
                 Rule::unique('posts')->ignore($this->route('post')),
             ],
             'excerpt' => ['nullable', 'string', 'max:300'],
-            'body' => ['required', 'string'],
+            'body' => ['required', 'string', 'max:50000'],
             'published_at' => ['nullable', 'date'],
         ];
     }
