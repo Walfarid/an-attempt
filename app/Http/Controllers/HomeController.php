@@ -10,8 +10,11 @@ use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Skill;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Laravel\Head\Facades\Head;
+use Laravel\Head\Facades\Schema;
 
 class HomeController extends Controller
 {
@@ -24,8 +27,27 @@ class HomeController extends Controller
      */
     public function index(): InertiaResponse
     {
-        $profile = Profile::current();
+        $profile = Profile::query()->firstOrFail([
+            'id', 'name', 'headline', 'bio', 'location', 'github_url', 'linkedin_url',
+        ]);
         $profile->bio_html = $profile->bioHtml();
+        $profile->makeHidden(['bio']);
+
+        Head::title('Home')
+            ->description($profile->headline.' — '.'Software developer with over 6 years of experience in application development, API management, and deployment platforms.')
+            ->canonical();
+
+        Head::schema(
+            Schema::person()
+                ->name($profile->name)
+                ->url(url('/'))
+                ->set('jobTitle', $profile->headline)
+                ->set('description', strip_tags($profile->bio_html))
+                ->set('sameAs', array_filter([
+                    $profile->github_url,
+                    $profile->linkedin_url,
+                ]))
+        );
 
         return Inertia::render('Welcome', [
             'profile' => $profile,
@@ -36,32 +58,44 @@ class HomeController extends Controller
             ],
             'turnstile_site_key' => config('contact.turnstile_site_key'),
             'skills' => Inertia::defer(fn () => Skill::query()
+                ->select(['id', 'name', 'category'])
                 ->orderBy('category')
                 ->orderBy('name')
                 ->get())->once(),
             'experiences' => Inertia::defer(fn () => Experience::query()
+                ->select(['id', 'role', 'company', 'location', 'started_at', 'ended_at', 'summary', 'highlights'])
                 ->orderByDesc('started_at')
                 ->get())->once(),
             'projects' => Inertia::defer(fn () => Project::query()
+                ->select(['id', 'title', 'description', 'year', 'live_url', 'repo_url'])
                 ->published()
                 ->with(['skills', 'screenshots'])
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->get())->once(),
+                ->get()
+                ->each(function (Project $project): void {
+                    $project->screenshots->each->makeHidden(['project_id', 'path', 'sort_order', 'created_at', 'updated_at']);
+                }))->once(),
             'educations' => Inertia::defer(fn () => Education::query()
+                ->select(['id', 'school', 'degree', 'started_at', 'ended_at', 'details'])
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get())->once(),
             'publications' => Inertia::defer(fn () => Publication::query()
+                ->select(['id', 'citation', 'venue', 'year', 'doi_url'])
                 ->orderByDesc('year')
                 ->orderBy('id')
                 ->get())->once(),
             'posts' => Inertia::defer(fn () => Post::query()
+                ->select(['id', 'slug', 'title', 'excerpt', 'body', 'cover_image_path', 'published_at'])
                 ->published()
                 ->orderByDesc('published_at')
                 ->limit(3)
                 ->get()
-                ->each(fn (Post $post) => $post->teaser_text = $post->teaser()))->once(),
+                ->each(function (Post $post): void {
+                    $post->teaser_text = $post->teaser();
+                    $post->makeHidden(['body', 'cover_image_path', 'created_at', 'updated_at']);
+                }))->once(),
         ]);
     }
 
@@ -70,18 +104,15 @@ class HomeController extends Controller
      */
     private function yearsActive(): int
     {
-        $experiences = Experience::query()->get(['started_at', 'ended_at']);
+        $row = DB::table('experiences')
+            ->selectRaw('MIN(started_at) as earliest, MAX(COALESCE(ended_at, CURRENT_TIMESTAMP)) as latest')
+            ->first();
 
-        if ($experiences->isEmpty()) {
+        if ($row === null || $row->earliest === null) {
             return 0;
         }
 
-        $starts = $experiences->pluck('started_at')
-            ->map(fn (string $date) => strtotime($date));
-        $ends = $experiences->pluck('ended_at')
-            ->map(fn (?string $date) => $date === null ? time() : strtotime($date));
-
-        $months = ($ends->max() - $starts->min()) / (1000 * 60 * 60 * 24 * 30.44);
+        $months = (strtotime($row->latest) - strtotime($row->earliest)) / (86400 * 30.44);
 
         return max(1, (int) round($months / 12));
     }
@@ -96,7 +127,7 @@ class HomeController extends Controller
             ['loc' => url('/posts'), 'priority' => '0.8'],
         ];
 
-        foreach (Post::published()->orderByDesc('published_at')->get() as $post) {
+        foreach (Post::published()->select(['slug', 'updated_at'])->orderByDesc('published_at')->get() as $post) {
             $urls[] = [
                 'loc' => route('posts.show', $post->slug),
                 'lastmod' => $post->updated_at->toW3cString(),
