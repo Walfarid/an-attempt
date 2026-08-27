@@ -15,13 +15,18 @@ test('the home page renders for guests', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('Welcome')
             ->has('profile')
-            ->has('experiences')
-            ->has('skills')
-            ->has('projects')
-            ->has('educations')
-            ->has('publications')
-            ->has('posts')
-        );
+            ->has('stats.years_active')
+            ->has('stats.projects_count')
+            ->has('stats.skills_count')
+            ->has('turnstile_site_key')
+            ->loadDeferredProps('default', fn ($page) => $page
+                ->has('experiences')
+                ->has('skills')
+                ->has('projects')
+                ->has('educations')
+                ->has('publications')
+                ->has('posts')
+            ));
 });
 
 test('the home page only shows published projects and posts', function () {
@@ -30,13 +35,16 @@ test('the home page only shows published projects and posts', function () {
     Project::factory()->draft()->create(['title' => 'Hidden draft']);
     Post::factory()->create(['title' => 'Published post']);
     Post::factory()->draft()->create(['title' => 'Hidden post']);
-    $this->get('/')->assertInertia(function ($page) {
-        $props = $page->toArray()['props'];
-        $projectTitles = array_column($props['projects'], 'title');
-        $postTitles = array_column($props['posts'], 'title');
 
-        expect($projectTitles)->toContain('Published project')->not->toContain('Hidden draft')
-            ->and($postTitles)->toContain('Published post')->not->toContain('Hidden post');
+    $this->get('/')->assertInertia(function ($page) {
+        $page->loadDeferredProps('default', function ($page) {
+            $props = $page->toArray()['props'];
+            $projectTitles = array_column($props['projects'], 'title');
+            $postTitles = array_column($props['posts'], 'title');
+
+            expect($projectTitles)->toContain('Published project')->not->toContain('Hidden draft')
+                ->and($postTitles)->toContain('Published post')->not->toContain('Hidden post');
+        });
     });
 });
 
@@ -50,13 +58,16 @@ test('the home page includes portfolio content', function () {
     Publication::factory()->count(2)->create();
 
     $this->get('/')->assertInertia(function ($page) {
-        $props = $page->toArray()['props'];
+        expect($page->toArray()['props']['profile']['bio_html'])->toContain('<strong>reliable</strong>');
 
-        expect(count($props['experiences']))->toBe(2)
-            ->and(count($props['skills']))->toBe(3)
-            ->and(count($props['educations']))->toBe(2)
-            ->and(count($props['publications']))->toBe(2)
-            ->and($props['profile']['bio_html'])->toContain('<strong>reliable</strong>');
+        $page->loadDeferredProps('default', function ($page) {
+            $props = $page->toArray()['props'];
+
+            expect(count($props['experiences']))->toBe(2)
+                ->and(count($props['skills']))->toBe(3)
+                ->and(count($props['educations']))->toBe(2)
+                ->and(count($props['publications']))->toBe(2);
+        });
     });
 });
 
@@ -71,10 +82,12 @@ test('home projects carry their skills and screenshot urls', function () {
     ]);
 
     $this->get('/')->assertInertia(function ($page) use ($project, $screenshot) {
-        $props = $page->toArray()['props'];
-        $first = collect($props['projects'])->firstWhere('id', $project->id);
+        $page->loadDeferredProps('default', function ($page) use ($project, $screenshot) {
+            $props = $page->toArray()['props'];
+            $first = collect($props['projects'])->firstWhere('id', $project->id);
 
-        expect(count($first['skills']))->toBe(2)
-            ->and($first['screenshots'][0]['url'])->toBe(Storage::disk('media')->url($screenshot->path));
+            expect(count($first['skills']))->toBe(2)
+                ->and($first['screenshots'][0]['url'])->toBe(Storage::disk('media')->url($screenshot->path));
+        });
     });
 });
