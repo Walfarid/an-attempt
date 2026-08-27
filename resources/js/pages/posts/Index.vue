@@ -48,7 +48,9 @@ useScrollAnimations();
                     v-for="post in posts"
                     :key="post.id"
                     :href="postShow.url({ post: post.slug })"
-                    class="d-surface block p-5 no-underline transition-shadow hover:shadow-sm sm:p-6"
+                    prefetch
+                    cache-for="10s"
+                    class="d-surface d-card-hover block p-5 no-underline sm:p-6"
                     data-motion
                 >
                     <div
