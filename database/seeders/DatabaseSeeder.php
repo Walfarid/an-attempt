@@ -6,6 +6,7 @@ use App\Models\ContactMessage;
 use App\Models\Education;
 use App\Models\Experience;
 use App\Models\Post;
+use App\Models\PrivacyPolicy;
 use App\Models\Profile;
 use App\Models\Project;
 use App\Models\Publication;
@@ -40,6 +41,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->seedProfile();
+        $this->seedPrivacyPolicy();
         $skills = $this->seedSkills();
         $this->seedExperience();
         $this->seedProjects($skills);
@@ -76,6 +78,58 @@ class DatabaseSeeder extends Seeder
             'github_url' => 'https://github.com/Walfarid/an-attempt',
             'linkedin_url' => null,
             'avatar_path' => null,
+        ]);
+    }
+
+    private function seedPrivacyPolicy(): void
+    {
+        PrivacyPolicy::updateOrCreate(['id' => 1], [
+            'body' => <<<'MD'
+                # Privacy disclosure
+
+                This site is a personal portfolio run by an individual — no ad networks, no data brokers, no selling of data. Everything this site knows about you is described below.
+
+                ## What the site owner collects
+
+                - **Contact form submissions** — when you send a message through the contact form, the name, email address, and message you provide are stored so the site owner can reply. Nothing else is attached to it.
+                - **First-party analytics** — the site keeps its own lightweight counters of page views and outbound-link clicks (page path, referrer, user-agent, coarse device type, approximate country from IP, and a non-reversible hash of the IP used only to count unique visitors). These are aggregate numbers, not personal profiles.
+
+                ## Third-party analytics
+
+                These load **only after you accept** the consent banner. Nothing from either vendor runs before that choice.
+
+                ### Microsoft Clarity
+
+                Microsoft Clarity provides heatmaps, session recordings, and click tracking (clicks, scrolls, mouse movement, and basic device and browser information). It sets its own cookies on this site — including `_clck` (unique visitor ID, 1 year), `_clsk` (groups page views into one session recording, 1 day), and `MR`, `MUID`, `SM`, `ANONCHK`, and `CLID` on Microsoft domains. Clarity states it does not collect personally identifiable information and applies IP masking.
+
+                - Privacy statement: [https://privacy.microsoft.com/privacystatement](https://privacy.microsoft.com/privacystatement)
+                - Clarity privacy FAQ: [https://clarity.microsoft.com/privacy](https://clarity.microsoft.com/privacy)
+                - Opt out of Clarity tracking: [https://clarity.microsoft.com/opt-out](https://clarity.microsoft.com/opt-out)
+
+                ### Google Analytics 4
+
+                Google Analytics 4 records pageviews and events (pages visited, time on site, referrer, approximate location, device and browser information). It sets Google cookies such as `_ga` (2 years) and `_ga_*` (2 years) to distinguish visitors and persist session state.
+
+                - How Google uses data: [https://policies.google.com/technologies/partner-sites](https://policies.google.com/technologies/partner-sites)
+                - Google privacy policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
+                - Browser add-on to opt out of Google Analytics: [https://tools.google.com/dlpage/gaoptout/](https://tools.google.com/dlpage/gaoptout/)
+
+                ## Cookies set by this site
+
+                - **`laravel-session`** (2 hours) — signed session cookie that keeps you logged in to the dashboard. Marked HTTP-only, so scripts cannot read it.
+                - **`XSRF-TOKEN`** (2 hours) — CSRF protection token for form submissions.
+                - **`consent`** (1 year) — remembers your analytics consent decision (`accepted` or `declined`) so the banner is not shown again.
+                - **`appearance`** (1 year) — remembers your light/dark theme choice.
+                - **`sidebar_state`** (1 year) — remembers whether the dashboard sidebar is open.
+
+                ## How consent works
+
+                On your first visit a small bar at the bottom of the page asks whether analytics may load. **Decline** (or simply ignoring it) means no Clarity or Google Analytics code is ever fetched or run. **Accept** stores the `consent` cookie and loads both tools on subsequent page loads. The choice is stored in a first-party cookie, never on a server, and can be changed at any time with the **Cookie settings** button on this page — clearing the stored choice brings the bar back.
+
+                ## Your choices
+
+                Because the analytics tools only run with your consent, declining is the simplest opt-out and can be reversed in either direction at any time. For site content, data collected through the contact form can be removed on request — reach out through the contact form and ask.
+                MD,
         ]);
     }
 

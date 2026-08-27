@@ -7,12 +7,14 @@ use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\PostCoverController;
+use App\Http\Controllers\Dashboard\PrivacyPolicyController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\ProjectController;
 use App\Http\Controllers\Dashboard\PublicationController;
 use App\Http\Controllers\Dashboard\ScreenshotController;
 use App\Http\Controllers\Dashboard\SkillController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PrivacyController;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
@@ -22,6 +24,8 @@ Route::get('sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 
 Route::get('posts', [BlogController::class, 'index'])->name('posts.index');
 Route::get('posts/{post:slug}', [BlogController::class, 'show'])->name('posts.show');
+
+Route::get('privacy', [PrivacyController::class, 'show'])->name('privacy');
 
 Route::post('contact', [ContactController::class, 'store'])
     ->middleware('throttle:5,1')
@@ -55,6 +59,9 @@ Route::middleware([
 
     Route::get('dashboard/profile/edit', [ProfileController::class, 'edit'])->name('dashboard.profile.edit');
     Route::put('dashboard/profile', [ProfileController::class, 'update'])->name('dashboard.profile.update');
+
+    Route::get('dashboard/privacy/edit', [PrivacyPolicyController::class, 'edit'])->name('dashboard.privacy.edit');
+    Route::put('dashboard/privacy', [PrivacyPolicyController::class, 'update'])->name('dashboard.privacy.update');
 
     Route::resource('dashboard/skills', SkillController::class)
         ->only(['index', 'store', 'update', 'destroy'])

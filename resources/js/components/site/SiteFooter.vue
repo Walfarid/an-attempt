@@ -56,6 +56,14 @@ function scrollToTop(e: Event) {
                 </li>
                 <li>
                     <a
+                        href="/privacy"
+                        class="inline-flex min-h-10 items-center gap-1 text-sm font-medium text-(--ink-soft) no-underline transition-colors hover:text-(--ink)"
+                    >
+                        Privacy
+                    </a>
+                </li>
+                <li>
+                    <a
                         href="#"
                         class="inline-flex min-h-10 items-center text-sm font-medium text-(--ink-soft) no-underline transition-colors hover:text-(--ink)"
                         @click="scrollToTop"

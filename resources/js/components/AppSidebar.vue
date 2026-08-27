@@ -8,6 +8,7 @@ import {
     GraduationCap,
     LayoutGrid,
     PenLine,
+    Shield,
     UserRoundPen,
     Wrench,
 } from '@lucide/vue';
@@ -27,6 +28,7 @@ import { dashboard, home } from '@/routes';
 import educations from '@/routes/dashboard/educations';
 import experience from '@/routes/dashboard/experience';
 import posts from '@/routes/dashboard/posts';
+import privacy from '@/routes/dashboard/privacy';
 import profile from '@/routes/dashboard/profile';
 import projects from '@/routes/dashboard/projects';
 import publications from '@/routes/dashboard/publications';
@@ -68,6 +70,11 @@ const mainNavItems: NavItem[] = [
         title: 'Skills',
         href: skills.index.url(),
         icon: Wrench,
+    },
+    {
+        title: 'Privacy',
+        href: privacy.edit.url(),
+        icon: Shield,
     },
     {
         title: 'Profile',
