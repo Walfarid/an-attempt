@@ -258,3 +258,10 @@ setup + ci:check), `security.yml` (gitleaks, zizmor, CodeQL, Semgrep, dep-review
 `dast.yml` (nightly ZAP), `deploy.yml` (buildx multi-arch → OCIR → VM + octane:reload).
 Action pins must be immutable SHAs whose comment matches the exact tag (zizmor fails
 otherwise). Verify version changes against current sources before pinning.
+
+Deploy quirks (see header of `deploy.yml`): the OCI security list allows SSH only
+key-based from anywhere (GitHub's `actions` ranges exceed SL rule limits — never
+re-lock port 22 to a single IP or deploys die with `dial tcp ...:22: i/o timeout`);
+the VM's public IP is ephemeral, so refresh the `DEPLOY_HOST` secret after reboots.
+`compose.prod.yaml` is the VM's compose file — after changing it, scp it to
+`/opt/walfa/compose.yaml` (a git push alone does not sync it).

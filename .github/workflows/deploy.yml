@@ -10,6 +10,15 @@
 #   DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH       (VM SSH target)
 #   DEPLOY_SSH_KEY                              (private key authorized on VM)
 #
+# OCI VM notes (verified 2026-08-27):
+#   - The VCN security list must allow SSH (22) from GitHub runners. The
+#     `actions` ranges in https://api.github.com/meta (250+ CIDRs) exceed
+#     the security-list rule budget, so the rule is 0.0.0.0/0 — sshd must
+#     stay key-only (PasswordAuthentication no). Symptom when SSH is
+#     blocked: `dial tcp ...:22: i/o timeout` from the appleboy step.
+#   - The VM's public IP is ephemeral. After a reboot, if it changed,
+#     update the DEPLOY_HOST secret (or move the VM to a reserved IP).
+#
 # Action versions pinned to immutable commit SHAs, verified 2026-08-27.
 
 name: Deploy
