@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/vue3';
 import { createApp, defineComponent, h } from 'vue';
+import CookieConsentBanner from '@/components/CookieConsentBanner.vue';
 import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
 import { initAutoClickTracker } from '@/composables/useClickTracker';
@@ -15,6 +16,7 @@ createInertiaApp({
     layout: (name) => {
         switch (true) {
             case name === 'Welcome':
+            case name === 'Privacy':
             case name.startsWith('posts/'):
                 return null;
             case name.startsWith('settings/'):
@@ -50,6 +52,16 @@ const loaderEl = document.createElement('div');
 loaderEl.id = 'page-loader-root';
 document.body.appendChild(loaderEl);
 createApp(defineComponent({ render: () => h(PageDrawLoader) })).mount(loaderEl);
+
+// The consent banner also lives outside the Inertia root so it shows on
+// every page (public and dashboard) and never gets hidden by the SPA
+// route-transition fade that targets the root.
+const consentEl = document.createElement('div');
+consentEl.id = 'consent-banner-root';
+document.body.appendChild(consentEl);
+createApp(defineComponent({ render: () => h(CookieConsentBanner) })).mount(
+    consentEl,
+);
 
 // This will set light / dark mode on page load...
 initializeTheme();

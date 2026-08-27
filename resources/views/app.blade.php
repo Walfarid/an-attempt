@@ -45,26 +45,29 @@
             <title>{{ config('app.name', 'Laravel') }}</title>
         </x-inertia::head>
 
-        {{-- Microsoft Clarity — heatmaps, session recordings, click tracking --}}
-        @if ($clarityId = config('services.clarity.id'))
-            <script>
-                (function(c,l,a,r,i,t,y){
-                    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-                })(window, document, "clarity", "script", @json($clarityId));
-            </script>
-        @endif
+        {{-- Analytics load only after an explicit, stored consent decision. --}}
+        @if (($consent ?? 'unset') === 'accepted')
+            {{-- Microsoft Clarity — heatmaps, session recordings, click tracking --}}
+            @if ($clarityId = config('services.clarity.id'))
+                <script>
+                    (function(c,l,a,r,i,t,y){
+                        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+                    })(window, document, "clarity", "script", @json($clarityId));
+                </script>
+            @endif
 
-        {{-- Google Analytics 4 — pageviews, events, conversions --}}
-        @if ($gaId = config('services.google.analytics_id'))
-            <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', @json($gaId));
-            </script>
+            {{-- Google Analytics 4 — pageviews, events, conversions --}}
+            @if ($gaId = config('services.google.analytics_id'))
+                <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+                <script>
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', @json($gaId));
+                </script>
+            @endif
         @endif
     </head>
     <body class="font-sans antialiased">
