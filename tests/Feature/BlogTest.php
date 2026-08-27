@@ -17,7 +17,7 @@ test('the blog index lists published posts newest first', function () {
         ->assertOk()
         ->assertInertia(function ($page) use ($older, $newer) {
             $props = $page->toArray()['props'];
-            $slugs = array_column($props['posts'], 'slug');
+            $slugs = array_column($props['posts']['data'], 'slug');
 
             expect($slugs)->toContain($newer->slug, $older->slug)
                 ->and($slugs[0])->toBe($newer->slug);

@@ -6,6 +6,8 @@ use App\Models\Post;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Laravel\Head\Enums\OgType;
+use Laravel\Head\Facades\Head;
 
 class BlogController extends Controller
 {
@@ -16,10 +18,16 @@ class BlogController extends Controller
     {
         return Inertia::render('posts/Index', [
             'posts' => Post::query()
+                ->select(['id', 'slug', 'title', 'excerpt', 'body', 'cover_image_path', 'published_at'])
                 ->published()
                 ->orderByDesc('published_at')
-                ->get()
-                ->each(fn (Post $post) => $post->teaser_text = $post->teaser()),
+                ->simplePaginate(10, ['*'], 'page')
+                ->through(function (Post $post): Post {
+                    $post->teaser_text = $post->teaser();
+                    $post->makeHidden(['body', 'cover_image_path']);
+
+                    return $post;
+                }),
         ]);
     }
 
@@ -33,8 +41,20 @@ class BlogController extends Controller
             Response::HTTP_NOT_FOUND,
         );
 
+        Head::title($post->title)
+            ->description($post->excerpt ?? $post->teaser(25))
+            ->og(type: OgType::Article)
+            ->canonical();
+
+        if ($post->cover_url) {
+            Head::ogImage($post->cover_url);
+        }
+
         return Inertia::render('posts/Show', [
-            'post' => tap($post, fn (Post $p) => $p->body_html = $p->bodyHtml()),
+            'post' => tap($post, function (Post $p): void {
+                $p->body_html = $p->bodyHtml();
+                $p->makeHidden(['body', 'cover_image_path']);
+            }),
             'recent' => Post::query()
                 ->published()
                 ->whereKeyNot($post->getKey())
