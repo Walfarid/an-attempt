@@ -40,6 +40,10 @@ services:
     restart: unless-stopped
     env_file: /opt/walfa/.env
     command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+    # The FrankenPHP image ships a default healthcheck against the Caddy
+    # admin endpoint (:2019); a queue worker serves no Caddy, so disable it.
+    healthcheck:
+      disable: true
     volumes:
       - /opt/walfa/storage:/app/storage
     depends_on:
