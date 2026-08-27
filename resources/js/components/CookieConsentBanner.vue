@@ -25,7 +25,7 @@ onMounted(checkConsent);
                 <span class="text-(--ink)">(Clarity, GA4)</span>
                 to understand how the site is used.
                 <a
-                    :href="privacy()"
+                    :href="privacy.url()"
                     class="font-medium text-(--ink) underline underline-offset-2 hover:text-(--accent)"
                     >Read the disclosure</a
                 >.
