@@ -18,6 +18,7 @@ class PublicationController extends Controller
     {
         return Inertia::render('dashboard/Publications', [
             'publications' => Publication::query()
+                ->select(['id', 'citation', 'venue', 'year', 'doi_url'])
                 ->orderByDesc('year')
                 ->orderBy('id')
                 ->get(),

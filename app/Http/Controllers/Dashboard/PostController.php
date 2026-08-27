@@ -18,7 +18,11 @@ class PostController extends Controller
     public function index(): Response
     {
         return Inertia::render('dashboard/Posts', [
-            'posts' => Post::query()->latest()->get(),
+            'posts' => Post::query()
+                ->select(['id', 'slug', 'title', 'excerpt', 'body', 'cover_image_path', 'published_at'])
+                ->latest()
+                ->get()
+                ->each->makeHidden(['cover_image_path']),
         ]);
     }
 

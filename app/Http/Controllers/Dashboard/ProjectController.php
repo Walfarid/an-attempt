@@ -19,10 +19,14 @@ class ProjectController extends Controller
     {
         return Inertia::render('dashboard/Projects', [
             'projects' => Project::query()
+                ->select(['id', 'title', 'description', 'year', 'live_url', 'repo_url', 'featured', 'published_at'])
                 ->with(['skills', 'screenshots'])
                 ->orderBy('sort_order')
                 ->orderBy('id')
-                ->get(),
+                ->get()
+                ->each(function (Project $project): void {
+                    $project->screenshots->each->makeHidden(['project_id', 'path', 'sort_order', 'created_at', 'updated_at']);
+                }),
         ]);
     }
 

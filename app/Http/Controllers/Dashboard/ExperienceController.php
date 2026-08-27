@@ -18,6 +18,7 @@ class ExperienceController extends Controller
     {
         return Inertia::render('dashboard/Experience', [
             'experiences' => Experience::query()
+                ->select(['id', 'role', 'company', 'location', 'started_at', 'ended_at', 'summary', 'highlights'])
                 ->orderByDesc('started_at')
                 ->get(),
         ]);

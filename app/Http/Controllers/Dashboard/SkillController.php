@@ -18,6 +18,7 @@ class SkillController extends Controller
     {
         return Inertia::render('dashboard/Skills', [
             'skills' => Skill::query()
+                ->select(['id', 'name', 'category'])
                 ->orderBy('category')
                 ->orderBy('name')
                 ->get(),

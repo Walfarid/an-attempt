@@ -18,6 +18,7 @@ class EducationController extends Controller
     {
         return Inertia::render('dashboard/Educations', [
             'educations' => Education::query()
+                ->select(['id', 'school', 'degree', 'started_at', 'ended_at', 'details'])
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get(),
