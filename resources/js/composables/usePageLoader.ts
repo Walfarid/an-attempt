@@ -68,7 +68,10 @@ export function usePageLoader() {
         document.addEventListener('inertia:start', startHandler);
         document.addEventListener('inertia:progress', progressHandler);
         document.addEventListener('inertia:finish', finishHandler);
-        window.addEventListener('page-loader:boot-complete', bootCompleteHandler);
+        window.addEventListener(
+            'page-loader:boot-complete',
+            bootCompleteHandler,
+        );
 
         // Hard cap: if boot-complete never fires, end the boot anyway.
         bootCapTimer = window.setTimeout(completeBoot, 3000);
@@ -76,20 +79,23 @@ export function usePageLoader() {
 
     onBeforeUnmount(() => {
         if (progressHandler) {
-document.removeEventListener('inertia:progress', progressHandler);
-}
+            document.removeEventListener('inertia:progress', progressHandler);
+        }
 
         if (startHandler) {
-document.removeEventListener('inertia:start', startHandler);
-}
+            document.removeEventListener('inertia:start', startHandler);
+        }
 
         if (finishHandler) {
-document.removeEventListener('inertia:finish', finishHandler);
-}
+            document.removeEventListener('inertia:finish', finishHandler);
+        }
 
         if (bootCompleteHandler) {
-window.removeEventListener('page-loader:boot-complete', bootCompleteHandler);
-}
+            window.removeEventListener(
+                'page-loader:boot-complete',
+                bootCompleteHandler,
+            );
+        }
 
         if (bootCapTimer) {
             window.clearTimeout(bootCapTimer);

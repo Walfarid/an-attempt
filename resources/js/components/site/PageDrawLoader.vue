@@ -2,9 +2,10 @@
 /**
  * PageDrawLoader — the destination page draws itself into existence.
  *
- * Boot: a paper-colored canvas covers the screen; when Inertia finishes
- * mounting (`page-loader:boot-complete`), the real page layout is measured
- * and drawn as SVG strokes that resolve into the live page. The full
+ * Boot: the page's own dot-grid texture covers the screen; when Inertia
+ * finishes mounting (`page-loader:boot-complete`), the real page layout
+ * is measured and drawn as SVG strokes that resolve into the live page
+ * (a small "Drafting…" caption keeps the boot legible). The full
  * overlay is boot-only.
  *
  * SPA: `inertia:start` / `inertia:finish` drive a lightweight top
@@ -42,35 +43,64 @@ if (typeof window !== 'undefined') {
 // Setup progress bar quickTo for smooth updates
 watch(topBarInner, (el) => {
     if (el) {
-        progressTo = gsap.quickTo(el, 'scaleX', { duration: 0.3, ease: 'power2.out' });
+        progressTo = gsap.quickTo(el, 'scaleX', {
+            duration: 0.3,
+            ease: 'power2.out',
+        });
     }
 });
 
-// Watch progress → update top bar
+// Watch progress → update top bar (instant when reduced motion is set)
 watch(progress, (p) => {
-    if (progressTo) {
+    const el = topBarInner.value;
+
+    if (!el) {
+        return;
+    }
+
+    if (prefersReducedMotion.value) {
+        el.style.transform = `scaleX(${p})`;
+    } else if (progressTo) {
         progressTo(p);
-    } else if (topBarInner.value) {
-        gsap.to(topBarInner.value, { scaleX: p, duration: 0.3, ease: 'power2.out' });
+    } else {
+        gsap.to(el, { scaleX: p, duration: 0.3, ease: 'power2.out' });
     }
 });
 
-// SPA active → top bar visibility
+// SPA active → top bar visibility (instant when reduced motion is set)
 watch(isSpaActive, (active) => {
-    if (active) {
-        if (topBar.value) {
-            gsap.fromTo(topBar.value, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: 'power2.out' });
-        }
+    const el = topBar.value;
+
+    if (!el) {
+        return;
+    }
+
+    if (prefersReducedMotion.value) {
+        gsap.set(el, { autoAlpha: active ? 1 : 0 });
+    } else if (active) {
+        gsap.fromTo(
+            el,
+            { autoAlpha: 0 },
+            { autoAlpha: 1, duration: 0.2, ease: 'power2.out' },
+        );
     } else {
-        if (topBar.value) {
-            gsap.to(topBar.value, { autoAlpha: 0, duration: 0.3, ease: 'power2.inOut' });
-        }
+        gsap.to(el, { autoAlpha: 0, duration: 0.3, ease: 'power2.inOut' });
     }
 });
 
 // --------------------------------------------------------- drawing
-function measurePage(): Array<{ x: number; y: number; width: number; height: number }> {
-    const regions: Array<{ x: number; y: number; width: number; height: number }> = [];
+function measurePage(): Array<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}> {
+    const regions: Array<{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    }> = [];
 
     // Measure semantic landmarks
     const landmarks = ['header', 'main', 'footer', 'nav'];
@@ -80,7 +110,12 @@ function measurePage(): Array<{ x: number; y: number; width: number; height: num
             const rect = el.getBoundingClientRect();
 
             if (rect.width > 0 && rect.height > 0) {
-                regions.push({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+                regions.push({
+                    x: rect.left,
+                    y: rect.top,
+                    width: rect.width,
+                    height: rect.height,
+                });
             }
         });
     });
@@ -105,7 +140,12 @@ function measurePage(): Array<{ x: number; y: number; width: number; height: num
                 );
 
                 if (!isDuplicate) {
-                    regions.push({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+                    regions.push({
+                        x: rect.left,
+                        y: rect.top,
+                        width: rect.width,
+                        height: rect.height,
+                    });
                 }
             }
         }
@@ -114,10 +154,12 @@ function measurePage(): Array<{ x: number; y: number; width: number; height: num
     return regions;
 }
 
-function drawRegions(regions: Array<{ x: number; y: number; width: number; height: number }>) {
+function drawRegions(
+    regions: Array<{ x: number; y: number; width: number; height: number }>,
+) {
     if (!svgHost.value) {
-return [];
-}
+        return [];
+    }
 
     const svg = svgHost.value;
 
@@ -127,7 +169,10 @@ return [];
     }
 
     return regions.map((r) => {
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const rect = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            'rect',
+        );
         rect.setAttribute('x', r.x.toString());
         rect.setAttribute('y', r.y.toString());
         rect.setAttribute('width', r.width.toString());
@@ -155,8 +200,8 @@ watch(isBoot, (boot) => {
 // ------------------------------------------------------------- reveal
 function drawAndReveal() {
     if (!overlay.value) {
-return;
-}
+        return;
+    }
 
     const regions = measurePage();
     const rects = drawRegions(regions);
@@ -181,11 +226,15 @@ return;
             stagger: 0.08,
             ease: 'power2.out',
         })
-        .to(overlay.value, {
-            autoAlpha: 0,
-            duration: 0.4,
-            ease: 'power2.inOut',
-        }, '+=0.15');
+        .to(
+            overlay.value,
+            {
+                autoAlpha: 0,
+                duration: 0.4,
+                ease: 'power2.inOut',
+            },
+            '+=0.15',
+        );
 }
 
 onMounted(() => {
@@ -204,26 +253,30 @@ onBeforeUnmount(() => {
     <!-- Top drafting line -->
     <div
         ref="topBar"
-        class="fixed left-0 right-0 top-0 z-[9999] h-[3px] pointer-events-none"
-        style="background: var(--accent-soft); opacity: 0; visibility: hidden;"
+        class="pointer-events-none fixed top-0 right-0 left-0 z-[9999] h-[3px]"
+        style="background: var(--accent-soft); opacity: 0; visibility: hidden"
     >
         <div
             ref="topBarInner"
             class="h-full origin-left"
-            style="background: var(--accent); transform: scaleX(0);"
+            style="background: var(--accent); transform: scaleX(0)"
         />
     </div>
 
     <!-- Full overlay with self-drawing SVG (boot canvas) -->
     <div
         ref="overlay"
-        class="fixed inset-0 z-[9998] pointer-events-none"
-        style="background: var(--paper);"
+        class="d-dots-bg pointer-events-none fixed inset-0 z-[9998]"
     >
         <svg
             ref="svgHost"
-            class="absolute inset-0 w-full h-full"
+            class="absolute inset-0 h-full w-full"
             xmlns="http://www.w3.org/2000/svg"
         />
+        <p
+            class="d-label pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-(--accent)"
+        >
+            Drafting…
+        </p>
     </div>
 </template>
