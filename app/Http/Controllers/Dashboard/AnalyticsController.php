@@ -21,13 +21,15 @@ class AnalyticsController extends Controller
     {
         $days = 14;
 
-        $visitorSeries = $this->dailyCounts(PageView::query(), 'viewed_at', $days);
-        $clickSeries = $this->dailyCounts(Click::query(), 'clicked_at', $days);
+        // Single 28-day query per model: derive current series, totals, and
+        // previous-period totals from one result set instead of 4 separate queries.
+        $viewData = $this->dailyCountsWithPrev(PageView::query(), 'viewed_at', $days);
+        $clickData = $this->dailyCountsWithPrev(Click::query(), 'clicked_at', $days);
 
-        $totalVisitors = PageView::lastDays($days)->count();
-        $totalClicks = Click::lastDays($days)->count();
-        $prevVisitors = PageView::lastDays($days * 2)->where('viewed_at', '<', now()->subDays($days))->count();
-        $prevClicks = Click::lastDays($days * 2)->where('clicked_at', '<', now()->subDays($days))->count();
+        $totalVisitors = $viewData['current_total'];
+        $totalClicks = $clickData['current_total'];
+        $prevVisitors = $viewData['prev_total'];
+        $prevClicks = $clickData['prev_total'];
 
         $ctr = $totalVisitors > 0 ? ($totalClicks / $totalVisitors) * 100 : 0;
         $prevCtr = $prevVisitors > 0 ? ($prevClicks / $prevVisitors) * 100 : 0;
@@ -62,8 +64,8 @@ class AnalyticsController extends Controller
 
         return inertia('Dashboard', [
             'kpis' => $kpis,
-            'visitorSeries' => $visitorSeries,
-            'clickSeries' => $clickSeries,
+            'visitorSeries' => $viewData['series'],
+            'clickSeries' => $clickData['series'],
             'topPages' => $topPages,
         ]);
     }
@@ -97,32 +99,50 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Build daily time series for a given model/column.
+     * Build daily time series for the current period and compute totals for
+     * both the current and previous period from a single 2N-day query.
      *
      * @param  Builder<PageView>|Builder<Click>  $query
      * @param  literal-string  $dateColumn
-     * @return array<int, array{label: string, value: int}>
+     * @return array{series: list<array{label: string, value: int}>, current_total: int, prev_total: int}
      */
-    private function dailyCounts(Builder $query, string $dateColumn, int $days): array
+    private function dailyCountsWithPrev(Builder $query, string $dateColumn, int $days): array
     {
         $counts = (clone $query)
             ->selectRaw("date({$dateColumn}) as day, count(*) as total")
-            ->where($dateColumn, '>=', now()->subDays($days))
+            ->where($dateColumn, '>=', now()->subDays($days * 2 - 1))
             ->groupBy('day')
             ->pluck('total', 'day');
 
-        $period = CarbonPeriod::create(now()->subDays($days - 1), '1 day', now());
-        $series = [];
+        $today = now()->startOfDay();
+        $currentStart = $today->copy()->subDays($days - 1);
+        $prevStart = $currentStart->copy()->subDays($days);
 
+        $currentSeries = [];
+        $currentTotal = 0;
+        $prevTotal = 0;
+
+        $period = CarbonPeriod::create($currentStart, '1 day', $today);
         foreach ($period as $date) {
             $key = $date->format('Y-m-d');
-            $series[] = [
+            $value = (int) ($counts[$key] ?? 0);
+            $currentSeries[] = [
                 'label' => $date->format('M j'),
-                'value' => (int) ($counts[$key] ?? 0),
+                'value' => $value,
             ];
+            $currentTotal += $value;
         }
 
-        return $series;
+        $period = CarbonPeriod::create($prevStart, '1 day', $currentStart->copy()->subDay());
+        foreach ($period as $date) {
+            $prevTotal += (int) ($counts[$date->format('Y-m-d')] ?? 0);
+        }
+
+        return [
+            'series' => $currentSeries,
+            'current_total' => $currentTotal,
+            'prev_total' => $prevTotal,
+        ];
     }
 
     private function delta(float $current, float $previous): float
