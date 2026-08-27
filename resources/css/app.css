@@ -292,8 +292,65 @@
     background-color: var(--accent-soft);
 }
 
+/* ---- Arrow nudge on links (feedback micro-interaction) ------------- */
+
+.d-arrow-link .d-arrow-icon,
+.d-card-hover .d-arrow-icon {
+    transition: transform 150ms ease;
+}
+
+.d-arrow-link:hover .d-arrow-icon,
+.d-arrow-link:focus-visible .d-arrow-icon,
+.d-card-hover:hover .d-arrow-icon,
+.d-card-hover:focus-visible .d-arrow-icon {
+    transform: translate(2px, -2px);
+}
+
+/* ---- Press feedback on buttons (100ms, tactile) -------------------- */
+
+.d-press {
+    transition:
+        color 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 100ms ease;
+}
+
+.d-press:active {
+    transform: translateY(1px) scale(0.99);
+}
+
+/* ---- Hoverable link cards (border deepens, arrow nudges) ----------- */
+
+.d-card-hover {
+    transition:
+        border-color 150ms ease,
+        background-color 150ms ease;
+}
+
+.d-card-hover:hover,
+.d-card-hover:focus-visible {
+    border-color: var(--ink-soft);
+}
+
 .d-tabular {
     font-variant-numeric: tabular-nums;
+}
+
+/* ---- Mobile menu transition ---------------------------------------- */
+
+.menu-enter-active,
+.menu-leave-active {
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.menu-enter-from,
+.menu-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
 }
 
 .d-sharp {
@@ -465,6 +522,14 @@
     }
 }
 
+/* ---- Smooth in-page scrolling (opt-in, motion OK only) ------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
 /* ---- Textarea utility ----------------------------------------------- */
 
 .d-textarea {
@@ -512,6 +577,32 @@
     border-bottom: none;
 }
 
+.d-table tbody tr {
+    transition: background-color 150ms ease;
+}
+
+.d-table tbody tr:hover {
+    background-color: var(--accent-soft);
+}
+
+/* ---- Skeleton loading blocks (perceived performance) --------------- */
+
+.d-skeleton {
+    background-color: var(--accent-soft);
+    animation: d-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes d-skeleton-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
 | shadcn-vue Component Overrides
@@ -543,10 +634,19 @@
         border-radius: 0 !important;
         box-shadow: none !important;
         border: 0.5px solid var(--rule);
+        transition:
+            border-color 150ms ease,
+            box-shadow 150ms ease;
     }
 
     [data-slot='dialog-content'],
     [data-slot='sheet-content'] {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: 0.5px solid var(--rule);
+    }
+
+    [data-slot='alert-dialog-content'] {
         border-radius: 0 !important;
         box-shadow: none !important;
         border: 0.5px solid var(--rule);

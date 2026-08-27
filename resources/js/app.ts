@@ -3,6 +3,7 @@ import { createApp, defineComponent, h } from 'vue';
 import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
 import { initAutoClickTracker } from '@/composables/useClickTracker';
+import { initRouteTransition } from '@/composables/useRouteTransition';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
@@ -32,6 +33,9 @@ createInertiaApp({
         const app = createApp({ render: () => h(App, props) });
         app.use(plugin);
         app.mount(el);
+
+        // Subtle rise-in for SPA navigations (skips the landing page).
+        initRouteTransition(el);
 
         // The page is now rendered; tell the loader to draw it and reveal.
         window.dispatchEvent(new CustomEvent('page-loader:boot-complete'));

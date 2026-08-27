@@ -6,6 +6,7 @@ import type { AppVariant } from '@/types';
 type Props = {
     variant?: AppVariant;
     class?: string;
+    id?: string;
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,11 +16,16 @@ const className = computed(() => props.class);
 </script>
 
 <template>
-    <SidebarInset v-if="props.variant === 'sidebar'" :class="className">
+    <SidebarInset
+        v-if="props.variant === 'sidebar'"
+        :id="props.id"
+        :class="className"
+    >
         <slot />
     </SidebarInset>
     <main
         v-else
+        :id="props.id"
         class="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl"
         :class="className"
     >

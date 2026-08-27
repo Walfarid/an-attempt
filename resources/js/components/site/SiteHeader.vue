@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { ArrowUpRight, Menu, Moon, Sun, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useAppearance } from '@/composables/useAppearance';
@@ -7,14 +7,19 @@ import { dashboard, login } from '@/routes';
 
 withDefaults(
     defineProps<{
-        links?: { href: string; label: string; external?: boolean }[];
+        links?: {
+            href: string;
+            label: string;
+            external?: boolean;
+            inertia?: boolean;
+        }[];
     }>(),
     {
         links: () => [
             { href: '/#experience', label: 'Experience' },
             { href: '/#projects', label: 'Projects' },
             { href: '/#skills', label: 'Skills' },
-            { href: '/posts', label: 'Writing' },
+            { href: '/posts', label: 'Writing', inertia: true },
             { href: '/#contact', label: 'Contact' },
         ],
     },
@@ -38,6 +43,16 @@ const themeLabel = computed(() =>
 
 function toggleTheme() {
     updateAppearance(isDark.value ? 'light' : 'dark');
+}
+
+const { url } = usePage();
+
+/**
+ * Active nav state. Hash anchors on the landing page are scroll-driven,
+ * so only real routes are marked (currently the Writing index).
+ */
+function isActive(href: string) {
+    return href === '/posts' && url.startsWith('/posts');
 }
 
 const mobileOpen = ref(false);
@@ -72,14 +87,41 @@ const mobileOpen = ref(false);
                     <Link
                         v-if="item.external"
                         :href="item.href"
-                        class="inline-flex min-h-10 items-center px-3 text-[13px] font-medium text-(--ink-soft) no-underline transition-colors hover:text-(--ink)"
+                        class="inline-flex min-h-10 items-center px-3 text-[13px] font-medium no-underline transition-colors"
+                        :class="
+                            isActive(item.href)
+                                ? 'text-(--accent)'
+                                : 'text-(--ink-soft) hover:text-(--ink)'
+                        "
+                        :aria-current="isActive(item.href) ? 'page' : undefined"
+                    >
+                        {{ item.label }}
+                    </Link>
+                    <Link
+                        v-else-if="item.inertia"
+                        :href="item.href"
+                        prefetch
+                        cache-for="10s"
+                        class="inline-flex min-h-10 items-center px-3 text-[13px] font-medium no-underline transition-colors"
+                        :class="
+                            isActive(item.href)
+                                ? 'text-(--accent)'
+                                : 'text-(--ink-soft) hover:text-(--ink)'
+                        "
+                        :aria-current="isActive(item.href) ? 'page' : undefined"
                     >
                         {{ item.label }}
                     </Link>
                     <a
                         v-else
                         :href="item.href"
-                        class="inline-flex min-h-10 items-center px-3 text-[13px] font-medium text-(--ink-soft) no-underline transition-colors hover:text-(--ink)"
+                        class="inline-flex min-h-10 items-center px-3 text-[13px] font-medium no-underline transition-colors"
+                        :class="
+                            isActive(item.href)
+                                ? 'text-(--accent)'
+                                : 'text-(--ink-soft) hover:text-(--ink)'
+                        "
+                        :aria-current="isActive(item.href) ? 'page' : undefined"
                     >
                         {{ item.label }}
                     </a>
@@ -89,7 +131,7 @@ const mobileOpen = ref(false);
             <div class="flex items-center gap-1.5">
                 <button
                     type="button"
-                    class="inline-flex size-9 items-center justify-center border border-(--rule) bg-(--surface) transition-colors hover:bg-(--accent-soft)"
+                    class="d-press inline-flex size-9 items-center justify-center border border-(--rule) bg-(--surface) transition-colors hover:bg-(--accent-soft)"
                     :aria-label="themeLabel"
                     @click="toggleTheme"
                 >
@@ -100,7 +142,7 @@ const mobileOpen = ref(false);
                 <Link
                     v-if="$page.props.auth.user"
                     :href="dashboard()"
-                    class="hidden min-h-9 items-center gap-1.5 bg-(--accent) px-3.5 py-1.5 text-xs font-semibold text-(--paper) no-underline transition-colors hover:bg-(--accent-hover) sm:inline-flex"
+                    class="d-press hidden min-h-9 items-center gap-1.5 bg-(--accent) px-3.5 py-1.5 text-xs font-semibold text-(--paper) no-underline transition-colors hover:bg-(--accent-hover) sm:inline-flex"
                 >
                     Dashboard
                     <ArrowUpRight class="size-3.5" aria-hidden="true" />
@@ -108,7 +150,7 @@ const mobileOpen = ref(false);
                 <Link
                     v-else
                     :href="login()"
-                    class="hidden min-h-9 items-center border border-(--rule) bg-(--surface) px-3.5 py-1.5 text-xs font-semibold no-underline transition-colors hover:bg-(--accent-soft) sm:inline-flex"
+                    class="d-press hidden min-h-9 items-center border border-(--rule) bg-(--surface) px-3.5 py-1.5 text-xs font-semibold no-underline transition-colors hover:bg-(--accent-soft) sm:inline-flex"
                 >
                     Log in
                 </Link>
@@ -116,9 +158,10 @@ const mobileOpen = ref(false);
                 <!-- Mobile menu toggle -->
                 <button
                     type="button"
-                    class="inline-flex size-9 items-center justify-center border border-(--rule) bg-(--surface) md:hidden"
+                    class="d-press inline-flex size-9 items-center justify-center border border-(--rule) bg-(--surface) md:hidden"
                     :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
                     :aria-expanded="mobileOpen"
+                    aria-controls="mobile-nav"
                     @click="mobileOpen = !mobileOpen"
                 >
                     <X v-if="mobileOpen" class="size-4" aria-hidden="true" />
@@ -128,51 +171,79 @@ const mobileOpen = ref(false);
         </nav>
 
         <!-- Mobile nav -->
-        <div
-            v-if="mobileOpen"
-            class="border-t border-(--rule) bg-(--paper) md:hidden"
-        >
-            <ul class="flex flex-col px-4 py-3">
-                <li v-for="item in links" :key="item.href">
-                    <Link
-                        v-if="item.external"
-                        :href="item.href"
-                        class="block min-h-11 py-2 text-sm font-medium text-(--ink-soft) no-underline"
-                        @click="mobileOpen = false"
+        <Transition name="menu">
+            <div
+                v-if="mobileOpen"
+                id="mobile-nav"
+                class="border-t border-(--rule) bg-(--paper) md:hidden"
+            >
+                <ul class="flex flex-col px-4 py-3">
+                    <li v-for="item in links" :key="item.href">
+                        <Link
+                            v-if="item.external"
+                            :href="item.href"
+                            class="block min-h-11 py-2 text-sm font-medium no-underline"
+                            :class="
+                                isActive(item.href)
+                                    ? 'text-(--accent)'
+                                    : 'text-(--ink-soft)'
+                            "
+                            @click="mobileOpen = false"
+                        >
+                            {{ item.label }}
+                        </Link>
+                        <Link
+                            v-else-if="item.inertia"
+                            :href="item.href"
+                            prefetch
+                            cache-for="10s"
+                            class="block min-h-11 py-2 text-sm font-medium no-underline"
+                            :class="
+                                isActive(item.href)
+                                    ? 'text-(--accent)'
+                                    : 'text-(--ink-soft)'
+                            "
+                            @click="mobileOpen = false"
+                        >
+                            {{ item.label }}
+                        </Link>
+                        <a
+                            v-else
+                            :href="item.href"
+                            class="block min-h-11 py-2 text-sm font-medium no-underline"
+                            :class="
+                                isActive(item.href)
+                                    ? 'text-(--accent)'
+                                    : 'text-(--ink-soft)'
+                            "
+                            @click="mobileOpen = false"
+                        >
+                            {{ item.label }}
+                        </a>
+                    </li>
+                    <li
+                        v-if="!$page.props.auth.user"
+                        class="mt-2 border-t border-(--rule) pt-2"
                     >
-                        {{ item.label }}
-                    </Link>
-                    <a
-                        v-else
-                        :href="item.href"
-                        class="block min-h-11 py-2 text-sm font-medium text-(--ink-soft) no-underline"
-                        @click="mobileOpen = false"
-                    >
-                        {{ item.label }}
-                    </a>
-                </li>
-                <li
-                    v-if="!$page.props.auth.user"
-                    class="mt-2 border-t border-(--rule) pt-2"
-                >
-                    <Link
-                        :href="login()"
-                        class="block min-h-11 py-2 text-sm font-semibold no-underline"
-                        @click="mobileOpen = false"
-                    >
-                        Log in
-                    </Link>
-                </li>
-                <li v-else class="mt-2 border-t border-(--rule) pt-2">
-                    <Link
-                        :href="dashboard()"
-                        class="block min-h-11 py-2 text-sm font-semibold no-underline"
-                        @click="mobileOpen = false"
-                    >
-                        Dashboard
-                    </Link>
-                </li>
-            </ul>
-        </div>
+                        <Link
+                            :href="login()"
+                            class="block min-h-11 py-2 text-sm font-semibold no-underline"
+                            @click="mobileOpen = false"
+                        >
+                            Log in
+                        </Link>
+                    </li>
+                    <li v-else class="mt-2 border-t border-(--rule) pt-2">
+                        <Link
+                            :href="dashboard()"
+                            class="block min-h-11 py-2 text-sm font-semibold no-underline"
+                            @click="mobileOpen = false"
+                        >
+                            Dashboard
+                        </Link>
+                    </li>
+                </ul>
+            </div>
+        </Transition>
     </header>
 </template>

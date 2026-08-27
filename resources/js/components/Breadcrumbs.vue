@@ -32,7 +32,11 @@ defineProps<Props>();
                             as-child
                             class="text-(--ink-soft) hover:text-(--accent)"
                         >
-                            <Link :href="item.href">{{ item.title }}</Link>
+                            <Link
+                                :href="item.href"
+                                class="inline-flex min-h-6 items-center"
+                                >{{ item.title }}</Link
+                            >
                         </BreadcrumbLink>
                     </template>
                 </BreadcrumbItem>

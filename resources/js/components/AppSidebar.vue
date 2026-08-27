@@ -91,11 +91,11 @@ const mainNavItems: NavItem[] = [
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent class="d-rule-t border-t border-(--rule)">
+        <SidebarContent class="border-t border-(--rule)">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter class="d-rule-t border-t border-(--rule)">
+        <SidebarFooter class="border-t border-(--rule)">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton as-child :tooltip="'View homepage'">
