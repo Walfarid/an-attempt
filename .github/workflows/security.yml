@@ -8,9 +8,9 @@
 #   sca-dependency-review  PR dependency diff review (SCA gate)
 #   osv-scan-pr / -full    OSV-Scanner against the OSV.dev database (SCA deep)
 #
-# Versions verified 2026-08-23:
+# Versions verified 2026-08-27:
 #   actions/checkout v7 · gitleaks-action v3 · zizmor-action v0.6.2
-#   codeql-action v4 · dependency-review-action v5 · osv-scanner-action v2.5.1
+#   codeql-action v4.37.8 · dependency-review-action v5 · osv-scanner-action v2.5.1
 #
 # Placeholder Garage credentials in .env.example / compose.yaml are dev-only
 # and allowlisted in .gitleaks.toml.
@@ -83,13 +83,13 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        uses: github/codeql-action/init@37f2634a92ba38a0926ef79a0748ac8ae7d95ab2 # v4.37.8
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
 
       - name: Analyze
-        uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        uses: github/codeql-action/analyze@37f2634a92ba38a0926ef79a0748ac8ae7d95ab2 # v4.37.8
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload SARIF to Code Scanning
         if: always()
-        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        uses: github/codeql-action/upload-sarif@37f2634a92ba38a0926ef79a0748ac8ae7d95ab2 # v4.37.8
         with:
           sarif_file: semgrep.sarif
 
