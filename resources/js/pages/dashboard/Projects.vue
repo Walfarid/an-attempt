@@ -421,6 +421,8 @@ function confirmShotDelete() {
                                 v-if="screenshot.url"
                                 :src="screenshot.url"
                                 :alt="screenshot.alt ?? ''"
+                                loading="lazy"
+                                decoding="async"
                                 class="aspect-video w-full object-cover"
                             />
                             <Button
