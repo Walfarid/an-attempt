@@ -315,6 +315,8 @@ function publishLabel(post: Post): string {
                         v-if="coverPost?.cover_url"
                         :src="coverPost.cover_url"
                         alt=""
+                        loading="lazy"
+                        decoding="async"
                         class="w-full border border-[var(--rule)] object-cover"
                     />
 
