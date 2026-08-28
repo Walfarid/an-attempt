@@ -84,6 +84,7 @@ const skillsByCategory = computed(() => {
 
     for (const skill of sections.value.skills) {
         const group = map.get(skill.category);
+
         if (group) {
             group.push(skill);
         } else {
