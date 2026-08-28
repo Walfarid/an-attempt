@@ -3,7 +3,6 @@ import { createApp, defineComponent, h } from 'vue';
 import CookieConsentBanner from '@/components/CookieConsentBanner.vue';
 import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
-import { useConsent } from '@/composables/useConsent';
 import { initAutoClickTracker } from '@/composables/useClickTracker';
 import { initRouteTransition } from '@/composables/useRouteTransition';
 import AppLayout from '@/layouts/AppLayout.vue';
