@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { privacy } from '@/routes';
-import { useConsent } from '@/composables/useConsent';
 import { Button } from '@/components/ui/button';
+import { useConsent } from '@/composables/useConsent';
+import { privacy } from '@/routes';
 
 const { bannerVisible, checkConsent, storeConsent } = useConsent();
 
