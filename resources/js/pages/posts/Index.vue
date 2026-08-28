@@ -65,14 +65,13 @@ useScrollAnimations();
                             </h2>
                             <time class="d-label shrink-0">
                                 {{
-                                    new Date(post.published_at).toLocaleDateString(
-                                        'en-US',
-                                        {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                        },
-                                    )
+                                    new Date(
+                                        post.published_at,
+                                    ).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                    })
                                 }}
                             </time>
                         </div>
