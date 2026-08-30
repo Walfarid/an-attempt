@@ -72,7 +72,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=registry,ref=${{ secrets.OCIR_IMAGE }}
-          cache-to: type=inline
+          cache-to: type=registry,ref=${{ secrets.OCIR_IMAGE }}-cache,mode=max
 
   deploy:
     name: Roll out on VM
@@ -93,7 +93,9 @@ jobs:
             docker compose up -d --remove-orphans
             docker compose exec -T app php artisan migrate --force
             docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
             docker compose exec -T app php artisan view:cache
+            docker compose exec -T app php artisan event:cache
             # Octane workers boot once; reload them so the fresh config cache
             # and routes take effect without a container restart.
             docker compose exec -T app php artisan octane:reload || true
