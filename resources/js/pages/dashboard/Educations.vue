@@ -295,7 +295,7 @@ function confirmDelete() {
                                           education.started_at,
                                           education.ended_at,
                                       )
-                                    : '?'
+                                    : '—'
                             }}
                         </td>
                         <td>
