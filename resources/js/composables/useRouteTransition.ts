@@ -18,6 +18,9 @@ import { gsap } from 'gsap';
 const REVEAL_DURATION = 0.28;
 const REVEAL_DISTANCE = 8;
 
+// HMR guard: prevent duplicate listener registration across hot reloads
+let listenersAttached = false;
+
 export function initRouteTransition(root: HTMLElement | null) {
     if (!root) {
         return;
@@ -26,6 +29,13 @@ export function initRouteTransition(root: HTMLElement | null) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         return;
     }
+
+    // HMR guard: skip if listeners already registered
+    if (listenersAttached) {
+        return;
+    }
+
+    listenersAttached = true;
 
     let active = false;
 

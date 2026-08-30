@@ -53,10 +53,20 @@ function getCsrfToken(): string {
  * Auto-track clicks on elements with data-track attribute.
  * Usage: <a href="/projects" data-track="project-link" data-track-label="Project 1">
  */
+// HMR guard: prevent duplicate listener registration across hot reloads
+let autoTrackerInitialized = false;
+
 export function initAutoClickTracker() {
     if (typeof document === 'undefined') {
         return;
     }
+
+    // HMR guard: skip if already initialized
+    if (autoTrackerInitialized) {
+        return;
+    }
+
+    autoTrackerInitialized = true;
 
     document.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
