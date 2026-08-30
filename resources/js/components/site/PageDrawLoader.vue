@@ -249,6 +249,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     revealTimeline?.kill();
+
     if (reducedMotionMql && reducedMotionHandler) {
         reducedMotionMql.removeEventListener('change', reducedMotionHandler);
     }

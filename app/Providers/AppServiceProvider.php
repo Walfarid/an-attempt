@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Head\Enums\ImageType;
 use Laravel\Head\Enums\OgType;
 use Laravel\Head\Enums\TwitterCard;
@@ -28,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configurePasswordDefaults();
         $this->configureSeoDefaults();
     }
 
@@ -41,6 +43,24 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
+    }
+
+    /**
+     * Configure password validation rules based on environment.
+     */
+    protected function configurePasswordDefaults(): void
+    {
+        Password::defaults(function () {
+            if (app()->isProduction()) {
+                return Password::min(12)
+                    ->mixedCase()
+                    ->letters()
+                    ->numbers()
+                    ->symbols();
+            }
+
+            return Password::min(8);
+        });
     }
 
     /**
