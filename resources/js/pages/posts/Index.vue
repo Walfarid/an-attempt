@@ -78,7 +78,7 @@ useScrollAnimations();
                         <p
                             class="mt-2 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
                         >
-                            {{ post.teaser_text ?? post.excerpt }}
+                            {{ post.teaser_text }}
                         </p>
                     </Link>
                 </div>
