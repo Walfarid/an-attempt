@@ -34,26 +34,31 @@ class AnalyticsController extends Controller
         $ctr = $totalVisitors > 0 ? ($totalClicks / $totalVisitors) * 100 : 0;
         $prevCtr = $prevVisitors > 0 ? ($prevClicks / $prevVisitors) * 100 : 0;
 
-        // Pre-aggregate clicks per path to avoid N+1 queries
-        $clicksByPath = Click::select('path', DB::raw('count(*) as clicks'))
-            ->lastDays($days)
-            ->groupBy('path')
-            ->pluck('clicks', 'path');
+        // Pre-aggregate top pages with click counts via a single correlated
+        // subquery instead of two separate queries (was: 1 for topPages + 1 for clicksByPath).
+        $cutoff = now()->subDays($days);
 
-        $topPages = PageView::select('path', DB::raw('count(*) as visitors'))
-            ->lastDays($days)
-            ->groupBy('path')
+        $topPages = PageView::select(
+            'page_views.path',
+            DB::raw('count(*) as visitors'),
+        )
+            ->selectSub(
+                Click::selectRaw('count(*)')
+                    ->whereColumn('clicks.path', 'page_views.path')
+                    ->where('clicks.clicked_at', '>=', $cutoff),
+                'clicks',
+            )
+            ->where('page_views.viewed_at', '>=', $cutoff)
+            ->groupBy('page_views.path')
             ->orderByDesc('visitors')
             ->limit(5)
             ->get()
-            ->map(function ($row) use ($clicksByPath) {
-                return [
-                    'path' => $row->path,
-                    'title' => $this->pathTitle($row->path),
-                    'visitors' => (int) $row->visitors, // @phpstan-ignore property.notFound
-                    'clicks' => (int) ($clicksByPath[$row->path] ?? 0),
-                ];
-            });
+            ->map(fn ($row): array => [
+                'path' => $row->path,
+                'title' => $this->pathTitle($row->path),
+                'visitors' => (int) $row->visitors, // @phpstan-ignore property.notFound
+                'clicks' => (int) $row->clicks, // @phpstan-ignore property.notFound
+            ]);
 
         $kpis = [
             ['key' => 'visitors', 'label' => 'Visitors', 'value' => $totalVisitors, 'delta' => $this->delta($totalVisitors, $prevVisitors), 'format' => 'number'],
