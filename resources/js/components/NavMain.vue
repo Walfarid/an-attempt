@@ -29,7 +29,7 @@ const { isCurrentUrl } = useCurrentUrl();
                     :is-active="isCurrentUrl(item.href)"
                     :tooltip="item.title"
                 >
-                    <Link :href="item.href" class="flex items-center gap-3">
+                    <Link :href="item.href" prefetch class="flex items-center gap-3">
                         <span class="d-section text-[10px]">{{
                             String(index + 1).padStart(2, '0')
                         }}</span>

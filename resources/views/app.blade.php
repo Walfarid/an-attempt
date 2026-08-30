@@ -4,6 +4,9 @@
         <meta charset="utf-8">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- Establish early connection to Bunny Fonts CDN for web fonts --}}
+        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+
         @head
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}

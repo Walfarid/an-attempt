@@ -30,7 +30,7 @@ export type Experience = {
     highlights: string[];
 };
 
-export type ProjectScreenshot = {
+type ProjectScreenshot = {
     id: number;
     alt: string | null;
     url: string | null;
@@ -90,7 +90,6 @@ export type Post = {
     title: string;
     excerpt: string | null;
     body: string;
-    cover_image_path: string | null;
     cover_url: string | null;
     published_at: string | null;
 };
@@ -101,7 +100,6 @@ export type PublicPost = {
     slug: string;
     title: string;
     excerpt: string | null;
-    cover_url: string | null;
     published_at: string;
     teaser_text?: string;
 };

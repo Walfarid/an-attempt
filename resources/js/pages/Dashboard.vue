@@ -111,9 +111,12 @@ const clickPath = computed(() =>
 
 const gridLines = [0.25, 0.5, 0.75, 1];
 
+const totalVisitors = computed(() => visitors.value.reduce((a, d) => a + d.value, 0));
+const totalClicks = computed(() => clicks.value.reduce((a, d) => a + d.value, 0));
+
 const totalCtr = computed(() => {
-    const v = visitors.value.reduce((a, d) => a + d.value, 0);
-    const c = clicks.value.reduce((a, d) => a + d.value, 0);
+    const v = totalVisitors.value;
+    const c = totalClicks.value;
 
     return v ? (c / v) * 100 : 0;
 });
@@ -365,9 +368,7 @@ onUnmounted(() => {
                                 class="font-display text-lg font-semibold tabular-nums"
                             >
                                 {{
-                                    visitors
-                                        .reduce((a, d) => a + d.value, 0)
-                                        .toLocaleString('en-US')
+                                    totalVisitors.toLocaleString('en-US')
                                 }}
                             </p>
                             <p class="text-xs text-(--ink-soft)">Visitors</p>
@@ -377,9 +378,7 @@ onUnmounted(() => {
                                 class="font-display text-lg font-semibold tabular-nums"
                             >
                                 {{
-                                    clicks
-                                        .reduce((a, d) => a + d.value, 0)
-                                        .toLocaleString('en-US')
+                                    totalClicks.toLocaleString('en-US')
                                 }}
                             </p>
                             <p class="text-xs text-(--ink-soft)">Clicks</p>
