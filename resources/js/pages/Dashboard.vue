@@ -111,18 +111,19 @@ const clickPath = computed(() =>
 
 const gridLines = [0.25, 0.5, 0.75, 1];
 
-const totalVisitors = computed(() =>
-    visitors.value.reduce((a, d) => a + d.value, 0),
-);
-const totalClicks = computed(() =>
-    clicks.value.reduce((a, d) => a + d.value, 0),
-);
+// Direct access to KPI values from props (no redundant reduce needed)
+const totalVisitors = computed(() => {
+    const kpi = props.kpis.find((k) => k.key === 'visitors');
+    return kpi?.value ?? 0;
+});
+const totalClicks = computed(() => {
+    const kpi = props.kpis.find((k) => k.key === 'clicks');
+    return kpi?.value ?? 0;
+});
 
 const totalCtr = computed(() => {
-    const v = totalVisitors.value;
-    const c = totalClicks.value;
-
-    return v ? (c / v) * 100 : 0;
+    const kpi = props.kpis.find((k) => k.key === 'ctr');
+    return kpi?.value ?? 0;
 });
 
 useScrollAnimations();
