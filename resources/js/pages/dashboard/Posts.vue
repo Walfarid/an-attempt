@@ -8,7 +8,7 @@ import {
     SquarePen,
     Trash2,
 } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import {
@@ -60,6 +60,32 @@ const form = useForm({
 
 const editingId = ref<number | null>(null);
 const open = ref(false);
+const slugManuallyEdited = ref(false);
+
+/* Slug auto-generation from title */
+watch(
+    () => form.title,
+    (title) => {
+        if (editingId.value || slugManuallyEdited.value) {
+            return;
+        }
+
+        if (!title) {
+            form.slug = '';
+
+            return;
+        }
+
+        form.slug = title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    },
+);
+
+function onSlugInput() {
+    slugManuallyEdited.value = true;
+}
 
 const coverPostId = ref<number | null>(null);
 const coverOpen = ref(false);
@@ -72,12 +98,14 @@ const coverForm = useForm({
 
 function startCreate() {
     editingId.value = null;
+    slugManuallyEdited.value = false;
     form.reset();
     open.value = true;
 }
 
 function startEdit(post: Post) {
     editingId.value = post.id;
+    slugManuallyEdited.value = true;
     form.defaults({
         title: post.title,
         slug: post.slug,
@@ -232,6 +260,7 @@ function publishLabel(post: Post): string {
                                     v-model="form.slug"
                                     placeholder="Auto-generated from title"
                                     class="d-sharp"
+                                    @input="onSlugInput"
                                 />
                                 <InputError :message="form.errors.slug" />
                             </div>
