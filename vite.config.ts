@@ -36,6 +36,42 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    // Vue core + ecosystem
+                    if (id.includes('node_modules/vue/') || id.includes('node_modules/@vueuse/')) {
+                        return 'vue-vendor';
+                    }
+                    // Inertia
+                    if (id.includes('node_modules/@inertiajs/')) {
+                        return 'inertia';
+                    }
+                    // Animation library
+                    if (id.includes('node_modules/gsap/')) {
+                        return 'gsap';
+                    }
+                    // UI primitives
+                    if (id.includes('node_modules/reka-ui/')) {
+                        return 'reka-ui';
+                    }
+                    // Utilities
+                    if (
+                        id.includes('node_modules/clsx/') ||
+                        id.includes('node_modules/tailwind-merge/') ||
+                        id.includes('node_modules/class-variance-authority/')
+                    ) {
+                        return 'utils';
+                    }
+                    // Lucide icons - keep together with the factory
+                    if (id.includes('node_modules/@lucide/')) {
+                        return 'lucide';
+                    }
+                },
+            },
+        },
+    },
     server: {
         watch: {
             ignored: [
