@@ -30,13 +30,16 @@ let revealTimeline: gsap.core.Timeline | null = null;
 
 // Reduced-motion detection (synchronous initialization)
 const prefersReducedMotion = ref(false);
+let reducedMotionMql: MediaQueryList | null = null;
+let reducedMotionHandler: ((e: MediaQueryListEvent) => void) | null = null;
 
 if (typeof window !== 'undefined') {
-    const mql = window.matchMedia('(prefers-reduced-motion: reduce)');
-    prefersReducedMotion.value = mql.matches;
-    mql.addEventListener('change', (e) => {
+    reducedMotionMql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    prefersReducedMotion.value = reducedMotionMql.matches;
+    reducedMotionHandler = (e) => {
         prefersReducedMotion.value = e.matches;
-    });
+    };
+    reducedMotionMql.addEventListener('change', reducedMotionHandler);
 }
 
 // ------------------------------------------------------------- top bar
@@ -246,6 +249,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     revealTimeline?.kill();
+    if (reducedMotionMql && reducedMotionHandler) {
+        reducedMotionMql.removeEventListener('change', reducedMotionHandler);
+    }
 });
 </script>
 
