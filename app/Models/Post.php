@@ -117,7 +117,7 @@ class Post extends Model
             return $this->excerpt;
         }
 
-        if ($this->body === null || $this->body === '') {
+        if ($this->body === '') {
             return '';
         }
 
