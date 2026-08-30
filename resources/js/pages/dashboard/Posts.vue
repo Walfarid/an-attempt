@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import {
     ImageUp,
     LoaderCircle,
@@ -103,18 +103,33 @@ function startCreate() {
     open.value = true;
 }
 
-function startEdit(post: Post) {
+async function startEdit(post: Post) {
     editingId.value = post.id;
     slugManuallyEdited.value = true;
+
+    // Set initial form data from list view
     form.defaults({
         title: post.title,
         slug: post.slug,
         excerpt: post.excerpt ?? '',
-        body: post.body,
+        body: '',
         published_at: post.published_at?.slice(0, 16) ?? '',
     });
     form.reset();
     open.value = true;
+
+    // Lazy-load body from show endpoint
+    const response = await fetch(postsRoute.show.url(post.id));
+    const fullPost = await response.json();
+
+    form.defaults({
+        title: fullPost.title,
+        slug: fullPost.slug,
+        excerpt: fullPost.excerpt ?? '',
+        body: fullPost.body,
+        published_at: fullPost.published_at?.slice(0, 16) ?? '',
+    });
+    form.reset();
 }
 
 function save() {
