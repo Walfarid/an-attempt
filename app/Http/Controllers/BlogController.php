@@ -19,7 +19,7 @@ class BlogController extends Controller
         return Inertia::render('posts/Index', [
             'posts' => Post::query()
                 ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
-                ->selectRaw('SUBSTRING(body, 1, 500) as body_preview')
+                ->selectRaw('SUBSTRING(body, 1, 300) as body_preview')
                 ->published()
                 ->orderByDesc('published_at')
                 ->simplePaginate(10, ['*'], 'page')

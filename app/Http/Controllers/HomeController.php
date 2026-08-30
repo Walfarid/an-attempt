@@ -70,7 +70,9 @@ class HomeController extends Controller
                 ->orderBy('id')
                 ->get()
                 ->each(function (Project $project): void {
-                    $project->screenshots->each->makeHidden(['project_id', 'path']);
+                    $project->screenshots->each->makeHidden([
+                        'project_id', 'path', 'sort_order', 'created_at', 'updated_at',
+                    ]);
                 }))->once(),
             'educations' => Inertia::defer(fn () => Education::query()
                 ->select(['id', 'school', 'degree', 'started_at', 'ended_at', 'details'])
@@ -84,14 +86,13 @@ class HomeController extends Controller
                 ->get())->once(),
             'posts' => Inertia::defer(fn () => Post::query()
                 ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
-                ->selectRaw('SUBSTRING(body, 1, 500) as body_preview')
+                ->selectRaw('SUBSTRING(body, 1, 300) as body_preview')
                 ->published()
                 ->orderByDesc('published_at')
                 ->limit(3)
                 ->get()
                 ->each(function (Post $post): void {
                     $post->teaser_text = $post->teaser();
-                    $post->makeHidden(['excerpt']);
                 }))->once(),
         ]);
     }
