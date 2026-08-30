@@ -74,10 +74,11 @@ test('id and timestamps are not mass assignable', function () {
     expect($post->id)->not->toBe(999);
 });
 
-test('cover_url is appended to model serialization', function () {
+test('cover_url is not appended by default but can be added explicitly', function () {
     $post = Post::factory()->create();
 
-    expect($post->toArray())->toHaveKey('cover_url');
+    expect($post->toArray())->not->toHaveKey('cover_url')
+        ->and($post->append('cover_url')->toArray())->toHaveKey('cover_url');
 });
 
 test('scopePublished returns only published posts', function () {

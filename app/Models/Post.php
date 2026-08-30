@@ -31,11 +31,9 @@ class Post extends Model
     use HasFactory;
 
     /**
-     * Appended attributes for serialization.
-     *
      * @var list<string>
      */
-    protected $appends = ['cover_url'];
+    protected $appends = [];
 
     /**
      * @var list<string>
@@ -48,6 +46,23 @@ class Post extends Model
         'cover_image_path',
         'published_at',
     ];
+
+    /**
+     * Regex patterns for stripping Markdown syntax from teasers.
+     *
+     * @var list<string>
+     */
+    private const TEASER_PATTERNS = [
+        '/^#{1,6}\s+/',
+        '/[*_`]{1,3}/',
+        '/!\[.*?\]\(.+?\)/',
+        '/\[(.+?)\]\(.+?\)/',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    private const TEASER_REPLACEMENTS = ['$1', '', '', ''];
 
     protected function casts(): array
     {
@@ -81,7 +96,7 @@ class Post extends Model
             }
 
             return Storage::disk('media')->url($this->cover_image_path);
-        });
+        })->shouldCache();
     }
 
     /**
@@ -102,12 +117,11 @@ class Post extends Model
             return $this->excerpt;
         }
 
-        $text = (string) preg_replace([
-            '/^#{1,6}\s+/',
-            '/[*_`]{1,3}/',
-            '/!\[.*?\]\(.+?\)/',
-            '/\[(.+?)\]\(.+?\)/',
-        ], ['$1', '', '', ''], $this->body);
+        if ($this->body === null || $this->body === '') {
+            return '';
+        }
+
+        $text = (string) preg_replace(self::TEASER_PATTERNS, self::TEASER_REPLACEMENTS, $this->body);
 
         return Str::words(trim($text), $words);
     }
