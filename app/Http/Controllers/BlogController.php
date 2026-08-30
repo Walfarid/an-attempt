@@ -19,11 +19,13 @@ class BlogController extends Controller
         return Inertia::render('posts/Index', [
             'posts' => Post::query()
                 ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
+                ->selectRaw('SUBSTRING(body, 1, 500) as body_preview')
                 ->published()
                 ->orderByDesc('published_at')
                 ->simplePaginate(10, ['*'], 'page')
                 ->through(function (Post $post): Post {
                     $post->teaser_text = $post->teaser();
+                    $post->makeHidden(['excerpt']);
 
                     return $post;
                 }),
@@ -53,7 +55,7 @@ class BlogController extends Controller
             'post' => tap($post, function (Post $p): void {
                 $p->append('cover_url');
                 $p->body_html = $p->bodyHtml();
-                $p->makeHidden(['body', 'cover_image_path']);
+                $p->makeHidden(['body', 'cover_image_path', 'id', 'slug', 'excerpt', 'created_at', 'updated_at']);
             }),
             'recent' => Post::query()
                 ->published()
