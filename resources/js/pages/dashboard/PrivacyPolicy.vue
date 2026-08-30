@@ -16,7 +16,7 @@ defineOptions({
     },
 });
 
-const { policy } = defineProps<{ policy: { id: number; body: string } }>();
+const { policy } = defineProps<{ policy: { body: string } }>();
 
 const form = useForm({
     body: policy.body ?? '',
