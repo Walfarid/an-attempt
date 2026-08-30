@@ -1,13 +1,21 @@
 import { createInertiaApp } from '@inertiajs/vue3';
-import { createApp, defineComponent, h } from 'vue';
+import { createApp, defineAsyncComponent, defineComponent, h } from 'vue';
 import CookieConsentBanner from '@/components/CookieConsentBanner.vue';
 import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
 import { initAutoClickTracker } from '@/composables/useClickTracker';
 import { initRouteTransition } from '@/composables/useRouteTransition';
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
+
+// Dashboard layouts are loaded lazily — their sidebar/shell code (reka-ui
+// Sheet, Tooltip, Sonner, etc.) is only fetched when the user navigates
+// to a dashboard or settings page, keeping the public-page bundle lean.
+const AppLayout = defineAsyncComponent(
+    () => import('@/layouts/AppLayout.vue'),
+);
+const SettingsLayout = defineAsyncComponent(
+    () => import('@/layouts/settings/Layout.vue'),
+);
 
 createInertiaApp({
     serverHead: true,
