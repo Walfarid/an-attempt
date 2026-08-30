@@ -13,19 +13,35 @@ use Inertia\Response;
 class PostController extends Controller
 {
     /**
-     * List the posts.
+     * List the posts (body excluded for performance; load via show() when editing).
      */
     public function index(): Response
     {
         return Inertia::render('dashboard/Posts', [
             'posts' => Post::query()
-                ->select(['id', 'slug', 'title', 'excerpt', 'body', 'cover_image_path', 'published_at'])
+                ->select(['id', 'slug', 'title', 'cover_image_path', 'published_at'])
                 ->latest()
                 ->get()
                 ->each(function (Post $post): void {
                     $post->append('cover_url')->makeHidden(['cover_image_path']);
                 }),
         ]);
+    }
+
+    /**
+     * Lazy-load a single post with body for editing.
+     */
+    public function show(Post $post): array
+    {
+        return [
+            'id' => $post->id,
+            'slug' => $post->slug,
+            'title' => $post->title,
+            'excerpt' => $post->excerpt,
+            'body' => $post->body,
+            'cover_url' => $post->cover_url,
+            'published_at' => $post->published_at?->toIso8601String(),
+        ];
     }
 
     /**

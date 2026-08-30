@@ -47,7 +47,7 @@ Route::middleware([
         ->names('dashboard.projects');
 
     Route::resource('dashboard/posts', PostController::class)
-        ->only(['index', 'store', 'update', 'destroy'])
+        ->only(['index', 'show', 'store', 'update', 'destroy'])
         ->names('dashboard.posts');
 
     Route::put('dashboard/posts/{post}/cover', [PostCoverController::class, 'update'])->name('dashboard.posts.cover.update');
