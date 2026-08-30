@@ -32,7 +32,7 @@ test('a published post renders its markdown body', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('posts/Show')
-            ->where('post.slug', $post->slug)
+            ->where('post.title', $post->title)
             ->where('post.body_html', "<h1>Heading</h1>\n"));
 });
 
