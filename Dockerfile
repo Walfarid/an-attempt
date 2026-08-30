@@ -19,7 +19,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --no-progress --no-scripts --prefer-dist
+RUN --mount=type=cache,target=/root/.composer \
+    composer install --no-dev --no-interaction --no-progress --no-scripts --prefer-dist
 COPY . .
 # Framework-writable dirs are gitignored, so recreate them before booting
 # artisan (octane:install needs a valid cache path).
@@ -29,7 +30,7 @@ RUN mkdir -p storage/framework/cache/data storage/framework/sessions \
 # Caddyfile worker mode needs.
 RUN php artisan octane:install --server=frankenphp --no-interaction \
     && php artisan package:discover --ansi \
-    && composer dump-autoload --optimize --no-interaction --no-scripts
+    && composer dump-autoload --optimize --classmap-authoritative --no-interaction --no-scripts
 
 # ---- Frontend assets -------------------------------------------------------
 # Needs PHP + vendor because the @laravel/vite-plugin-wayfinder plugin
@@ -45,7 +46,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=vendor /app /app
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 RUN npm run build
 
 # ---- Runtime ---------------------------------------------------------------
