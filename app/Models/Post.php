@@ -24,6 +24,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property string $teaser_text list teaser, set before serialization by controllers
  * @property string $body_html Markdown body rendered to HTML, set before serialization
+ * @property string|null $body_preview Substring of body for teaser computation
  */
 class Post extends Model
 {
@@ -110,6 +111,9 @@ class Post extends Model
     /**
      * The list teaser: the excerpt when set, otherwise a plain-text
      * summary stripped of common Markdown syntax (avoids a full render).
+     *
+     * When body is not selected (e.g., in list queries), body_preview
+     * (a SUBSTRING of body) is used instead.
      */
     public function teaser(int $words = 30): string
     {
@@ -117,11 +121,13 @@ class Post extends Model
             return $this->excerpt;
         }
 
-        if ($this->body === '') {
+        $body = $this->body ?? $this->body_preview;
+
+        if ($body === null || $body === '') {
             return '';
         }
 
-        $text = (string) preg_replace(self::TEASER_PATTERNS, self::TEASER_REPLACEMENTS, $this->body);
+        $text = (string) preg_replace(self::TEASER_PATTERNS, self::TEASER_REPLACEMENTS, $body);
 
         return Str::words(trim($text), $words);
     }
