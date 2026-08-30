@@ -199,11 +199,11 @@ Vue components must have a single root element.
 
 ## Overview
 
-Personal portfolio app: public site (home + blog) and an authenticated content dashboard.
-Laravel 13 (PHP 8.5) + Inertia v3 + Vue 3 SPA + Tailwind 4 + TypeScript. Tests are Pest;
-code style Pint; static analysis PHPStan + vue-tsc. Auth is WorkOS. Backing services run in
-Docker (compose.yaml): MariaDB 12.3, Valkey 9.1, Garage (S3-compatible), Mailpit. Production
-image is FrankenPHP + Octane deployed to an OCI VM via .github/workflows/deploy.yml.
+Personal portfolio: public site (home + blog) and authenticated content dashboard.
+Laravel 13 (PHP 8.5) + Inertia v3 + Vue 3 SPA + Tailwind 4 + TypeScript. Pest for tests,
+Pint for code style, PHPStan + vue-tsc for static analysis. WorkOS for auth. Backing services
+run in Docker (compose.yaml): MariaDB 12.3, Valkey 9.1, Garage (S3-compatible), Mailpit.
+FrankenPHP + Octane in production, deployed to an OCI VM via .github/workflows/deploy.yml.
 
 ## Repository rules
 
@@ -222,8 +222,8 @@ image is FrankenPHP + Octane deployed to an OCI VM via .github/workflows/deploy.
 
 `Profile` (bio), `Project` + `ProjectScreenshot`, `Post` (slug, cover on media disk,
 `published_at`, teaser), `Skill`, `Experience`, `Education`, `Publication`, `ContactMessage`,
-`PageView`/`Click` (analytics). Dashboard CRUD is scope-bound under `dashboard/{entity}`
-with controllers in `app/Http/Controllers/Dashboard`.
+`PageView`/`Click` (analytics). Dashboard controllers live in `app/Http/Controllers/Dashboard`,
+scoped under `dashboard/{entity}`.
 
 ## Frontend conventions
 
@@ -244,10 +244,11 @@ with controllers in `app/Http/Controllers/Dashboard`.
 ## Media (S3) & tests
 
 - The `media` disk is S3-compatible: Garage in dev (port 3900, keys in `.env`), Oracle
-  Cloud bucket in production — swap is an `AWS_*`/`GARAGE_*` env change only. Dev creds in
-  `.env.example` are gitleaks-allowlisted; never write real ones into files or workflows.
-- The Pest suite requires MariaDB (db `walfa_testing`, phpunit.xml) AND Garage running —
-  `task docker:up` first. Run `php artisan test --compact` or with `--filter=`.
+  Cloud bucket in production. Switching between them requires only an `AWS_*`/`GARAGE_*`
+  env change. Dev creds in `.env.example` are gitleaks-allowlisted; never write real
+  ones into files or workflows.
+- The Pest suite needs MariaDB (db `walfa_testing`, phpunit.xml) and Garage running —
+  run `task docker:up` first, then `php artisan test --compact` (or `--filter=`).
 - CI runs Garage as a docker-in-job step sourcing creds from `.env`; keep `ci.yml`,
   `tests.yml`, and `docker/garage/garage.toml` in sync.
 
@@ -256,8 +257,8 @@ with controllers in `app/Http/Controllers/Dashboard`.
 Five workflows: `ci.yml` (lint/static/build/tests/audit gate), `tests.yml` (composer
 setup + ci:check), `security.yml` (gitleaks, zizmor, CodeQL, Semgrep, dep-review, OSV),
 `dast.yml` (nightly ZAP), `deploy.yml` (buildx multi-arch → OCIR → VM + octane:reload).
-Action pins must be immutable SHAs whose comment matches the exact tag (zizmor fails
-otherwise). Verify version changes against current sources before pinning.
+Pin actions to immutable SHAs with a comment matching the exact tag; zizmor rejects
+mismatches. Verify version changes against current sources before pinning.
 
 Deploy quirks (see header of `deploy.yml`): the OCI security list allows SSH only
 key-based from anywhere (GitHub's `actions` ranges exceed SL rule limits — never
