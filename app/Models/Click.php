@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
 
 class Click extends Model
 {
@@ -24,13 +23,5 @@ class Click extends Model
         return [
             'clicked_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @param  Builder  $query
-     */
-    public function scopeLastDays($query, int $days): void
-    {
-        $query->where('clicked_at', '>=', now()->subDays($days));
     }
 }

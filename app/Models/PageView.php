@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
 
 class PageView extends Model
 {
@@ -24,13 +23,5 @@ class PageView extends Model
         return [
             'viewed_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @param  Builder  $query
-     */
-    public function scopeLastDays($query, int $days): void
-    {
-        $query->where('viewed_at', '>=', now()->subDays($days));
     }
 }
