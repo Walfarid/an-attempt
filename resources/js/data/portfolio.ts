@@ -83,13 +83,13 @@ export type Profile = {
     avatar_path?: string | null;
 };
 
-/** A post as listed on the dashboard (full fields). */
+/** A post as listed on the dashboard (body loaded lazily via show endpoint). */
 export type Post = {
     id: number;
     slug: string;
     title: string;
-    excerpt: string | null;
-    body: string;
+    excerpt?: string | null;
+    body?: string;
     cover_url: string | null;
     published_at: string | null;
 };
@@ -99,17 +99,13 @@ export type PublicPost = {
     id: number;
     slug: string;
     title: string;
-    excerpt: string | null;
     published_at: string;
     teaser_text?: string;
 };
 
 /** A rendered post page. */
 export type PublicPostDetail = {
-    id: number;
-    slug: string;
     title: string;
-    excerpt: string | null;
     cover_url: string | null;
     published_at: string;
     body_html: string;
