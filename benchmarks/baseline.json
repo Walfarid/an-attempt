@@ -1,25 +1,25 @@
 {
-    "timestamp": "2026-08-27T23:49:26+00:00",
+    "timestamp": "2026-08-28T16:17:23+00:00",
     "routes": {
         "/": {
             "method": "GET",
-            "avg_ms": 21.92,
-            "min_ms": 10.55,
-            "max_ms": 65.52,
-            "avg_queries": 6.2,
+            "avg_ms": 21.54,
+            "min_ms": 8.84,
+            "max_ms": 70.88,
+            "avg_queries": 4.2,
             "queries": [
-                7,
-                6,
-                6,
-                6,
-                6
+                5,
+                4,
+                4,
+                4,
+                4
             ]
         },
         "/posts": {
             "method": "GET",
-            "avg_ms": 22.38,
-            "min_ms": 10.23,
-            "max_ms": 69.85,
+            "avg_ms": 9.74,
+            "min_ms": 9.22,
+            "max_ms": 11.14,
             "avg_queries": 3,
             "queries": [
                 3,
@@ -31,9 +31,9 @@
         },
         "/posts/what-clean-architecture-means-in-practice": {
             "method": "GET",
-            "avg_ms": 12.01,
-            "min_ms": 10.53,
-            "max_ms": 14.23,
+            "avg_ms": 9.51,
+            "min_ms": 9.24,
+            "max_ms": 9.94,
             "avg_queries": 4,
             "queries": [
                 4,
@@ -45,9 +45,9 @@
         },
         "/sitemap.xml": {
             "method": "GET",
-            "avg_ms": 8.47,
-            "min_ms": 7.87,
-            "max_ms": 9.5,
+            "avg_ms": 6.95,
+            "min_ms": 6.76,
+            "max_ms": 7.11,
             "avg_queries": 3,
             "queries": [
                 3,
@@ -58,46 +58,174 @@
             ]
         }
     },
+    "dashboard": {
+        "dashboard (analytics)": {
+            "method": "GET",
+            "avg_ms": 2.56,
+            "min_ms": 2.25,
+            "max_ms": 3.7,
+            "avg_queries": 3,
+            "queries": [
+                3,
+                3,
+                3,
+                3,
+                3
+            ]
+        },
+        "dashboard/posts": {
+            "method": "GET",
+            "avg_ms": 0.32,
+            "min_ms": 0.27,
+            "max_ms": 0.47,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dashboard/projects": {
+            "method": "GET",
+            "avg_ms": 2.84,
+            "min_ms": 1.54,
+            "max_ms": 6.26,
+            "avg_queries": 3,
+            "queries": [
+                3,
+                3,
+                3,
+                3,
+                3
+            ]
+        },
+        "dashboard/skills": {
+            "method": "GET",
+            "avg_ms": 0.82,
+            "min_ms": 0.6,
+            "max_ms": 1.26,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dashboard/experience": {
+            "method": "GET",
+            "avg_ms": 0.35,
+            "min_ms": 0.25,
+            "max_ms": 0.74,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dashboard/educations": {
+            "method": "GET",
+            "avg_ms": 0.35,
+            "min_ms": 0.23,
+            "max_ms": 0.77,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dashboard/publications": {
+            "method": "GET",
+            "avg_ms": 0.37,
+            "min_ms": 0.24,
+            "max_ms": 0.66,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dashboard/profile/edit": {
+            "method": "GET",
+            "avg_ms": 0.3,
+            "min_ms": 0.24,
+            "max_ms": 0.43,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        },
+        "dashboard/privacy/edit": {
+            "method": "GET",
+            "avg_ms": 0.37,
+            "min_ms": 0.26,
+            "max_ms": 0.76,
+            "avg_queries": 1,
+            "queries": [
+                1,
+                1,
+                1,
+                1,
+                1
+            ]
+        }
+    },
     "bundle": {
-        "total_kb": 881.8,
+        "total_kb": 880.2,
         "files": {
             "assets/InputError-DLlSAc8q.js": 363,
-            "assets/Privacy-CDWNJgyk.js": 1770,
+            "assets/Posts-B9-S4tet.js": 9938,
+            "assets/useScrollAnimations-wUOSAaZt.js": 1571,
+            "assets/Profile-Bn7E2JsL.js": 5808,
             "assets/alert-dialog-Bgia6obr.js": 7162,
-            "assets/Projects-BZYGOz-4.js": 12858,
-            "assets/dialog-DkQcKsqO.js": 5116,
+            "assets/Projects-DvTpBriu.js": 12890,
+            "assets/app-C1_NehS2.js": 241347,
             "assets/chevron-down-DUVF3d5G.js": 128,
-            "assets/SiteHeader-dKcGFmyG.js": 7528,
-            "assets/app-2nVy9UdO.css": 126454,
-            "assets/Dashboard-BsV1iTed.js": 8106,
+            "assets/Profile-CuyyiD5r.js": 4033,
+            "assets/Index-985mevJc.js": 2488,
             "assets/ScrollTrigger-BXR6Gh-7.js": 42760,
             "assets/rolldown-runtime-DK3Fl9T5.js": 158,
-            "assets/app-Cklp8t89.js": 241335,
-            "assets/Skills-tMw2MXbb.js": 38625,
+            "assets/SiteHeader-BbpyLrny.js": 7528,
+            "assets/Skills-Bv5Up2nl.js": 38625,
             "assets/shared-DWkHoDWq.js": 36876,
-            "assets/Welcome-BMK9H7n3.js": 31451,
-            "assets/Appearance-B147Vmk5.js": 1718,
-            "assets/Profile-CDIuISql.js": 5808,
+            "assets/Dashboard-Q5X1NEW6.js": 8090,
             "assets/sun-TUuxPMIn.js": 636,
-            "assets/Educations-Bfc7M-nB.js": 6593,
             "assets/Label-Dx8tcMyk.js": 1007,
-            "assets/useScrollAnimations-CuXU6INV.js": 1571,
+            "assets/Privacy-cfxF2Da0.js": 1770,
             "assets/fonts-DMTc6bNq.css": 3246,
             "assets/posts-CvDzvhGf.js": 1294,
-            "assets/Profile-CjvIO1Fz.js": 4033,
+            "assets/dialog-BWUz_NqQ.js": 5116,
+            "assets/Input-DAy-y3nV.js": 1186,
+            "assets/Experience-COI2paFc.js": 7474,
+            "assets/Show-BgobQI1w.js": 3137,
+            "assets/Educations-C0LWnKEL.js": 6593,
             "assets/app-Ds1aFT64.css": 14910,
             "assets/badge-SUPQC5SE.js": 1410,
-            "assets/Posts-Cq-mrLNV.js": 9906,
             "assets/portfolio-CzseIob3.js": 150,
-            "assets/Index-BjIXCcd1.js": 2488,
-            "assets/PrivacyPolicy-CWEKhNkS.js": 1531,
+            "assets/app-CAgjpTPa.css": 124761,
+            "assets/Publications-DmUK4YBD.js": 6168,
             "assets/DialogTitle-bM8vUUfg.js": 30403,
-            "assets/Publications-8gOpSTgh.js": 6168,
             "assets/arrow-left-D5gOMm4H.js": 165,
             "assets/createLucideIcon-BJoZ3OVb.js": 237442,
-            "assets/Input-Ca2GZt9J.js": 1186,
-            "assets/Show-DTGRBNiw.js": 3137,
-            "assets/Experience-D-iRggI6.js": 7474
+            "assets/PrivacyPolicy-DuBTTCR3.js": 1531,
+            "assets/Appearance-B8iYfjfA.js": 1718,
+            "assets/Welcome-C4i1aYqm.js": 31451
         }
     }
 }
