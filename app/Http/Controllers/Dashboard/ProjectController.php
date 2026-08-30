@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\ProjectRequest;
 use App\Models\Project;
+use App\Models\Skill;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -27,6 +28,11 @@ class ProjectController extends Controller
                 ->each(function (Project $project): void {
                     $project->screenshots->each->makeHidden(['project_id', 'path']);
                 }),
+            'skills' => Skill::query()
+                ->select(['id', 'name', 'category'])
+                ->orderBy('category')
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -61,6 +67,7 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project): RedirectResponse
     {
+        $project->load('screenshots');
         Storage::disk('media')->delete($project->screenshots->pluck('path')->all());
         $project->screenshots()->delete();
         $project->delete();
