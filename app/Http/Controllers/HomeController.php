@@ -84,12 +84,14 @@ class HomeController extends Controller
                 ->get())->once(),
             'posts' => Inertia::defer(fn () => Post::query()
                 ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
+                ->selectRaw('SUBSTRING(body, 1, 500) as body_preview')
                 ->published()
                 ->orderByDesc('published_at')
                 ->limit(3)
                 ->get()
                 ->each(function (Post $post): void {
                     $post->teaser_text = $post->teaser();
+                    $post->makeHidden(['excerpt']);
                 }))->once(),
         ]);
     }
