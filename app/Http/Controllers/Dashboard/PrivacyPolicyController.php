@@ -17,7 +17,7 @@ class PrivacyPolicyController extends Controller
     public function edit(): Response
     {
         return Inertia::render('dashboard/PrivacyPolicy', [
-            'policy' => PrivacyPolicy::current(),
+            'policy' => PrivacyPolicy::current()->only(['id', 'body']),
         ]);
     }
 

@@ -79,3 +79,24 @@ test('privacy policy body is required', function () {
 
     $this->put('/dashboard/privacy', ['body' => ''])->assertInvalid('body');
 });
+
+test('public privacy page does not 404 when the policy table is empty', function () {
+    expect(PrivacyPolicy::count())->toBe(0);
+
+    $this->get('/privacy')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Privacy'));
+
+    expect(PrivacyPolicy::count())->toBe(1);
+});
+
+test('dashboard privacy edit page does not 404 when the policy table is empty', function () {
+    expect(PrivacyPolicy::count())->toBe(0);
+    $this->actingAs(User::factory()->create());
+
+    $this->get('/dashboard/privacy/edit')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('dashboard/PrivacyPolicy'));
+
+    expect(PrivacyPolicy::count())->toBe(1);
+});

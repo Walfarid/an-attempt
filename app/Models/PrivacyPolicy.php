@@ -29,11 +29,13 @@ class PrivacyPolicy extends Model
 
     /**
      * The singleton privacy policy. There is always exactly one row;
-     * the seeder creates it and the dashboard edits it.
+     * the seeder creates it and the dashboard edits it. If the row has
+     * not been seeded yet (e.g. migration ran but seeder did not), an
+     * empty placeholder is created so the page does not 404.
      */
     public static function current(): self
     {
-        return static::query()->firstOrFail();
+        return static::firstOrCreate([], ['body' => '']);
     }
 
     /**
