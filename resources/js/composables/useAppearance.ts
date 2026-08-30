@@ -61,6 +61,8 @@ const handleSystemThemeChange = () => {
     updateTheme(currentAppearance || 'system');
 };
 
+let systemThemeListenerAttached = false;
+
 export function initializeTheme(): void {
     if (typeof window === 'undefined') {
         return;
@@ -70,8 +72,11 @@ export function initializeTheme(): void {
     const savedAppearance = getStoredAppearance();
     updateTheme(savedAppearance || 'system');
 
-    // Set up system theme change listener...
-    mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+    // Set up system theme change listener (once, guard against HMR duplicates)...
+    if (!systemThemeListenerAttached) {
+        mediaQuery()?.addEventListener('change', handleSystemThemeChange);
+        systemThemeListenerAttached = true;
+    }
 }
 
 const appearance = ref<Appearance>('system');
