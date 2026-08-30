@@ -204,7 +204,7 @@ jobs:
           exit 1
 
       - name: Run test suite
-        run: php artisan config:clear --ansi && php artisan test
+        run: php artisan config:clear --ansi && php artisan test --parallel
 
   sca-composer:
     name: SCA (Composer audit)
