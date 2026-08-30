@@ -18,13 +18,12 @@ class BlogController extends Controller
     {
         return Inertia::render('posts/Index', [
             'posts' => Post::query()
-                ->select(['id', 'slug', 'title', 'excerpt', 'body', 'cover_image_path', 'published_at'])
+                ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
                 ->published()
                 ->orderByDesc('published_at')
                 ->simplePaginate(10, ['*'], 'page')
                 ->through(function (Post $post): Post {
                     $post->teaser_text = $post->teaser();
-                    $post->makeHidden(['body', 'cover_image_path']);
 
                     return $post;
                 }),
@@ -52,6 +51,7 @@ class BlogController extends Controller
 
         return Inertia::render('posts/Show', [
             'post' => tap($post, function (Post $p): void {
+                $p->append('cover_url');
                 $p->body_html = $p->bodyHtml();
                 $p->makeHidden(['body', 'cover_image_path']);
             }),

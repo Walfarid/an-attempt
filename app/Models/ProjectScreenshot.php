@@ -52,7 +52,7 @@ class ProjectScreenshot extends Model
     {
         return Attribute::make(get: fn () => config('filesystems.disks.media.bucket')
             ? Storage::disk('media')->url($this->path)
-            : null);
+            : null)->shouldCache();
     }
 
     /**

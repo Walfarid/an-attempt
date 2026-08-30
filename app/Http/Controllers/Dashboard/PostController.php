@@ -22,7 +22,9 @@ class PostController extends Controller
                 ->select(['id', 'slug', 'title', 'excerpt', 'body', 'cover_image_path', 'published_at'])
                 ->latest()
                 ->get()
-                ->each->makeHidden(['cover_image_path']),
+                ->each(function (Post $post): void {
+                    $post->append('cover_url')->makeHidden(['cover_image_path']);
+                }),
         ]);
     }
 

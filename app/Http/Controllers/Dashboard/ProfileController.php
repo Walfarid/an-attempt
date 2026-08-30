@@ -17,7 +17,9 @@ class ProfileController extends Controller
     public function edit(): Response
     {
         return Inertia::render('dashboard/Profile', [
-            'profile' => Profile::current(),
+            'profile' => Profile::query()->firstOrFail([
+                'name', 'headline', 'bio', 'location', 'github_url', 'linkedin_url',
+            ]),
         ]);
     }
 

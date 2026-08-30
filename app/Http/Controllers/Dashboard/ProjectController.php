@@ -20,12 +20,12 @@ class ProjectController extends Controller
         return Inertia::render('dashboard/Projects', [
             'projects' => Project::query()
                 ->select(['id', 'title', 'description', 'year', 'live_url', 'repo_url', 'featured', 'published_at'])
-                ->with(['skills', 'screenshots'])
+                ->with(['skills' => fn ($q) => $q->select(['skills.id', 'skills.name', 'skills.category']), 'screenshots' => fn ($q) => $q->select(['id', 'project_id', 'path', 'alt'])])
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get()
                 ->each(function (Project $project): void {
-                    $project->screenshots->each->makeHidden(['project_id', 'path', 'sort_order', 'created_at', 'updated_at']);
+                    $project->screenshots->each->makeHidden(['project_id', 'path']);
                 }),
         ]);
     }
@@ -77,8 +77,6 @@ class ProjectController extends Controller
      */
     private function validated(ProjectRequest $request): array
     {
-        $data = $request->safe()->except(['skills']);
-
-        return $data;
+        return $request->safe()->except(['skills']);
     }
 }
