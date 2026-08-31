@@ -13,6 +13,7 @@ test('public privacy page renders the policy', function () {
             ->component('Privacy')
             ->has('policy.body_html')
             ->missing('policy.body')
+            ->missing('policy.id')
         );
 });
 

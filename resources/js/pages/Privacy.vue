@@ -6,7 +6,7 @@ import { useConsent } from '@/composables/useConsent';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
 
 const { policy } = defineProps<{
-    policy: { id: number; body_html: string; updated_at: string };
+    policy: { body_html: string; updated_at: string };
 }>();
 
 const { openCookieSettings } = useConsent();
