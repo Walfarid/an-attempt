@@ -678,3 +678,28 @@
 - JSON-LD Person description (878 B on `/`): deliberate SEO content
 - Legacy `/favicon.ico` link (49 B): blade, cosmetic
 - gsap/Dashboard chart: already off critical path (verified)
+## Round 16: GSAP off the boot graph + lucide/sonner off public pages + final trims
+
+### Changes applied
+1. **GSAP removed from the eager boot graph (the last big chunk)** — `PageDrawLoader.vue` (boot-mounted) is now dependency-free: the SPA top bar uses pure CSS transitions (`scaleX` + cubic-beziers matching gsap power2), the boot drawing uses the Web Animations API with the identical timeline (stagger 0.08s, 0.5s power2.out draw, 0.4s power2.inOut fade), reduced-motion degrades to instant reveal, animations cancelled on unmount. `useRouteTransition.ts` switched to a cached dynamic `import('gsap')` on first navigation. **Eager JS chain: 391.8 → 278.6 KB raw (−113.2 KB / ~−44 KB gz); eager graph is now `[inertia]` only.** Browser-verified: boot drawing, bar on every navigation, transitions, cold-refresh lazy path, reduced motion, 1440+390, 0 console errors. Rule recorded in `.ai/rules/site.md`.
+2. **vue-sonner lazy** — `flashToast.ts` now `await import('vue-sonner')` (cached); toasts only ever render inside the dashboard's `<Toaster>`. Sonner (22.9 KB) no longer fetched on any public page.
+3. **lucide icons replaced with inline SVGs in public chrome** — new `components/site/icons.ts` (path data copied verbatim from the built lucide output); `Welcome/SiteHeader/SiteFooter/posts Index+Show` no longer import `@lucide/vue`. Lucide (11.1 KB) now loads only with dashboard/HomeSections. Public boot chains shrink 30-35 KB raw / ~10 KB gz per page; pixel-diff vs previous build: 0 at 1440×900 and 390×844.
+4. **BelongsToMany pivot dropped from the wire** — serialized project skills no longer include `"pivot":{...}` (~37 B/row): homepage deferred −503 B raw / −86 gz; `dashboard/projects` −514 / −98. No frontend reads pivot.
+5. **sitemap.xml excluded from page-view tracking** — crawlers hit sitemap.xml constantly; each hit wrote a DB row and polluted analytics with a machine-facing "page". `TrackPageView::shouldTrack` now excludes it (alongside robots.txt/favicon). New `TrackPageViewTest` (+2 tests) covers both sides.
+6. **`.env.example` driver drift fixed (latent bug)** — template still had `SESSION_DRIVER=database`, `CACHE_STORE=database`, `QUEUE_CONNECTION=database` after the Round-11 Redis switch: every fresh checkout / CI `cp .env.example .env` silently regressed to 2-3 DB queries per request. Now redis + `REDIS_PERSISTENT=true` (verified `config:show` resolves redis). Rule recorded in `.ai/rules/general.md`.
+7. **Dead bunny preconnect removed from the 404 view** — the error page never uses the CDN (system-ui stack; fonts self-hosted). 404 body 3817 → 3732 B.
+8. **Loader test updated** — `SingularityLoaderTest` asserted the old gsap API (`gsap`, `topBar`); now asserts the dependency-free contract (no gsap import, `rect.animate`, `page-loader-bar-inner`, `getBoundingClientRect`).
+
+### Verified clean (no change)
+- Infra: full `docker build` reproduced — ini flags baked (JIT tracing, validate_timestamps=0, 20k files), `.dockerignore` excludes all local artifacts (context 1.71 MB vs 208 MB repo), single `composer install --no-dev`, wayfinder in `require`, CI caches intact.
+- Harness: determinism 3/3 runs (bytes AND bytes_gz on all 14 endpoints), mask is a no-op without the identifiers, leak fix proven (with-fix 3110 B vs reproduced-leak 4350 B on analytics), order-independence verified.
+- Backend: no new queries anywhere; homepage initial payload still ships hero/stats/contact only with exactly 6 deferred props; providers/middleware/models have zero avoidable eager work; byte deltas vs Round 15 on remaining routes: −24 B (uniform, new bundle hashes).
+- Modulepreload: no JS preloads exist; the 239 KB `inertia` chunk (Vue core — settled Round 13) is fetched after the entry parses — **flagged as the last boot-serialization candidate for Round 17** (needs blade/manifest work + throttled-network proof).
+
+### Results after Round 16 (median of 3)
+- Eager JS chain: 278.6 KB raw (was 391.8 KB in Round 15, 550.7 KB in Round 13 — **cumulative −272 KB off first load**)
+- Public boot fetches: HTML + entry + inertia + fonts only — no gsap, no lucide, no sonner, no reka-ui, no utils, no badge
+- Wire bytes: `/` 11.5 KB raw / 2.6 KB gz; `/posts` 9.2 / 2.3; post show 9.5 / 2.1; sitemap 924 B / 279 B; analytics 3.0 / 0.8; projects 4.5 / 1.5; privacy-edit 5.3 / 2.1
+- Queries: all floors (public 1×4, analytics 3, projects 4, dashboard 1)
+- Bundle total: 869.4 KB raw / 269.6 KB gz (boundary overhead of splits + icon copies; critical-path bytes down ~200 KB)
+- Tests: **796 passed, 2231 assertions** (+2 new tracking tests, loader test updated); Pint/PHPStan/vue-tsc clean; browser 0 console errors at both viewports
