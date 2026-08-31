@@ -11,10 +11,14 @@
  * SPA: `inertia:start` / `inertia:finish` drive a lightweight top
  * "drafting line" bar tied to real progress.
  *
- * Degrades to a static reveal when prefers-reduced-motion is set, and a
- * 3s hard cap in the composable guarantees the page is never blocked.
+ * Animation is dependency-free: the top bar uses CSS transitions
+ * (same durations/easings gsap used — power2.out = cubic-bezier
+ * (0.25, 0.46, 0.45, 0.94), power2.inOut = cubic-bezier(0.455, 0.03,
+ * 0.515, 0.955)) and the boot drawing uses the Web Animations API with
+ * the identical timeline. Degrades to a static reveal when
+ * prefers-reduced-motion is set, and a 3s hard cap in the composable
+ * guarantees the page is never blocked.
  */
-import { gsap } from 'gsap';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { usePageLoader } from '@/composables/usePageLoader';
 
@@ -22,11 +26,9 @@ const { progress, isSpaActive, isBoot } = usePageLoader();
 
 const overlay = ref<HTMLDivElement | null>(null);
 const svgHost = ref<SVGSVGElement | null>(null);
-const topBar = ref<HTMLDivElement | null>(null);
-const topBarInner = ref<HTMLDivElement | null>(null);
 
-let progressTo: gsap.QuickToFunc | null = null;
-let revealTimeline: gsap.core.Timeline | null = null;
+// Live WAAPI animations, cancelled on unmount (replaces the gsap timeline).
+const animations = new Set<Animation>();
 
 // Reduced-motion detection (synchronous initialization)
 const prefersReducedMotion = ref(false);
@@ -41,55 +43,6 @@ if (typeof window !== 'undefined') {
     };
     reducedMotionMql.addEventListener('change', reducedMotionHandler);
 }
-
-// ------------------------------------------------------------- top bar
-// Setup progress bar quickTo for smooth updates
-watch(topBarInner, (el) => {
-    if (el) {
-        progressTo = gsap.quickTo(el, 'scaleX', {
-            duration: 0.3,
-            ease: 'power2.out',
-        });
-    }
-});
-
-// Watch progress → update top bar (instant when reduced motion is set)
-watch(progress, (p) => {
-    const el = topBarInner.value;
-
-    if (!el) {
-        return;
-    }
-
-    if (prefersReducedMotion.value) {
-        el.style.transform = `scaleX(${p})`;
-    } else if (progressTo) {
-        progressTo(p);
-    } else {
-        gsap.to(el, { scaleX: p, duration: 0.3, ease: 'power2.out' });
-    }
-});
-
-// SPA active → top bar visibility (instant when reduced motion is set)
-watch(isSpaActive, (active) => {
-    const el = topBar.value;
-
-    if (!el) {
-        return;
-    }
-
-    if (prefersReducedMotion.value) {
-        gsap.set(el, { autoAlpha: active ? 1 : 0 });
-    } else if (active) {
-        gsap.fromTo(
-            el,
-            { autoAlpha: 0 },
-            { autoAlpha: 1, duration: 0.2, ease: 'power2.out' },
-        );
-    } else {
-        gsap.to(el, { autoAlpha: 0, duration: 0.3, ease: 'power2.inOut' });
-    }
-});
 
 // --------------------------------------------------------- drawing
 function measurePage(): Array<{
@@ -159,7 +112,7 @@ function measurePage(): Array<{
 
 function drawRegions(
     regions: Array<{ x: number; y: number; width: number; height: number }>,
-) {
+): Array<{ rect: SVGRectElement; length: number }> {
     if (!svgHost.value) {
         return [];
     }
@@ -187,9 +140,10 @@ function drawRegions(
         svg.appendChild(rect);
 
         const length = 2 * (r.width + r.height);
-        gsap.set(rect, { strokeDasharray: length, strokeDashoffset: length });
+        rect.style.strokeDasharray = `${length}`;
+        rect.style.strokeDashoffset = `${length}`;
 
-        return rect;
+        return { rect, length };
     });
 }
 
@@ -202,42 +156,56 @@ watch(isBoot, (boot) => {
 
 // ------------------------------------------------------------- reveal
 function drawAndReveal() {
-    if (!overlay.value) {
+    const overlayEl = overlay.value;
+
+    if (!overlayEl) {
         return;
     }
 
     const regions = measurePage();
-    const rects = drawRegions(regions);
+    const drawn = drawRegions(regions);
 
-    revealTimeline?.kill();
+    animations.forEach((a) => a.cancel());
+    animations.clear();
 
     if (prefersReducedMotion.value) {
         // Skip animation, just set end state
-        rects.forEach((rect) => {
-            gsap.set(rect, { strokeDashoffset: 0 });
+        drawn.forEach(({ rect }) => {
+            rect.style.strokeDashoffset = '0';
         });
-        gsap.set(overlay.value, { autoAlpha: 0 });
+        overlayEl.style.opacity = '0';
+        overlayEl.style.visibility = 'hidden';
 
         return;
     }
 
-    revealTimeline = gsap.timeline();
-    revealTimeline
-        .to(rects, {
-            strokeDashoffset: 0,
-            duration: 0.5,
-            stagger: 0.08,
-            ease: 'power2.out',
-        })
-        .to(
-            overlay.value,
+    // Same timeline the gsap version played: rects draw in with a 0.08s
+    // stagger (0.5s, power2.out), then the overlay fades 0.15s after the
+    // last stroke completes (0.4s, power2.inOut).
+    drawn.forEach(({ rect, length }, i) => {
+        const anim = rect.animate(
+            [{ strokeDashoffset: `${length}` }, { strokeDashoffset: '0' }],
             {
-                autoAlpha: 0,
-                duration: 0.4,
-                ease: 'power2.inOut',
+                duration: 500,
+                delay: i * 80,
+                easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                fill: 'both',
             },
-            '+=0.15',
         );
+        animations.add(anim);
+    });
+
+    const lastStagger = Math.max(0, (drawn.length - 1) * 80);
+    const fade = overlayEl.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 400,
+        delay: lastStagger + 500 + 150,
+        easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
+        fill: 'forwards',
+    });
+    animations.add(fade);
+    fade.onfinish = () => {
+        overlayEl.style.visibility = 'hidden';
+    };
 }
 
 onMounted(() => {
@@ -248,7 +216,8 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    revealTimeline?.kill();
+    animations.forEach((a) => a.cancel());
+    animations.clear();
 
     if (reducedMotionMql && reducedMotionHandler) {
         reducedMotionMql.removeEventListener('change', reducedMotionHandler);
@@ -259,14 +228,12 @@ onBeforeUnmount(() => {
 <template>
     <!-- Top drafting line -->
     <div
-        ref="topBar"
-        class="pointer-events-none fixed top-0 right-0 left-0 z-[9999] h-[3px]"
-        style="background: var(--accent-soft); opacity: 0; visibility: hidden"
+        class="page-loader-bar pointer-events-none fixed top-0 right-0 left-0 z-[9999] h-[3px]"
+        :class="{ 'is-spa-active': isSpaActive }"
     >
         <div
-            ref="topBarInner"
-            class="h-full origin-left"
-            style="background: var(--accent); transform: scaleX(0)"
+            class="page-loader-bar-inner h-full origin-left"
+            :style="{ transform: `scaleX(${progress})` }"
         />
     </div>
 
@@ -287,3 +254,35 @@ onBeforeUnmount(() => {
         </p>
     </div>
 </template>
+
+<style scoped>
+.page-loader-bar {
+    background: var(--accent-soft);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955),
+        visibility 0s linear 0.3s;
+}
+
+.page-loader-bar.is-spa-active {
+    opacity: 1;
+    visibility: visible;
+    transition:
+        opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        visibility 0s;
+}
+
+.page-loader-bar-inner {
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-loader-bar,
+    .page-loader-bar-inner {
+        transition: none;
+    }
+}
+</style>
