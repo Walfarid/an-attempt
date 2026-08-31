@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Deferred, Form, Head } from '@inertiajs/vue3';
-import { ArrowUpRight, Briefcase, MapPin, Sparkles } from '@lucide/vue';
 import { defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue';
+import { ArrowUpRight, Briefcase, MapPin, Sparkles } from '@/components/site/icons';
 import InputError from '@/components/InputError.vue';
 import HomeSkeleton from '@/components/site/HomeSkeleton.vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';

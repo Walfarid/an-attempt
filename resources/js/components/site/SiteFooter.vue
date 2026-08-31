@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpRight } from '@lucide/vue';
+import { ArrowUpRight } from '@/components/site/icons';
 import type { Profile } from '@/data/portfolio';
 
 withDefaults(

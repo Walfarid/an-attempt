@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { ArrowUpRight, Menu, Moon, Sun, X } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import { ArrowUpRight, Menu, Moon, Sun, X } from '@/components/site/icons';
 import { useAppearance } from '@/composables/useAppearance';
 import { dashboard, login } from '@/routes';
 
