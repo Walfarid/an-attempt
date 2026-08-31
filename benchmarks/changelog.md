@@ -717,6 +717,46 @@ Every area swept, every candidate measured, zero changes kept. The project is at
 
 ---
 
+## Round 18: Wire trims (unused IDs) + dead boot code + harness coverage
+
+Audit method: 10 parallel read-only audit agents swept every controller, model, middleware, provider, Vue page/component/composable, and the bundle graph; candidates cross-referenced against producer AND consumer code. Only measured wins were kept.
+
+### Changes applied
+1. **`auth.user.id` off the wire** — `HandleInertiaRequests` shared `id` on every authenticated payload; grep-verified zero reads in `resources/js` (only `name`/`email`/`avatar` consumed). `User` TS type trimmed to the exact wire shape (also drops never-sent `email_verified_at`/`created_at`/`updated_at` — pre-existing drift). −7 B raw/gz per authenticated response (measured via direct serialization: 66 → 59 B raw, 81 → 74 B gz).
+2. **Public `policy.id` hidden** — `PrivacyController` shipped it; `Privacy.vue` reads only `body_html`/`updated_at`. (Round 11 changelog claimed this trim but the code didn't have it.) `/privacy`: 12,886 → 12,879 B raw, 3,535 → 3,529 B gz.
+3. **Public screenshot `id` hidden** — homepage deferred projects shipped `{id, alt, url}`; public cards read `screenshots[0].url/alt` only. Dashboard keeps `id` (deletion) via a `DashboardProject` intersection type in `Projects.vue`. Deferred payload: −7 B raw / −2 B gz per screenshot (verified with a temporary screenshot row: 7,540 → 7,533 B raw; 0-delta with empty local screenshots).
+4. **`useClickTracker` deleted** — 85-line composable + global click listener + Wayfinder route import sat in the eager boot path, but no `data-track` attribute exists anywhere (repo-wide grep). Backend `analytics/clicks` route + `Click` model + dashboard click KPIs untouched (visible UI, no `data-track` usage ever existed, so behavior is unchanged). Bundle: 869.4 → 867.3 KB raw, 269.6 → 269.1 KB gz; app entry 16.7 → 15.7 KB raw. (CSS +1.5 KB raw is build-freshness noise from the stale pre-existing build dir, not this change.)
+5. **Harness coverage** — `benchmarks/baseline.php` now measures `/privacy` and the homepage deferred-props partial payload with the exact X-Inertia partial headers. The deferred payload (the largest public payload) was previously invisible to the benchmark.
+
+### Investigated but not changed (no measurable gain or UX-negative)
+- `posts/Show.vue` cover `loading="lazy"` — the cover sits directly under the H1, an in-viewport LCP candidate; lazy-loading risks delaying LCP. Unmeasurable via the harness; rejected.
+- `HomeSections` `sections` computed wrapper, `AppContent` className computed — unmeasurable micro-churn.
+- Tailwind `@source` Blade scanning — robustness, not perf; current CSS verified complete.
+- WOFF font fallback removal — UX trade-off (older browsers lose webfonts); rejected.
+- Dashboard pagination — data volumes reconfirmed tiny (4 posts, 4 projects, 40 skills); settled in Round 1.
+- `NavItem.isActive` dead type field — no runtime impact; hygiene, not perf.
+
+## Round 19: Partial-reload waste elimination
+
+The new deferred-payload measurement exposed two server-side leaks on background requests.
+
+### Changes applied
+1. **HomeController eager props are now lazily evaluated** — `profile`/`stats` are memoized closures and the `Head::` block only runs on full renders. Previously every deferred-group request ran the profile aggregate query + Markdown render + schema building and then discarded the result (profile isn't in `PARTIAL_ONLY`). Deferred request: **9.0 → 8.0 queries**; time neutral within the 31.5–32.4 ms noise band.
+2. **`profile.id` off the homepage wire** — dropped from the profile `select()` and from the `Profile` TS type (fixes drift both ways: the dashboard profile endpoint never sent `id` either, and nothing reads it). `/`: 11,772 → 11,765 B raw, 2,635 → 2,632 B gz.
+3. **TrackPageView excludes Inertia background requests** — partial reloads (`X-Inertia-Partial-Component`) and prefetches (`Purpose: prefetch`, what the Inertia client actually sends) no longer record page views. Verified live: partial + prefetch + XHR navigation → **+1 view (was +3)**. Every homepage visit was double-counted (initial + deferred fetch) and every link hover on posts counted a phantom view. XHR SPA navigations remain tracked (pinned by test).
+
+### Environment note
+`php artisan test` re-execs PHP without inheriting `-d` flags, and the suite needs more than the 128M CLI default here — run `php -d memory_limit=1G vendor/bin/pest --compact`.
+
+### Round 18-19 results (median of runs)
+- Deferred payload: 31.9 ms / **8.0 q** (was 9.0) / 2,586 B gz
+- `/privacy`: 12,879 B / 3,529 B gz · `/`: 11,765 B / 2,632 B gz
+- Bundle: 867.3 KB raw / 269.1 KB gz
+- Tests: **799 passed, 2238 assertions** (+3)
+- Browser-verified: `/`, `/posts`, post show, `/privacy` — zero console errors; all six deferred sections mount; title + JSON-LD present on full renders; partial responses contain only requested props.
+
+---
+
 ## Cumulative summary (rounds 13-17 of this goal run; original baseline from rounds 1-12 retained in earlier entries)
 
 | Metric | Original baseline | Current | Net change |
@@ -751,3 +791,6 @@ Every area swept, every candidate measured, zero changes kept. The project is at
 
 ### Baseline final numbers (Round 17, median of runs)
 `/` 26.35 ms / 11.5 KB / 1.0 q · `/posts` 27.00 / 9.2 KB / 1.0 q · post show 26.87 / 9.5 KB / 1.0 q · sitemap 24.92 ms / 924 B / 1.0 q · analytics 3.04 ms / 3.0 q · projects 2.75 ms / 4.0 q · bundle 869.4 KB / 269.6 KB gz · tests 796 passed
+
+### Baseline final numbers (Round 19, median of runs)
+`/` 21.66 ms / 11,765 B / 1.0 q · `/posts` 21.03 ms / 9.2 KB / 1.0 q · post show 20.34 ms / 9.5 KB / 1.0 q · `/privacy` 12,879 B / 3,529 B gz / 1.0 q · sitemap 18.58 ms / 924 B / 1.0 q · deferred `/` props 8.0 q / 2,586 B gz · analytics 2.53 ms / 3.0 q · projects 2.26 ms / 4.0 q · bundle 867.3 KB / 269.1 KB gz · tests **799 passed** · pageview tracking: partials/prefetches excluded
