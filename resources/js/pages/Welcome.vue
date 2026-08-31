@@ -83,6 +83,11 @@ const skillsByCategory = computed(() => {
     const map = new Map<SkillCategory, Skill[]>();
 
     for (const skill of sections.value.skills) {
+        // Category is always present on public homepage (HomeController includes it)
+        if (!skill.category) {
+            continue;
+        }
+
         const group = map.get(skill.category);
 
         if (group) {

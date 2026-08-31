@@ -21,7 +21,7 @@ class ProjectController extends Controller
         return Inertia::render('dashboard/Projects', [
             'projects' => Project::query()
                 ->select(['id', 'title', 'description', 'year', 'live_url', 'repo_url', 'featured', 'published_at'])
-                ->with(['skills' => fn ($q) => $q->select(['skills.id', 'skills.name', 'skills.category']), 'screenshots' => fn ($q) => $q->select(['id', 'project_id', 'path', 'alt'])])
+                ->with(['skills' => fn ($q) => $q->select(['skills.id', 'skills.name']), 'screenshots' => fn ($q) => $q->select(['id', 'project_id', 'path', 'alt'])])
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get()
@@ -29,7 +29,7 @@ class ProjectController extends Controller
                     $project->screenshots->each->makeHidden(['project_id', 'path']);
                 }),
             'skills' => Skill::query()
-                ->select(['id', 'name', 'category'])
+                ->select(['id', 'name'])
                 ->orderBy('category')
                 ->orderBy('name')
                 ->get(),
