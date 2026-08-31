@@ -20,6 +20,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string $bio_html Markdown bio rendered to HTML, set before serialization
+ * @property string|null $years_earliest MIN(started_at) aggregate, set by the homepage query
+ * @property string|null $years_latest MAX(COALESCE(ended_at, CURRENT_TIMESTAMP)) aggregate, set by the homepage query
+ * @property string|null $projects_count Published-project count aggregate, set by the homepage query
+ * @property string|null $skills_count Skill count aggregate, set by the homepage query
  */
 class Profile extends Model
 {

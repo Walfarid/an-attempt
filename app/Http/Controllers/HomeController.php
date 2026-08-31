@@ -10,7 +10,6 @@ use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Skill;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Laravel\Head\Facades\Head;
@@ -27,11 +26,25 @@ class HomeController extends Controller
      */
     public function index(): InertiaResponse
     {
-        $profile = Profile::query()->firstOrFail([
-            'id', 'name', 'headline', 'bio', 'location', 'github_url', 'linkedin_url',
-        ]);
+        // One query instead of two: the hero-stats aggregate (years active,
+        // project count, skill count) is inlined into the profile SELECT as
+        // scalar subqueries — the same pattern stats() used on its own.
+        $profile = Profile::query()
+            ->select([
+                'id', 'name', 'headline', 'bio', 'location', 'github_url', 'linkedin_url',
+            ])
+            ->selectRaw('
+                (SELECT MIN(started_at) FROM experiences) as years_earliest,
+                (SELECT MAX(COALESCE(ended_at, CURRENT_TIMESTAMP)) FROM experiences) as years_latest,
+                (SELECT COUNT(*) FROM projects WHERE published_at IS NOT NULL AND published_at <= CURRENT_TIMESTAMP) as projects_count,
+                (SELECT COUNT(*) FROM skills) as skills_count
+            ')
+            ->firstOrFail();
+
         $profile->bio_html = $profile->bioHtml();
-        $profile->makeHidden(['bio']);
+        $profile->makeHidden([
+            'bio', 'years_earliest', 'years_latest', 'projects_count', 'skills_count',
+        ]);
 
         Head::title('Home')
             ->description($profile->headline.' — '.'Software developer with over 6 years of experience in application development, API management, and deployment platforms.')
@@ -51,7 +64,7 @@ class HomeController extends Controller
 
         return Inertia::render('Welcome', [
             'profile' => $profile,
-            'stats' => $this->stats(),
+            'stats' => $this->stats($profile),
             'turnstile_site_key' => config('contact.turnstile_site_key'),
             'skills' => Inertia::defer(fn () => Skill::query()
                 ->select(['id', 'name', 'category'])
@@ -93,38 +106,33 @@ class HomeController extends Controller
                 ->get()
                 ->each(function (Post $post): void {
                     $post->teaser_text = $post->teaser();
+                    // excerpt/body_preview are only inputs to teaser(); the
+                    // frontend reads teaser_text, so keep them off the wire.
+                    $post->makeHidden(['excerpt', 'body_preview']);
                 }))->once(),
         ]);
     }
 
     /**
-     * Hero stats in a single aggregate query: years active, published
-     * project count, and total skill count.
+     * Hero stats derived from the aggregate columns inlined into the
+     * profile query: years active, published project count, total skill count.
      *
+     * @param  Profile  $profile  Profile carrying the years_earliest/years_latest/projects_count/skills_count attributes
      * @return array{years_active: int, projects_count: int, skills_count: int}
      */
-    private function stats(): array
+    private function stats(Profile $profile): array
     {
-        $row = DB::table('experiences')
-            ->selectRaw('
-                MIN(started_at) as earliest,
-                MAX(COALESCE(ended_at, CURRENT_TIMESTAMP)) as latest,
-                (SELECT COUNT(*) FROM projects WHERE published_at IS NOT NULL AND published_at <= CURRENT_TIMESTAMP) as projects_count,
-                (SELECT COUNT(*) FROM skills) as skills_count
-            ')
-            ->first();
-
         $yearsActive = 0;
 
-        if ($row !== null && $row->earliest !== null) {
-            $months = (strtotime($row->latest) - strtotime($row->earliest)) / (86400 * 30.44);
+        if ($profile->years_earliest !== null) {
+            $months = (strtotime($profile->years_latest) - strtotime($profile->years_earliest)) / (86400 * 30.44);
             $yearsActive = max(1, (int) round($months / 12));
         }
 
         return [
             'years_active' => $yearsActive,
-            'projects_count' => (int) ($row->projects_count ?? 0),
-            'skills_count' => (int) ($row->skills_count ?? 0),
+            'projects_count' => (int) $profile->projects_count,
+            'skills_count' => (int) $profile->skills_count,
         ];
     }
 
