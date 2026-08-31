@@ -6,6 +6,7 @@ use App\Models\PageView;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Inertia\Support\Header;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackPageView
@@ -47,6 +48,13 @@ class TrackPageView
     private function shouldTrack(Request $request, Response $response): bool
     {
         if (! $response->isOk()) {
+            return false;
+        }
+
+        // Inertia background data requests never render a page: partial
+        // reloads (deferred props, only=/except=) and prefetches fire without
+        // a navigation, so counting them would double-count views.
+        if ($request->hasHeader(Header::PARTIAL_COMPONENT) || $request->prefetch()) {
             return false;
         }
 
