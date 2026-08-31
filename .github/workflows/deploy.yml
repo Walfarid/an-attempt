@@ -70,7 +70,11 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=registry,ref=${{ secrets.OCIR_IMAGE }}
+          cache-from: |
+            type=registry,ref=${{ secrets.OCIR_IMAGE }}-cache
+            # Second source: inline cache carried by older images (pre-Round-8
+            # builds pushed with cache-to: type=inline).
+            type=registry,ref=${{ secrets.OCIR_IMAGE }}
           cache-to: type=registry,ref=${{ secrets.OCIR_IMAGE }}-cache,mode=max
 
   deploy:

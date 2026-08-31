@@ -40,7 +40,9 @@ https://walfa.my.id {
 		@nocache {
 			not path /build/*
 		}
-		header @nocache Cache-Control "no-cache"
+		# "?" = set default only: the app's own Cache-Control (e.g. the 1h TTL
+		# on /sitemap.xml) passes through; everything else stays uncached.
+		header @nocache ?Cache-Control "no-cache"
 		header X-Content-Type-Options "nosniff"
 		header X-Frame-Options "SAMEORIGIN"
 		header Referrer-Policy "strict-origin-when-cross-origin"
