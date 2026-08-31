@@ -13,6 +13,8 @@
  * - Warmup request per route/endpoint (eliminates cold-cache outliers)
  * - Median as headline (robust against outliers), plus mean, min, p95
  * - Adaptive iterations: 15 for sub-5ms endpoints, 7 otherwise
+ * - Response size per route: full HTML body for public routes, serialized
+ *   Inertia payload (JSON) for dashboard endpoints
  * - Gzipped bundle size (wire weight)
  */
 
@@ -27,9 +29,12 @@ use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\ProjectController;
 use App\Http\Controllers\Dashboard\PublicationController;
 use App\Http\Controllers\Dashboard\SkillController;
+use App\Models\Post;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Inertia\Response;
+use Inertia\Support\Header;
 
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
@@ -61,9 +66,9 @@ function percentile(array $sorted, float $p): float
 /**
  * @param  list<float>  $times
  * @param  list<int>  $queryCounts
- * @return array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>}
+ * @return array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int}
  */
-function formatResult(string $method, array $times, array $queryCounts): array
+function formatResult(string $method, array $times, array $queryCounts, int $bytes): array
 {
     $sorted = $times;
     sort($sorted);
@@ -82,14 +87,23 @@ function formatResult(string $method, array $times, array $queryCounts): array
         'p95_ms' => round($p95, 2),
         'avg_queries' => round($avgQueries, 1),
         'queries' => $queryCounts,
+        'bytes' => $bytes,
     ];
+}
+
+/**
+ * Format a byte count for the compact printout column.
+ */
+function formatBytes(int $bytes): string
+{
+    return $bytes < 1024 ? $bytes.' B' : round($bytes / 1024, 1).' KB';
 }
 
 /**
  * Benchmark a public route through the full HTTP stack.
  *
  * @param  list<array{0: string, 1: string}>  $routes
- * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>}>
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int}>
  */
 function benchmarkRoutes(array $routes): array
 {
@@ -112,6 +126,7 @@ function benchmarkRoutes(array $routes): array
         // Now run the timed iterations
         $times = [];
         $queryCounts = [];
+        $bytes = 0;
 
         // Use 7 iterations for public routes (typically > 5ms)
         $iterations = 7;
@@ -123,6 +138,7 @@ function benchmarkRoutes(array $routes): array
             $request = Request::create($uri, $method);
 
             $start = microtime(true);
+            $response = null;
             try {
                 $response = $app->handle($request);
                 $app->terminate($request, $response);
@@ -130,6 +146,7 @@ function benchmarkRoutes(array $routes): array
                 // Measure time even on error.
             }
             $elapsed = (microtime(true) - $start) * 1000;
+            $bytes = $response !== null ? strlen($response->getContent()) : 0;
 
             $queries = DB::getQueryLog();
             DB::disableQueryLog();
@@ -138,17 +155,45 @@ function benchmarkRoutes(array $routes): array
             $queryCounts[] = count($queries);
         }
 
-        $results[$uri] = formatResult($method, $times, $queryCounts);
+        $results[$uri] = formatResult($method, $times, $queryCounts, $bytes);
     }
 
     return $results;
 }
 
 /**
+ * Measure the serialized response size of a controller result.
+ *
+ * Inertia responses are serialized through toResponse() with an X-Inertia
+ * request, yielding the exact wire payload (component, props, url, version).
+ * Plain array results (e.g. the dashboard post show endpoint) are measured
+ * as their JSON encoding.
+ */
+function serializeResultBytes(string $uri, mixed $result): int
+{
+    if ($result instanceof Response) {
+        $payloadRequest = Request::create($uri);
+        $payloadRequest->headers->set(Header::INERTIA, 'true');
+
+        try {
+            return strlen($result->toResponse($payloadRequest)->getContent());
+        } catch (Throwable) {
+            return 0;
+        }
+    }
+
+    if (is_array($result)) {
+        return strlen((string) json_encode($result));
+    }
+
+    return 0;
+}
+
+/**
  * Benchmark a dashboard controller method directly (bypasses auth middleware).
  *
- * @param  list<array{0: string, 1: callable, 2?: array<mixed>}>  $endpoints
- * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>}>
+ * @param  list<array{0: string, 1: callable, 2?: array<mixed>, 3?: string}>  $endpoints
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int}>
  */
 function benchmarkControllers(array $endpoints): array
 {
@@ -158,6 +203,7 @@ function benchmarkControllers(array $endpoints): array
         $label = $endpoint[0];
         $callable = $endpoint[1];
         $args = $endpoint[2] ?? [];
+        $uri = $endpoint[3] ?? $label;
 
         // Warmup: run once to warm caches, discard result
         DB::flushQueryLog();
@@ -186,6 +232,7 @@ function benchmarkControllers(array $endpoints): array
 
         $times = [];
         $queryCounts = [];
+        $lastResult = null;
 
         for ($i = 0; $i < $iterations; $i++) {
             DB::flushQueryLog();
@@ -193,7 +240,7 @@ function benchmarkControllers(array $endpoints): array
 
             $start = microtime(true);
             try {
-                $callable(...$args);
+                $lastResult = $callable(...$args);
             } catch (Throwable) {
                 // Measure time even on error.
             }
@@ -206,7 +253,7 @@ function benchmarkControllers(array $endpoints): array
             $queryCounts[] = count($queries);
         }
 
-        $results[$label] = formatResult('GET', $times, $queryCounts);
+        $results[$label] = formatResult('GET', $times, $queryCounts, serializeResultBytes($uri, $lastResult));
     }
 
     return $results;
@@ -217,13 +264,14 @@ function printResults(array $results, string $section): void
     echo "\n--- {$section} ---\n";
     foreach ($results as $uri => $data) {
         echo sprintf(
-            "%-55s median: %6.2f ms (mean: %6.2f, min: %6.2f, p95: %6.2f) | %3.1f queries\n",
+            "%-55s median: %6.2f ms (mean: %6.2f, min: %6.2f, p95: %6.2f) | %3.1f queries | %9s\n",
             $uri,
             $data['median_ms'],
             $data['mean_ms'],
             $data['min_ms'],
             $data['p95_ms'],
             $data['avg_queries'],
+            formatBytes($data['bytes']),
         );
     }
 }
@@ -241,15 +289,16 @@ printResults($publicResults, 'Public routes');
 
 // --- Dashboard endpoints (direct controller calls, bypasses auth) ---
 $dashboardEndpoints = [
-    ['dashboard (analytics)', fn () => app(AnalyticsController::class)->index(Request::create('/dashboard'))],
-    ['dashboard/posts', fn () => app(PostController::class)->index()],
-    ['dashboard/projects', fn () => app(ProjectController::class)->index()],
-    ['dashboard/skills', fn () => app(SkillController::class)->index()],
-    ['dashboard/experience', fn () => app(ExperienceController::class)->index()],
-    ['dashboard/educations', fn () => app(EducationController::class)->index()],
-    ['dashboard/publications', fn () => app(PublicationController::class)->index()],
-    ['dashboard/profile/edit', fn () => app(ProfileController::class)->edit()],
-    ['dashboard/privacy/edit', fn () => app(PrivacyPolicyController::class)->edit()],
+    ['dashboard (analytics)', fn () => app(AnalyticsController::class)->index(Request::create('/dashboard')), [], '/dashboard'],
+    ['dashboard/posts', fn () => app(PostController::class)->index(), [], '/dashboard/posts'],
+    ['dashboard/posts/{id}', fn () => app(PostController::class)->show(Post::findOrFail(1)), [], '/dashboard/posts/1'],
+    ['dashboard/projects', fn () => app(ProjectController::class)->index(), [], '/dashboard/projects'],
+    ['dashboard/skills', fn () => app(SkillController::class)->index(), [], '/dashboard/skills'],
+    ['dashboard/experience', fn () => app(ExperienceController::class)->index(), [], '/dashboard/experience'],
+    ['dashboard/educations', fn () => app(EducationController::class)->index(), [], '/dashboard/educations'],
+    ['dashboard/publications', fn () => app(PublicationController::class)->index(), [], '/dashboard/publications'],
+    ['dashboard/profile/edit', fn () => app(ProfileController::class)->edit(), [], '/dashboard/profile/edit'],
+    ['dashboard/privacy/edit', fn () => app(PrivacyPolicyController::class)->edit(), [], '/dashboard/privacy/edit'],
 ];
 
 $dashboardResults = benchmarkControllers($dashboardEndpoints);
