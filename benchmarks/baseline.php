@@ -15,6 +15,10 @@
  * - Adaptive iterations: 15 for sub-5ms endpoints, 7 otherwise
  * - Response size per route: full HTML body for public routes, serialized
  *   Inertia payload (JSON) for dashboard endpoints
+ * - Gzipped response size per route (`bytes_gz`): gzencode(payload, 9) length,
+ *   a lower-bound wire-weight proxy (the edge serves zstd/br/gzip). Per-request
+ *   session identifiers (csrf-token meta, devtools ULID) are masked before
+ *   gzipping so the metric is reproducible across runs.
  * - Gzipped bundle size (wire weight)
  */
 
@@ -66,9 +70,9 @@ function percentile(array $sorted, float $p): float
 /**
  * @param  list<float>  $times
  * @param  list<int>  $queryCounts
- * @return array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int}
+ * @return array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int, bytes_gz: int}
  */
-function formatResult(string $method, array $times, array $queryCounts, int $bytes): array
+function formatResult(string $method, array $times, array $queryCounts, int $bytes, int $bytesGz): array
 {
     $sorted = $times;
     sort($sorted);
@@ -88,6 +92,7 @@ function formatResult(string $method, array $times, array $queryCounts, int $byt
         'avg_queries' => round($avgQueries, 1),
         'queries' => $queryCounts,
         'bytes' => $bytes,
+        'bytes_gz' => $bytesGz,
     ];
 }
 
@@ -100,10 +105,35 @@ function formatBytes(int $bytes): string
 }
 
 /**
+ * Mask per-request session identifiers before gzipping so bytes_gz is
+ * reproducible across runs.
+ *
+ * The csrf-token meta is a random 40-char string that changes per process,
+ * and the inertia-devtools record id is a random 26-char ULID that changes
+ * per request (the tag only renders in local environments). Both are
+ * replaced with equal-length fixed strings: random strings of the same
+ * alphabet and length re-encode to within 1-2 bytes, so the proxy stays
+ * faithful to the true wire weight.
+ */
+function maskPerRequestIdentifiers(string $content): string
+{
+    // High-entropy fixed stand-ins: base64 of a fixed hash is deterministic
+    // and compresses like the random originals (within 1-2 bytes).
+    $mockToken = substr(base64_encode(hash('sha256', 'mock csrf token', true)), 0, 40);
+    $mockUlid = substr(base64_encode(hash('sha256', 'mock devtools ulid', true)), 0, 26);
+
+    return preg_replace(
+        ['/<meta name="csrf-token" content="[A-Za-z0-9]{40}"/', '/data-inertia-devtools-id type="application\/json">"[A-Z0-9]{26}"/'],
+        ['<meta name="csrf-token" content="'.$mockToken.'"', 'data-inertia-devtools-id type="application/json">"'.$mockUlid.'"'],
+        $content,
+    ) ?? $content;
+}
+
+/**
  * Benchmark a public route through the full HTTP stack.
  *
  * @param  list<array{0: string, 1: string}>  $routes
- * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int}>
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int, bytes_gz: int}>
  */
 function benchmarkRoutes(array $routes): array
 {
@@ -111,6 +141,12 @@ function benchmarkRoutes(array $routes): array
     $results = [];
 
     foreach ($routes as [$method, $uri]) {
+        // Scoped bindings (Laravel\Head\CurrentHead) survive across $kernel->handle()
+        // calls in one process — forget them so one route's head markup cannot
+        // leak into the next route's bytes measurement (production/Octane
+        // forgets scoped instances per request, so this is harness-only).
+        $app->forgetScopedInstances();
+
         // Warmup: run once to warm caches, discard result
         DB::flushQueryLog();
         DB::enableQueryLog();
@@ -127,6 +163,7 @@ function benchmarkRoutes(array $routes): array
         $times = [];
         $queryCounts = [];
         $bytes = 0;
+        $bytesGz = 0;
 
         // Use 7 iterations for public routes (typically > 5ms)
         $iterations = 7;
@@ -146,7 +183,9 @@ function benchmarkRoutes(array $routes): array
                 // Measure time even on error.
             }
             $elapsed = (microtime(true) - $start) * 1000;
-            $bytes = $response !== null ? strlen($response->getContent()) : 0;
+            $content = $response !== null ? $response->getContent() : '';
+            $bytes = strlen($content);
+            $bytesGz = strlen(gzencode(maskPerRequestIdentifiers($content), 9));
 
             $queries = DB::getQueryLog();
             DB::disableQueryLog();
@@ -155,51 +194,62 @@ function benchmarkRoutes(array $routes): array
             $queryCounts[] = count($queries);
         }
 
-        $results[$uri] = formatResult($method, $times, $queryCounts, $bytes);
+        $results[$uri] = formatResult($method, $times, $queryCounts, $bytes, $bytesGz);
     }
 
     return $results;
 }
 
 /**
- * Measure the serialized response size of a controller result.
+ * Measure the serialized response size (raw and gzipped) of a controller result.
  *
  * Inertia responses are serialized through toResponse() with an X-Inertia
  * request, yielding the exact wire payload (component, props, url, version).
  * Plain array results (e.g. the dashboard post show endpoint) are measured
- * as their JSON encoding.
+ * as their JSON encoding. `bytes_gz` is a lower-bound wire-weight proxy
+ * (the edge serves zstd/br/gzip); per-request identifiers are masked for
+ * reproducibility (see maskPerRequestIdentifiers).
+ *
+ * @return array{bytes: int, bytes_gz: int}
  */
-function serializeResultBytes(string $uri, mixed $result): int
+function serializeResultSizes(string $uri, mixed $result): array
 {
     if ($result instanceof Response) {
         $payloadRequest = Request::create($uri);
         $payloadRequest->headers->set(Header::INERTIA, 'true');
 
         try {
-            return strlen($result->toResponse($payloadRequest)->getContent());
+            $content = $result->toResponse($payloadRequest)->getContent();
         } catch (Throwable) {
-            return 0;
+            $content = '';
         }
+    } elseif (is_array($result)) {
+        $content = (string) json_encode($result);
+    } else {
+        return ['bytes' => 0, 'bytes_gz' => 0];
     }
 
-    if (is_array($result)) {
-        return strlen((string) json_encode($result));
-    }
-
-    return 0;
+    return [
+        'bytes' => strlen($content),
+        'bytes_gz' => strlen(gzencode(maskPerRequestIdentifiers($content), 9)),
+    ];
 }
 
 /**
  * Benchmark a dashboard controller method directly (bypasses auth middleware).
  *
  * @param  list<array{0: string, 1: callable, 2?: array<mixed>, 3?: string}>  $endpoints
- * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int}>
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int, bytes_gz: int}>
  */
 function benchmarkControllers(array $endpoints): array
 {
     $results = [];
 
     foreach ($endpoints as $endpoint) {
+        // Same scoped-binding hygiene as benchmarkRoutes(): dashboard payloads
+        // include the `head` prop, which must not carry a previous route's head.
+        app()->forgetScopedInstances();
+
         $label = $endpoint[0];
         $callable = $endpoint[1];
         $args = $endpoint[2] ?? [];
@@ -253,7 +303,8 @@ function benchmarkControllers(array $endpoints): array
             $queryCounts[] = count($queries);
         }
 
-        $results[$label] = formatResult('GET', $times, $queryCounts, serializeResultBytes($uri, $lastResult));
+        $sizes = serializeResultSizes($uri, $lastResult);
+        $results[$label] = formatResult('GET', $times, $queryCounts, $sizes['bytes'], $sizes['bytes_gz']);
     }
 
     return $results;
@@ -264,7 +315,7 @@ function printResults(array $results, string $section): void
     echo "\n--- {$section} ---\n";
     foreach ($results as $uri => $data) {
         echo sprintf(
-            "%-55s median: %6.2f ms (mean: %6.2f, min: %6.2f, p95: %6.2f) | %3.1f queries | %9s\n",
+            "%-55s median: %6.2f ms (mean: %6.2f, min: %6.2f, p95: %6.2f) | %3.1f queries | %9s raw / %9s gz\n",
             $uri,
             $data['median_ms'],
             $data['mean_ms'],
@@ -272,6 +323,7 @@ function printResults(array $results, string $section): void
             $data['p95_ms'],
             $data['avg_queries'],
             formatBytes($data['bytes']),
+            formatBytes($data['bytes_gz']),
         );
     }
 }
