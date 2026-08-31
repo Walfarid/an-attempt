@@ -86,6 +86,11 @@ class HomeController extends Controller
                     $project->screenshots->each->makeHidden([
                         'project_id', 'path', 'sort_order', 'created_at', 'updated_at',
                     ]);
+                    // BelongsToMany always carries pivot columns (project_id,
+                    // skill_id) in serialized pivot payloads — ~37 B/row of
+                    // dead wire. The frontend renders skill.name (id as key),
+                    // so rebuild the relation as plain {id, name} arrays.
+                    $project->setRelation('skills', $project->skills->map->only(['id', 'name']));
                 }))->once(),
             'educations' => Inertia::defer(fn () => Education::query()
                 ->select(['id', 'school', 'degree', 'started_at', 'ended_at', 'details'])

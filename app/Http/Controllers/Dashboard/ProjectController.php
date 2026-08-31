@@ -27,6 +27,11 @@ class ProjectController extends Controller
                 ->get()
                 ->each(function (Project $project): void {
                     $project->screenshots->each->makeHidden(['project_id', 'path']);
+                    // Drop the BelongsToMany pivot payload (~37 B/row of dead
+                    // wire): the dashboard edits via skill ids read from the
+                    // standalone `skills` prop; project.skills only renders
+                    // name. Rebuild as plain {id, name} arrays.
+                    $project->setRelation('skills', $project->skills->map->only(['id', 'name']));
                 }),
             'skills' => Skill::query()
                 ->select(['id', 'name'])

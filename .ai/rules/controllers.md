@@ -11,3 +11,6 @@ The "Keep reading" list is inlined into the post SELECT as a JSON aggregate (rec
 
 ## Public project skills ship id+name only (category is dashboard-only)
 The homepage deferred projects eager load selects ['skills.id','skills.name'] — Welcome.vue renders project tags from name (id as key) and never reads skill.category. Category lives only on the standalone `skills` prop (grouping UI). Keep the two datasets' shapes distinct; the TS Skill type marks category optional. Extra columns would be dead wire bytes (~22 B/row).
+
+## Project skills: drop the BelongsToMany pivot from the wire
+Both HomeController deferred projects and Dashboard\ProjectController::index() select skills id+name but Eloquent still serializes pivot columns (~37 B/row dead wire). After each(), rebuild the relation with $project->setRelation('skills', $project->skills->map->only(['id','name'])) — frontend renders name only and reads ids from the standalone skills prop. Keeps TS Skill {id,name,category?} honest and stays off any skills.* pivot accessor.
