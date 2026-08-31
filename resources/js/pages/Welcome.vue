@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { Deferred, Form, Head } from '@inertiajs/vue3';
 import { defineAsyncComponent, onMounted, onUnmounted, ref } from 'vue';
-import { ArrowUpRight, Briefcase, MapPin, Sparkles } from '@/components/site/icons';
 import InputError from '@/components/InputError.vue';
 import HomeSkeleton from '@/components/site/HomeSkeleton.vue';
+import {
+    ArrowUpRight,
+    Briefcase,
+    MapPin,
+    Sparkles,
+} from '@/components/site/icons';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useCountUp } from '@/composables/useCountUp';

@@ -14,7 +14,8 @@ type IconNode = [
     attrs: Record<string, string>,
 ];
 
-const makeIcon = (nodes: IconNode[]): FunctionalComponent =>
+const makeIcon =
+    (nodes: IconNode[]): FunctionalComponent =>
     (_, { attrs }) =>
         h(
             'svg',

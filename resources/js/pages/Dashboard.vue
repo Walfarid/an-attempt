@@ -114,15 +114,18 @@ const gridLines = [0.25, 0.5, 0.75, 1];
 // Direct access to KPI values from props (no redundant reduce needed)
 const totalVisitors = computed(() => {
     const kpi = props.kpis.find((k) => k.key === 'visitors');
+
     return kpi?.value ?? 0;
 });
 const totalClicks = computed(() => {
     const kpi = props.kpis.find((k) => k.key === 'clicks');
+
     return kpi?.value ?? 0;
 });
 
 const totalCtr = computed(() => {
     const kpi = props.kpis.find((k) => k.key === 'ctr');
+
     return kpi?.value ?? 0;
 });
 

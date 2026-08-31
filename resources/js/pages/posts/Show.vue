@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, ArrowUpRight } from '@/components/site/icons';
 import { onMounted, onUnmounted, ref } from 'vue';
+import { ArrowLeft, ArrowUpRight } from '@/components/site/icons';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';

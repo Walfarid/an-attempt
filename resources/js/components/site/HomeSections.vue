@@ -122,9 +122,7 @@ function toggleCategory(category: string) {
             aria-labelledby="skills-title"
             class="d-rule scroll-mt-20"
         >
-            <div
-                class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
-            >
+            <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
                 <div class="mb-10 max-w-2xl" data-motion>
                     <p class="d-section mb-2">Skills</p>
                     <h2
@@ -133,12 +131,9 @@ function toggleCategory(category: string) {
                     >
                         What I work with
                     </h2>
-                    <p
-                        class="mt-3 text-base leading-relaxed text-(--ink-soft)"
-                    >
-                        Grouped so you don't have to scroll
-                        through a wall of text. Tap a category
-                        to see what's inside.
+                    <p class="mt-3 text-base leading-relaxed text-(--ink-soft)">
+                        Grouped so you don't have to scroll through a wall of
+                        text. Tap a category to see what's inside.
                     </p>
                 </div>
 
@@ -156,42 +151,27 @@ function toggleCategory(category: string) {
                             type="button"
                             class="flex w-full items-center gap-4 p-5 text-left"
                             :aria-expanded="
-                                expandedCategories.has(
-                                    group.category,
-                                )
+                                expandedCategories.has(group.category)
                             "
-                            @click="
-                                toggleCategory(group.category)
-                            "
+                            @click="toggleCategory(group.category)"
                         >
                             <span
                                 class="flex size-10 shrink-0 items-center justify-center bg-(--accent-soft)"
                                 aria-hidden="true"
                             >
                                 <component
-                                    :is="
-                                        categoryMeta[
-                                            group.category
-                                        ].icon
-                                    "
+                                    :is="categoryMeta[group.category].icon"
                                     class="size-5 text-(--accent)"
                                 />
                             </span>
                             <div class="flex-1">
-                                <p
-                                    class="font-display text-base font-semibold"
-                                >
-                                    {{
-                                        categoryMeta[
-                                            group.category
-                                        ].label
-                                    }}
+                                <p class="font-display text-base font-semibold">
+                                    {{ categoryMeta[group.category].label }}
                                 </p>
                                 <p class="d-label mt-0.5">
                                     {{ group.skills.length }}
                                     {{
-                                        group.skills.length ===
-                                        1
+                                        group.skills.length === 1
                                             ? 'tool'
                                             : 'tools'
                                     }}
@@ -200,25 +180,18 @@ function toggleCategory(category: string) {
                             <ChevronDown
                                 class="size-4 shrink-0 text-(--ink-soft) transition-transform"
                                 :class="{
-                                    'rotate-180':
-                                        expandedCategories.has(
-                                            group.category,
-                                        ),
+                                    'rotate-180': expandedCategories.has(
+                                        group.category,
+                                    ),
                                 }"
                                 aria-hidden="true"
                             />
                         </button>
                         <div
-                            v-show="
-                                expandedCategories.has(
-                                    group.category,
-                                )
-                            "
+                            v-show="expandedCategories.has(group.category)"
                             class="d-rule-b px-5 pb-4"
                         >
-                            <div
-                                class="flex flex-wrap gap-1.5 pt-3"
-                            >
+                            <div class="flex flex-wrap gap-1.5 pt-3">
                                 <span
                                     v-for="skill in group.skills"
                                     :key="skill.id"
@@ -240,9 +213,7 @@ function toggleCategory(category: string) {
             aria-labelledby="experience-title"
             class="d-rule scroll-mt-20"
         >
-            <div
-                class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
-            >
+            <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
                 <div
                     class="mb-10 flex flex-wrap items-end justify-between gap-4"
                     data-motion
@@ -286,9 +257,7 @@ function toggleCategory(category: string) {
                                 />
                             </span>
 
-                            <article
-                                class="d-surface p-5 sm:p-6"
-                            >
+                            <article class="d-surface p-5 sm:p-6">
                                 <div
                                     class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between"
                                 >
@@ -297,9 +266,7 @@ function toggleCategory(category: string) {
                                     >
                                         {{ exp.role }}
                                     </h3>
-                                    <time
-                                        class="d-label shrink-0"
-                                    >
+                                    <time class="d-label shrink-0">
                                         {{
                                             formatDateRange(
                                                 exp.started_at,
@@ -353,9 +320,7 @@ function toggleCategory(category: string) {
             aria-labelledby="projects-title"
             class="d-rule scroll-mt-20"
         >
-            <div
-                class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
-            >
+            <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
                 <div
                     class="mb-10 flex flex-wrap items-end justify-between gap-4"
                     data-motion
@@ -377,25 +342,15 @@ function toggleCategory(category: string) {
                         class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold no-underline"
                     >
                         More on GitHub
-                        <ExternalLink
-                            class="size-4"
-                            aria-hidden="true"
-                        />
-                        <span class="sr-only"
-                            >(opens in a new tab)</span
-                        >
+                        <ExternalLink class="size-4" aria-hidden="true" />
+                        <span class="sr-only">(opens in a new tab)</span>
                     </a>
                 </div>
 
                 <!-- Asymmetric bento grid -->
-                <div
-                    class="grid gap-4 lg:grid-cols-12"
-                    data-motion-group
-                >
+                <div class="grid gap-4 lg:grid-cols-12" data-motion-group>
                     <article
-                        v-for="(
-                            project, i
-                        ) in sections.projects"
+                        v-for="(project, i) in sections.projects"
                         :key="project.id"
                         class="d-surface flex flex-col overflow-hidden"
                         :class="
@@ -410,10 +365,7 @@ function toggleCategory(category: string) {
                         <img
                             v-if="project.screenshots[0]?.url"
                             :src="project.screenshots[0].url"
-                            :alt="
-                                project.screenshots[0].alt ??
-                                project.title
-                            "
+                            :alt="project.screenshots[0].alt ?? project.title"
                             loading="lazy"
                             decoding="async"
                             class="aspect-[16/9] w-full object-cover"
@@ -423,13 +375,9 @@ function toggleCategory(category: string) {
                             class="relative flex aspect-[16/9] w-full items-center justify-center bg-(--accent-soft)"
                             aria-hidden="true"
                         >
-                            <span class="d-label">{{
-                                project.year
-                            }}</span>
+                            <span class="d-label">{{ project.year }}</span>
                         </div>
-                        <div
-                            class="flex flex-1 flex-col gap-3 p-5 sm:p-6"
-                        >
+                        <div class="flex flex-1 flex-col gap-3 p-5 sm:p-6">
                             <div
                                 class="flex items-baseline justify-between gap-2"
                             >
@@ -438,39 +386,26 @@ function toggleCategory(category: string) {
                                 >
                                     {{ project.title }}
                                 </h3>
-                                <span class="d-label">{{
-                                    project.year
-                                }}</span>
+                                <span class="d-label">{{ project.year }}</span>
                             </div>
                             <p
                                 class="max-w-prose text-sm leading-relaxed text-pretty"
                             >
                                 {{ project.description }}
                             </p>
-                            <ul
-                                class="mt-auto flex flex-wrap gap-1.5 pt-2"
-                            >
+                            <ul class="mt-auto flex flex-wrap gap-1.5 pt-2">
                                 <li
-                                    v-for="skill in project.skills.slice(
-                                        0,
-                                        5,
-                                    )"
+                                    v-for="skill in project.skills.slice(0, 5)"
                                     :key="skill.id"
                                     class="inline-flex items-center bg-(--accent-soft) px-2 py-0.5 text-[11px] font-medium"
                                 >
                                     {{ skill.name }}
                                 </li>
                                 <li
-                                    v-if="
-                                        project.skills.length >
-                                        5
-                                    "
+                                    v-if="project.skills.length > 5"
                                     class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium text-(--ink-soft)"
                                 >
-                                    +{{
-                                        project.skills.length -
-                                        5
-                                    }}
+                                    +{{ project.skills.length - 5 }}
                                 </li>
                             </ul>
                             <div
@@ -489,8 +424,7 @@ function toggleCategory(category: string) {
                                         aria-hidden="true"
                                     />
                                     <span class="sr-only"
-                                        >(opens in a new
-                                        tab)</span
+                                        >(opens in a new tab)</span
                                     >
                                 </a>
                                 <a
@@ -506,8 +440,7 @@ function toggleCategory(category: string) {
                                         aria-hidden="true"
                                     />
                                     <span class="sr-only"
-                                        >(opens in a new
-                                        tab)</span
+                                        >(opens in a new tab)</span
                                     >
                                 </a>
                             </div>
@@ -524,9 +457,7 @@ function toggleCategory(category: string) {
             aria-labelledby="writing-title"
             class="d-rule scroll-mt-20"
         >
-            <div
-                class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
-            >
+            <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
                 <div
                     class="mb-10 flex flex-wrap items-end justify-between gap-4"
                     data-motion
@@ -547,10 +478,7 @@ function toggleCategory(category: string) {
                         class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold no-underline"
                     >
                         All posts
-                        <ArrowUpRight
-                            class="size-4"
-                            aria-hidden="true"
-                        />
+                        <ArrowUpRight class="size-4" aria-hidden="true" />
                     </Link>
                 </div>
 
@@ -558,9 +486,7 @@ function toggleCategory(category: string) {
                     <Link
                         v-for="post in sections.posts"
                         :key="post.id"
-                        :href="
-                            postShow.url({ post: post.slug })
-                        "
+                        :href="postShow.url({ post: post.slug })"
                         prefetch
                         cache-for="10s"
                         class="d-surface d-card-hover block p-5 no-underline sm:p-6"
@@ -569,32 +495,25 @@ function toggleCategory(category: string) {
                         <div
                             class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"
                         >
-                            <h3
-                                class="font-display text-base font-semibold"
-                            >
+                            <h3 class="font-display text-base font-semibold">
                                 {{ post.title }}
                             </h3>
                             <time class="d-label shrink-0">
                                 {{
                                     new Date(
                                         post.published_at,
-                                    ).toLocaleDateString(
-                                        'en-US',
-                                        {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                        },
-                                    )
+                                    ).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                    })
                                 }}
                             </time>
                         </div>
                         <p
                             class="mt-2 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
                         >
-                            {{
-                                post.teaser_text
-                            }}
+                            {{ post.teaser_text }}
                         </p>
                     </Link>
                 </div>
@@ -603,17 +522,12 @@ function toggleCategory(category: string) {
 
         <!-- ═══════════════════ EDUCATION ═══════════════════ -->
         <section
-            v-if="
-                sections.educations.length ||
-                sections.publications.length
-            "
+            v-if="sections.educations.length || sections.publications.length"
             id="education"
             aria-labelledby="education-title"
             class="d-rule scroll-mt-20"
         >
-            <div
-                class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24"
-            >
+            <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
                 <div class="mb-10 max-w-2xl" data-motion>
                     <p class="d-section mb-2">Education</p>
                     <h2
@@ -624,10 +538,7 @@ function toggleCategory(category: string) {
                     </h2>
                 </div>
 
-                <div
-                    class="grid gap-4 lg:grid-cols-2"
-                    data-motion-group
-                >
+                <div class="grid gap-4 lg:grid-cols-2" data-motion-group>
                     <article
                         v-for="edu in sections.educations"
                         :key="edu.id"
@@ -639,9 +550,7 @@ function toggleCategory(category: string) {
                                 class="flex size-9 shrink-0 items-center justify-center bg-(--accent-soft)"
                                 aria-hidden="true"
                             >
-                                <GraduationCap
-                                    class="size-4 text-(--accent)"
-                                />
+                                <GraduationCap class="size-4 text-(--accent)" />
                             </span>
                             <div>
                                 <h3
@@ -649,9 +558,7 @@ function toggleCategory(category: string) {
                                 >
                                     {{ edu.school }}
                                 </h3>
-                                <p
-                                    class="text-sm font-medium text-(--accent)"
-                                >
+                                <p class="text-sm font-medium text-(--accent)">
                                     {{ edu.degree }}
                                 </p>
                                 <time class="d-label mt-1">
@@ -664,22 +571,16 @@ function toggleCategory(category: string) {
                                             : edu.ended_at
                                               ? new Date(
                                                     edu.ended_at,
-                                                ).toLocaleDateString(
-                                                    'en-US',
-                                                    {
-                                                        month: 'short',
-                                                        year: 'numeric',
-                                                    },
-                                                )
+                                                ).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                })
                                               : 'Present'
                                     }}
                                 </time>
                             </div>
                         </div>
-                        <ul
-                            v-if="edu.details.length"
-                            class="mt-1 grid gap-1.5"
-                        >
+                        <ul v-if="edu.details.length" class="mt-1 grid gap-1.5">
                             <li
                                 v-for="detail in edu.details"
                                 :key="detail"
@@ -710,9 +611,7 @@ function toggleCategory(category: string) {
                             Publication · {{ pub.year }} ·
                             {{ pub.venue }}
                         </p>
-                        <p
-                            class="mt-2 max-w-3xl leading-relaxed text-pretty"
-                        >
+                        <p class="mt-2 max-w-3xl leading-relaxed text-pretty">
                             {{ pub.citation }}
                         </p>
                         <a
@@ -722,13 +621,8 @@ function toggleCategory(category: string) {
                             class="mt-2 inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold no-underline"
                         >
                             Read the paper (DOI)
-                            <ExternalLink
-                                class="size-3.5"
-                                aria-hidden="true"
-                            />
-                            <span class="sr-only"
-                                >(opens in a new tab)</span
-                            >
+                            <ExternalLink class="size-3.5" aria-hidden="true" />
+                            <span class="sr-only">(opens in a new tab)</span>
                         </a>
                     </article>
                 </div>

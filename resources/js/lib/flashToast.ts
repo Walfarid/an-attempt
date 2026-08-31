@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/vue3';
+import type { toast } from 'vue-sonner';
 import type { FlashToast } from '@/types/ui';
 
 /**
@@ -8,7 +9,7 @@ import type { FlashToast } from '@/types/ui';
  * off the public critical path (it is also statically imported by the
  * dashboard layout's Sonner wrapper, so dashboard pages load it anyway).
  */
-let toastApi: typeof import('vue-sonner')['toast'] | null = null;
+let toastApi: typeof toast | null = null;
 
 async function showToast(data: FlashToast): Promise<void> {
     toastApi ??= (await import('vue-sonner')).toast;

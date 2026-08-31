@@ -10,9 +10,7 @@ import { initializeFlashToast } from '@/lib/flashToast';
 // Dashboard layouts are loaded lazily — their sidebar/shell code (reka-ui
 // Sheet, Tooltip, Sonner, etc.) is only fetched when the user navigates
 // to a dashboard or settings page, keeping the public-page bundle lean.
-const AppLayout = defineAsyncComponent(
-    () => import('@/layouts/AppLayout.vue'),
-);
+const AppLayout = defineAsyncComponent(() => import('@/layouts/AppLayout.vue'));
 const SettingsLayout = defineAsyncComponent(
     () => import('@/layouts/settings/Layout.vue'),
 );
