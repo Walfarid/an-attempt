@@ -30,6 +30,8 @@ class PostController extends Controller
 
     /**
      * Lazy-load a single post with body for editing.
+     *
+     * @return array{id: int, slug: string, title: string, excerpt: string|null, body: string|null, cover_url: string|null, published_at: string|null}
      */
     public function show(Post $post): array
     {
