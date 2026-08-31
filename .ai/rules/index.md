@@ -10,8 +10,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
 | compose.prod.yaml, .env.example | .ai/rules/general.md |
 | resources/js/lib/flashToast.ts | .ai/rules/lib.md |
+| app/Http/Middleware/TrackPageView.php | .ai/rules/middleware.md |
 | database/migrations/** | .ai/rules/migrations.md |
 | resources/js/pages/Welcome.vue | .ai/rules/pages.md |
 | resources/js/pages/posts/*.vue | .ai/rules/posts.md |
 | resources/js/components/site/** | .ai/rules/site.md |
+| tests/** | .ai/rules/tests.md |
 | .github/workflows/deploy.yml, .github/workflows/dast.yml | .ai/rules/workflows.md |
