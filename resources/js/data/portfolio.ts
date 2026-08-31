@@ -30,8 +30,8 @@ export type Experience = {
     highlights: string[];
 };
 
-type ProjectScreenshot = {
-    id: number;
+/** Public shape — the dashboard re-adds `id` (needed for screenshot deletion). */
+export type ProjectScreenshot = {
     alt: string | null;
     url: string | null;
 };
@@ -71,7 +71,6 @@ export type Publication = {
 };
 
 export type Profile = {
-    id: number;
     name: string;
     headline: string;
     bio_html?: string;

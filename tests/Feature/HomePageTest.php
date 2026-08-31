@@ -87,7 +87,8 @@ test('home projects carry their skills and screenshot urls', function () {
             $first = collect($props['projects'])->firstWhere('id', $project->id);
 
             expect(count($first['skills']))->toBe(2)
-                ->and($first['screenshots'][0]['url'])->toBe(Storage::disk('media')->url($screenshot->path));
+                ->and($first['screenshots'][0]['url'])->toBe(Storage::disk('media')->url($screenshot->path))
+                ->and($first['screenshots'][0])->not->toHaveKey('id');
         });
     });
 });

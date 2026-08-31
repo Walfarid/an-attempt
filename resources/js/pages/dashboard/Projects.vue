@@ -28,9 +28,14 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { Project, Skill } from '@/data/portfolio';
+import type { Project, ProjectScreenshot, Skill } from '@/data/portfolio';
 import projectsRoute from '@/routes/dashboard/projects';
 import screenshotsRoute from '@/routes/dashboard/projects/screenshots';
+
+/** Dashboard payloads re-add the screenshot `id` (needed for deletion). */
+type DashboardProject = Omit<Project, 'screenshots'> & {
+    screenshots: (ProjectScreenshot & { id: number })[];
+};
 
 defineOptions({
     layout: {
@@ -42,7 +47,7 @@ defineOptions({
 });
 
 const { projects, skills } = defineProps<{
-    projects: Project[];
+    projects: DashboardProject[];
     skills: Skill[];
 }>();
 
@@ -131,9 +136,9 @@ function confirmDelete() {
     form.delete(projectsRoute.destroy.url(project.id), {
         preserveScroll: true,
         optimistic: (props) => ({
-            projects: ((props.projects as Project[] | undefined) ?? []).filter(
-                (p) => p.id !== project.id,
-            ),
+            projects: (
+                (props.projects as DashboardProject[] | undefined) ?? []
+            ).filter((p) => p.id !== project.id),
         }),
     });
 }
@@ -199,16 +204,17 @@ function confirmShotDelete() {
         {
             preserveScroll: true,
             optimistic: (props) => ({
-                projects: ((props.projects as Project[] | undefined) ?? []).map(
-                    (project) =>
-                        project.id === projectId
-                            ? {
-                                  ...project,
-                                  screenshots: project.screenshots.filter(
-                                      (s) => s.id !== screenshotId,
-                                  ),
-                              }
-                            : project,
+                projects: (
+                    (props.projects as DashboardProject[] | undefined) ?? []
+                ).map((project) =>
+                    project.id === projectId
+                        ? {
+                              ...project,
+                              screenshots: project.screenshots.filter(
+                                  (s) => s.id !== screenshotId,
+                              ),
+                          }
+                        : project,
                 ),
             }),
         },

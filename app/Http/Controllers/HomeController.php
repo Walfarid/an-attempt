@@ -9,9 +9,11 @@ use App\Models\Profile;
 use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Skill;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Inertia\Support\Header;
 use Laravel\Head\Facades\Head;
 use Laravel\Head\Facades\Schema;
 
@@ -23,48 +25,64 @@ class HomeController extends Controller
      * The hero, stats, and contact form ship with the initial page; the
      * below-the-fold sections are deferred so the first paint stays fast.
      * `once()` keeps them cached client-side for back/forward visits.
+     *
+     * The eager props are closures and the head block only runs on full
+     * renders: a partial reload (deferred groups) never receives profile,
+     * stats, or head, so computing them there is discarded work (a query
+     * plus a Markdown render per background request).
      */
-    public function index(): InertiaResponse
+    public function index(Request $request): InertiaResponse
     {
         // One query instead of two: the hero-stats aggregate (years active,
         // project count, skill count) is inlined into the profile SELECT as
         // scalar subqueries — the same pattern stats() used on its own.
-        $profile = Profile::query()
-            ->select([
-                'id', 'name', 'headline', 'bio', 'location', 'github_url', 'linkedin_url',
-            ])
-            ->selectRaw('
-                (SELECT MIN(started_at) FROM experiences) as years_earliest,
-                (SELECT MAX(COALESCE(ended_at, CURRENT_TIMESTAMP)) FROM experiences) as years_latest,
-                (SELECT COUNT(*) FROM projects WHERE published_at IS NOT NULL AND published_at <= CURRENT_TIMESTAMP) as projects_count,
-                (SELECT COUNT(*) FROM skills) as skills_count
-            ')
-            ->firstOrFail();
+        // Lazily resolved and memoized: profile and stats share the one row.
+        $profile = null;
+        $resolveProfile = static function () use (&$profile): Profile {
+            return $profile ??= tap(
+                Profile::query()
+                    ->select([
+                        'name', 'headline', 'bio', 'location', 'github_url', 'linkedin_url',
+                    ])
+                    ->selectRaw('
+                        (SELECT MIN(started_at) FROM experiences) as years_earliest,
+                        (SELECT MAX(COALESCE(ended_at, CURRENT_TIMESTAMP)) FROM experiences) as years_latest,
+                        (SELECT COUNT(*) FROM projects WHERE published_at IS NOT NULL AND published_at <= CURRENT_TIMESTAMP) as projects_count,
+                        (SELECT COUNT(*) FROM skills) as skills_count
+                    ')
+                    ->firstOrFail(),
+                function (Profile $p): void {
+                    $p->bio_html = $p->bioHtml();
+                    $p->makeHidden([
+                        'bio', 'years_earliest', 'years_latest', 'projects_count', 'skills_count',
+                    ]);
+                },
+            );
+        };
 
-        $profile->bio_html = $profile->bioHtml();
-        $profile->makeHidden([
-            'bio', 'years_earliest', 'years_latest', 'projects_count', 'skills_count',
-        ]);
+        if (! $request->hasHeader(Header::PARTIAL_COMPONENT)) {
+            $profile = $resolveProfile();
 
-        Head::title('Home')
-            ->description($profile->headline.' — '.'Software developer with over 6 years of experience in application development, API management, and deployment platforms.')
-            ->canonical();
+            Head::title('Home')
+                ->description($profile->headline.' — '.'Software developer with over 6 years of experience in application development, API management, and deployment platforms.')
+                ->canonical();
 
-        Head::schema(
-            Schema::person()
-                ->name($profile->name)
-                ->url(url('/'))
-                ->set('jobTitle', $profile->headline)
-                ->set('description', strip_tags($profile->bio_html))
-                ->set('sameAs', array_filter([
-                    $profile->github_url,
-                    $profile->linkedin_url,
-                ]))
-        );
+            Head::schema(
+                Schema::person()
+                    ->name($profile->name)
+                    ->url(url('/'))
+                    ->set('jobTitle', $profile->headline)
+                    ->set('description', strip_tags($profile->bio_html))
+                    ->set('sameAs', array_filter([
+                        $profile->github_url,
+                        $profile->linkedin_url,
+                    ]))
+            );
+        }
 
         return Inertia::render('Welcome', [
-            'profile' => $profile,
-            'stats' => $this->stats($profile),
+            'profile' => $resolveProfile,
+            'stats' => fn () => $this->stats($resolveProfile()),
             'turnstile_site_key' => config('contact.turnstile_site_key'),
             'skills' => Inertia::defer(fn () => Skill::query()
                 ->select(['id', 'name', 'category'])
@@ -83,8 +101,10 @@ class HomeController extends Controller
                 ->orderBy('id')
                 ->get()
                 ->each(function (Project $project): void {
+                    // Public cards render screenshots[0] url/alt only (id is
+                    // dashboard-only, needed for deletion) — keep it off the wire.
                     $project->screenshots->each->makeHidden([
-                        'project_id', 'path', 'sort_order', 'created_at', 'updated_at',
+                        'id', 'project_id', 'path', 'sort_order', 'created_at', 'updated_at',
                     ]);
                     // BelongsToMany always carries pivot columns (project_id,
                     // skill_id) in serialized pivot payloads — ~37 B/row of
