@@ -3,7 +3,7 @@
 # Boots the full Laravel stack (MariaDB service + built frontend assets +
 # `php artisan serve`), then runs the ZAP baseline scan (spider + passive
 # rules) over the public pages. Active scanning is intentionally not enabled:
-# the baseline profile is non-intrusive and safe to run on every push.
+# the baseline profile is non-intrusive and safe to run on PRs and nightly.
 #
 # Versions verified 2026-08-23: ghcr.io/zaproxy/zaproxy stable image,
 # actions/upload-artifact v7.
@@ -11,8 +11,7 @@
 name: DAST
 
 on:
-  push:
-    branches: [main]
+  pull_request:
   schedule:
     - cron: '30 3 * * *' # Nightly 03:30 UTC
   workflow_dispatch:

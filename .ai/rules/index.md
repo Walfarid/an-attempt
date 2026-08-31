@@ -7,4 +7,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
 | compose.prod.yaml | .ai/rules/general.md |
 | resources/js/pages/Welcome.vue | .ai/rules/pages.md |
-| .github/workflows/deploy.yml | .ai/rules/workflows.md |
+| .github/workflows/deploy.yml, .github/workflows/dast.yml | .ai/rules/workflows.md |
