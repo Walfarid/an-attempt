@@ -8,6 +8,12 @@
  *
  * Public routes go through the full HTTP stack. Dashboard routes call
  * controller methods directly (they require auth middleware).
+ *
+ * Features:
+ * - Warmup request per route/endpoint (eliminates cold-cache outliers)
+ * - Median as headline (robust against outliers), plus mean, min, p95
+ * - Adaptive iterations: 15 for sub-5ms endpoints, 7 otherwise
+ * - Gzipped bundle size (wire weight)
  */
 
 require __DIR__.'/../vendor/autoload.php';
@@ -29,10 +35,61 @@ $app = require __DIR__.'/../bootstrap/app.php';
 $app->make(Kernel::class)->bootstrap();
 
 /**
+ * Calculate percentile of a sorted array.
+ *
+ * @param  list<float>  $sorted
+ */
+function percentile(array $sorted, float $p): float
+{
+    $count = count($sorted);
+    if ($count === 1) {
+        return $sorted[0];
+    }
+
+    $index = ($p / 100) * ($count - 1);
+    $lower = (int) floor($index);
+    $upper = (int) ceil($index);
+    $fraction = $index - $lower;
+
+    if ($lower === $upper) {
+        return $sorted[$lower];
+    }
+
+    return $sorted[$lower] + $fraction * ($sorted[$upper] - $sorted[$lower]);
+}
+
+/**
+ * @param  list<float>  $times
+ * @param  list<int>  $queryCounts
+ * @return array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>}
+ */
+function formatResult(string $method, array $times, array $queryCounts): array
+{
+    $sorted = $times;
+    sort($sorted);
+
+    $median = percentile($sorted, 50);
+    $mean = array_sum($times) / count($times);
+    $min = min($times);
+    $p95 = percentile($sorted, 95);
+    $avgQueries = array_sum($queryCounts) / count($queryCounts);
+
+    return [
+        'method' => $method,
+        'median_ms' => round($median, 2),
+        'mean_ms' => round($mean, 2),
+        'min_ms' => round($min, 2),
+        'p95_ms' => round($p95, 2),
+        'avg_queries' => round($avgQueries, 1),
+        'queries' => $queryCounts,
+    ];
+}
+
+/**
  * Benchmark a public route through the full HTTP stack.
  *
  * @param  list<array{0: string, 1: string}>  $routes
- * @return array<string, array{method: string, avg_ms: float, min_ms: float, max_ms: float, avg_queries: float, queries: list<int>}>
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>}>
  */
 function benchmarkRoutes(array $routes): array
 {
@@ -40,10 +97,26 @@ function benchmarkRoutes(array $routes): array
     $results = [];
 
     foreach ($routes as [$method, $uri]) {
+        // Warmup: run once to warm caches, discard result
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $request = Request::create($uri, $method);
+        try {
+            $response = $app->handle($request);
+            $app->terminate($request, $response);
+        } catch (Throwable) {
+            // Warmup error is okay, we're just warming caches
+        }
+        DB::disableQueryLog();
+
+        // Now run the timed iterations
         $times = [];
         $queryCounts = [];
 
-        for ($i = 0; $i < 5; $i++) {
+        // Use 7 iterations for public routes (typically > 5ms)
+        $iterations = 7;
+
+        for ($i = 0; $i < $iterations; $i++) {
             DB::flushQueryLog();
             DB::enableQueryLog();
 
@@ -75,7 +148,7 @@ function benchmarkRoutes(array $routes): array
  * Benchmark a dashboard controller method directly (bypasses auth middleware).
  *
  * @param  list<array{0: string, 1: callable, 2?: array<mixed>}>  $endpoints
- * @return array<string, array{method: string, avg_ms: float, min_ms: float, max_ms: float, avg_queries: float, queries: list<int>}>
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>}>
  */
 function benchmarkControllers(array $endpoints): array
 {
@@ -85,10 +158,36 @@ function benchmarkControllers(array $endpoints): array
         $label = $endpoint[0];
         $callable = $endpoint[1];
         $args = $endpoint[2] ?? [];
+
+        // Warmup: run once to warm caches, discard result
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        try {
+            $callable(...$args);
+        } catch (Throwable) {
+            // Warmup error is okay
+        }
+        DB::disableQueryLog();
+
+        // Quick measurement to determine iteration count
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $start = microtime(true);
+        try {
+            $callable(...$args);
+        } catch (Throwable) {
+        }
+        $sampleTime = (microtime(true) - $start) * 1000;
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        // Adaptive iterations: 15 for sub-5ms endpoints, 7 otherwise
+        $iterations = ($sampleTime < 5.0) ? 15 : 7;
+
         $times = [];
         $queryCounts = [];
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < $iterations; $i++) {
             DB::flushQueryLog();
             DB::enableQueryLog();
 
@@ -113,36 +212,17 @@ function benchmarkControllers(array $endpoints): array
     return $results;
 }
 
-/**
- * @param  list<float>  $times
- * @param  list<int>  $queryCounts
- * @return array{method: string, avg_ms: float, min_ms: float, max_ms: float, avg_queries: float, queries: list<int>}
- */
-function formatResult(string $method, array $times, array $queryCounts): array
-{
-    $avgTime = round(array_sum($times) / count($times), 2);
-    $avgQueries = round(array_sum($queryCounts) / count($queryCounts), 1);
-
-    return [
-        'method' => $method,
-        'avg_ms' => $avgTime,
-        'min_ms' => round(min($times), 2),
-        'max_ms' => round(max($times), 2),
-        'avg_queries' => $avgQueries,
-        'queries' => $queryCounts,
-    ];
-}
-
 function printResults(array $results, string $section): void
 {
     echo "\n--- {$section} ---\n";
     foreach ($results as $uri => $data) {
         echo sprintf(
-            "%-55s %8.2f ms (min: %8.2f, max: %8.2f) | %3.1f queries\n",
+            "%-55s median: %6.2f ms (mean: %6.2f, min: %6.2f, p95: %6.2f) | %3.1f queries\n",
             $uri,
-            $data['avg_ms'],
+            $data['median_ms'],
+            $data['mean_ms'],
             $data['min_ms'],
-            $data['max_ms'],
+            $data['p95_ms'],
             $data['avg_queries'],
         );
     }
@@ -175,10 +255,12 @@ $dashboardEndpoints = [
 $dashboardResults = benchmarkControllers($dashboardEndpoints);
 printResults($dashboardResults, 'Dashboard endpoints');
 
-// --- Bundle size ---
+// --- Bundle size (raw and gzipped) ---
 $buildDir = __DIR__.'/../public/build';
 $bundleSize = 0;
+$bundleSizeGzipped = 0;
 $bundleFiles = [];
+$bundleFilesGzipped = [];
 
 if (is_dir($buildDir)) {
     $iterator = new RecursiveIteratorIterator(
@@ -192,16 +274,32 @@ if (is_dir($buildDir)) {
                 $size = $file->getSize();
                 $bundleSize += $size;
                 $bundleFiles[$relative] = $size;
+
+                // Gzipped size (wire weight)
+                $content = file_get_contents($file->getPathname());
+                $gzipped = strlen(gzencode($content, 9));
+                $bundleSizeGzipped += $gzipped;
+                $bundleFilesGzipped[$relative] = $gzipped;
             }
         }
     }
 }
 
-echo "\n--- Bundle ---\n";
+echo "\n--- Bundle (raw / gzipped) ---\n";
 foreach ($bundleFiles as $file => $size) {
-    echo sprintf("  %-50s %s KB\n", $file, number_format($size / 1024, 1));
+    $gzipped = $bundleFilesGzipped[$file] ?? 0;
+    echo sprintf(
+        "  %-50s %7.1f KB / %5.1f KB\n",
+        $file,
+        $size / 1024,
+        $gzipped / 1024
+    );
 }
-echo sprintf("  Total: %s KB\n\n", number_format($bundleSize / 1024, 1));
+echo sprintf(
+    "  Total: %7.1f KB / %5.1f KB (gzipped)\n\n",
+    $bundleSize / 1024,
+    $bundleSizeGzipped / 1024
+);
 
 // --- Save ---
 $output = [
@@ -210,7 +308,9 @@ $output = [
     'dashboard' => $dashboardResults,
     'bundle' => [
         'total_kb' => round($bundleSize / 1024, 1),
+        'total_gzipped_kb' => round($bundleSizeGzipped / 1024, 1),
         'files' => $bundleFiles,
+        'files_gzipped' => $bundleFilesGzipped,
     ],
 ];
 
