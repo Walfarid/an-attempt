@@ -19,14 +19,25 @@ public/build
 public/hot
 public/storage
 storage/logs
+storage/app
+storage/inertia-devtools
 storage/framework/cache/data
+storage/framework/cache/*.php
 storage/framework/sessions
+storage/framework/testing
 storage/framework/views
 bootstrap/cache/*.php
 .phpunit.cache
 .codegraph
 .claude
 .playwright-mcp
+
+# Local dev database — MariaDB is the real store in every environment
+database/*.sqlite*
+
+# Tests and benchmarks never run in the image (composer installs --no-dev)
+tests
+benchmarks
 
 # Screenshots / scratch
 *.png
