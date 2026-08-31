@@ -34,6 +34,11 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   queue:
     image: sin.ocir.io/axcrmi3rzxfh/walfa-app:latest
@@ -48,6 +53,11 @@ services:
       - /opt/walfa/storage:/app/storage
     depends_on:
       - valkey
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   valkey:
     image: valkey/valkey:9.1
@@ -60,6 +70,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   valkey_data:
