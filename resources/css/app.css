@@ -83,16 +83,6 @@
     }
 }
 
-@layer utilities {
-    body,
-    html {
-        --font-sans:
-            'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif,
-            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
-    }
-}
-
 :root {
     --paper: #fafaf5;
     --ink: #1a1a18;
@@ -136,7 +126,6 @@
     --sidebar-accent-foreground: #1a1a18;
     --sidebar-border: #dddad2;
     --sidebar-ring: #17594a;
-    --sidebar: #fafaf5;
 }
 
 .dark {
@@ -181,7 +170,6 @@
     --sidebar-accent-foreground: #ece9e2;
     --sidebar-border: #2a2a27;
     --sidebar-ring: #5bb89a;
-    --sidebar: #141413;
 }
 
 @layer base {
@@ -213,18 +201,6 @@
     border-bottom: 0.5px solid var(--rule);
 }
 
-.d-rule-l {
-    border-left: 0.5px solid var(--rule);
-}
-
-.d-rule-r {
-    border-right: 0.5px solid var(--rule);
-}
-
-.d-rule-all {
-    border: 0.5px solid var(--rule);
-}
-
 .d-label {
     font-family: var(--font-mono);
     font-size: 10px;
@@ -242,20 +218,12 @@
     color: var(--accent);
 }
 
-.d-paper {
-    background-color: var(--paper);
-}
-
 .d-ink {
     color: var(--ink);
 }
 
 .d-ink-soft {
     color: var(--ink-soft);
-}
-
-.d-accent {
-    color: var(--accent);
 }
 
 .d-surface {
@@ -270,16 +238,6 @@
     background-image: radial-gradient(var(--rule) 1px, transparent 1px);
     background-size: 20px 20px;
     background-position: 0 0;
-}
-
-/* Legacy graph paper (kept for backwards compat) */
-.d-grid-bg {
-    background-color: var(--paper);
-    background-image:
-        linear-gradient(var(--rule) 1px, transparent 1px),
-        linear-gradient(90deg, var(--rule) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: -1px -1px;
 }
 
 /* ---- Hover states --------------------------------------------------- */
@@ -334,10 +292,6 @@
     border-color: var(--ink-soft);
 }
 
-.d-tabular {
-    font-variant-numeric: tabular-nums;
-}
-
 /* ---- Mobile menu transition ---------------------------------------- */
 
 .menu-enter-active,
@@ -357,63 +311,9 @@
     border-radius: 0 !important;
 }
 
-/* ---- New: Noise texture overlay ------------------------------------- */
-
-.d-noise::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 256px 256px;
-    pointer-events: none;
-    z-index: 0;
-}
-
 /* ---- New: Gradient accent border ------------------------------------ */
 
-.d-gradient-border {
-    position: relative;
-}
-
-.d-gradient-border::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(
-        90deg,
-        var(--accent),
-        var(--accent-secondary),
-        transparent
-    );
-}
-
 /* ---- New: Animated underline for links ------------------------------ */
-
-.d-link-underline {
-    position: relative;
-    text-decoration: none;
-}
-
-.d-link-underline::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 0;
-    height: 1px;
-    background: var(--accent);
-    transition: width 300ms cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-
-.d-link-underline:hover::after,
-.d-link-underline:focus-visible::after {
-    width: 100%;
-}
 
 /* ---- Site-scoped styles (public site only) -------------------------- */
 
@@ -610,13 +510,6 @@
 */
 
 @layer components {
-    [data-slot='card'] {
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        border: 0.5px solid var(--rule) !important;
-        background-color: var(--surface);
-    }
-
     [data-slot='button'] {
         border-radius: 0 !important;
         box-shadow: none !important;
@@ -654,12 +547,6 @@
 
     [data-slot='dropdown-menu-content'],
     [data-slot='select-content'] {
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        border: 0.5px solid var(--rule);
-    }
-
-    [data-slot='popover-content'] {
         border-radius: 0 !important;
         box-shadow: none !important;
         border: 0.5px solid var(--rule);

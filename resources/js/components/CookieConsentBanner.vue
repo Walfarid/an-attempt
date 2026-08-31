@@ -1,12 +1,21 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { Button } from '@/components/ui/button';
 import { useConsent } from '@/composables/useConsent';
 import { privacy } from '@/routes';
 
 const { bannerVisible, checkConsent, storeConsent } = useConsent();
 
 onMounted(checkConsent);
+
+// Plain <button>s instead of the ui/button component: Button pulls reka-ui
+// (Primitive) + the utils chunk (cva/cn) into the eager boot graph, which
+// would force 150+ KB of dashboard-only UI code onto every public page.
+// Classes mirror buttonVariants('sm') exactly (svg/aria-invalid/disabled
+// rules omitted — the banner buttons never have icons or those states).
+const acceptClasses =
+    'd-sharp inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-3 font-mono text-sm font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] bg-(--accent) text-(--paper) hover:bg-(--accent-hover)';
+const declineClasses =
+    'd-sharp inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border border-(--rule) bg-(--paper) px-3 font-mono text-sm font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] hover:bg-(--accent) dark:bg-input/30 dark:hover:bg-input/50';
 </script>
 
 <template>
@@ -31,21 +40,20 @@ onMounted(checkConsent);
                 >.
             </p>
             <div class="flex shrink-0 items-center gap-2">
-                <Button
-                    size="sm"
-                    class="d-sharp bg-(--accent) text-(--paper) hover:bg-(--accent-hover)"
+                <button
+                    type="button"
+                    :class="acceptClasses"
                     @click="storeConsent('accepted')"
                 >
                     Accept
-                </Button>
-                <Button
-                    size="sm"
-                    variant="outline"
-                    class="d-sharp"
+                </button>
+                <button
+                    type="button"
+                    :class="declineClasses"
                     @click="storeConsent('declined')"
                 >
                     Decline
-                </Button>
+                </button>
             </div>
         </div>
     </div>
