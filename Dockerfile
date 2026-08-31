@@ -57,11 +57,11 @@ RUN install-php-extensions pdo_mysql redis intl zip opcache bcmath pcntl exif \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-ENV APP_ENV=production \
-    PHP_OPCACHE_ENABLE=1 \
-    PHP_OPCACHE_REVALIDATE_FREQ=0 \
-    PHP_OPCACHE_VALIDATE_TIMESTAMPS=0 \
-    PHP_OPCACHE_MAX_ACCELERATED_FILES=20000
+ENV APP_ENV=production
+
+# Real opcache config (the old PHP_OPCACHE_* env vars were never read by the
+# image; see docker/zz-opcache.ini for the verification record).
+COPY docker/zz-opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
 
 WORKDIR /app
 COPY --from=vendor /app /app

@@ -53,5 +53,6 @@ frankenphp-worker.php
 # Docs and workflows are not needed in the image
 *.md
 docker/
+!docker/zz-opcache.ini
 compose.yaml
 compose.prod.yaml
