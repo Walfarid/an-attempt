@@ -655,3 +655,26 @@
 - `laravel/tinker` → require-dev (−4.8 MB prod image): ops-debugging tradeoff, user decision
 - Top-level devDependency hygiene moves (@inertiajs/vite, laravel-vite-plugin, tailwindcss, tw-animate-css): cosmetic, zero local gain
 - `skills.category` single-column index drop: dev-only composite drift is not canonical schema
+
+## Round 15: Async homepage sections + payload trim + prod opcache/JIT + harness truth
+
+### Changes applied
+1. **Homepage below-the-fold sections extracted to `HomeSections.vue`** — skills/experience/projects/writing/education+publications (620 lines, 12.3 KB raw / 3.7 KB gz) moved out of `Welcome.vue` (1332 → 653 lines) into their own chunk via `defineAsyncComponent`. Welcome chunk 29,268 → 17,940 B raw (−38.7%) / gz −32.3%; initial JS chain 445,368 → 432,238 B raw (−13.1 KB) / ~155.2 → 152.7 KB gz. Sections mount only when BOTH deferred props land and the chunk is ready (skeleton persists — zero visual change, hero pixel-diff 0.00% at 1440; verified at 390px, 0 console errors). Chunk warms after first paint via **double rAF** (the `setTimeout(0)` variant was measured and reverted — it pulls the section parse INTO the boot window and pushes LCP up).
+2. **Scroll-reveal race fixed as a side effect** — HomeSections emits `contentMounted` after DOM commit; `useScrollAnimations.refresh()` now runs post-commit (was a pre-commit props-watch): 27/28 `data-motion` elements now tracked vs 6/28 before.
+3. **Homepage deferred projects: drop `skills.category`** — −294 B deterministic on the deferred payload (aligns with dashboard; `Welcome.vue` renders `skill.name` only).
+4. **Production OPcache/JIT actually enabled** — verified against the real `dunglas/frankenphp:1.12.7-php8.5-bookworm` image: OPcache was on by default but **JIT off**, and the Dockerfile's `PHP_OPCACHE_*` env vars were dead config (proven: they change nothing in `php -i`). New `docker/zz-opcache.ini`: `validate_timestamps=0`, `revalidate_freq=0`, `max_accelerated_files=20000`, `jit=tracing`, `jit_buffer_size=64M`; Dockerfile COPYs it, dead env lines removed, `.dockerignore` negation added. Verified in a real staged `docker build` (JIT enabled, flag values applied). Expected prod CPU-bound gain 5-15% (not measurable locally — stated honestly). Takes effect on next deploy; no VM file sync needed.
+5. **Harness: true wire weight + measurement-truth fixes** — new `bytes_gz` per route (gzencode of masked body; csrf-token/devtools ULID are per-request random strings — masked with equal-length fixed stand-ins proven faithful to 1 byte). Also fixed a real byte-metric bug: `Laravel\Head\CurrentHead` is scoped and survives across in-process `$kernel->handle()` calls, so one route's head markup (incl. 878 B JSON-LD) leaked into every subsequent route's bytes — `forgetScopedInstances()` per route/endpoint now (harness-only concern; Octane forgets scoped instances per request). Dashboard analytics: 4.3 KB → **3.0 KB true** (1.7 KB content + default head).
+6. **Rules recorded** — pages.md updated for the async-sections pattern + double-rAF requirement; controllers.md for the deferred-projects category trim.
+
+### Results after Round 15
+- Query counts unchanged (all public routes 1.0; floor — analytics 3, projects 4 proven irreducible)
+- Wire bytes (median of 3, deterministic): `/` 11.5 KB raw / 2.6 KB gz, `/posts` 9.2 / 2.3, post show 9.6 / 2.1, sitemap 924 B / 279 B, dashboard analytics 3.0 KB / 834 B, projects 6.3 / 2.1, privacy-edit 6.6 / 2.6
+- Bundle: 867.7 KB raw / 268.5 KB gz (neutral total; bytes off first load); eager JS = [inertia, gsap]
+- Tests: **794 passed, 2226 assertions** (orchestrator-verified), Pint/PHPStan/vue-tsc clean; browser: 0 console errors, 28/28 motion elements, no overflow, all 6 sections render (dev DB has no publications rows — section hides when empty)
+
+### Rejected this round (with evidence)
+- twitter:title/description suppression (~300 B/page): vendor hardcodes, no knob
+- JSON escaping flags (`JSON_UNESCAPED_UNICODE`, 12-45 B/page): `<`/`/` escaping must stay, vendor-rendered
+- JSON-LD Person description (878 B on `/`): deliberate SEO content
+- Legacy `/favicon.ico` link (49 B): blade, cosmetic
+- gsap/Dashboard chart: already off critical path (verified)
