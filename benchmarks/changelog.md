@@ -703,3 +703,51 @@
 - Queries: all floors (public 1×4, analytics 3, projects 4, dashboard 1)
 - Bundle total: 869.4 KB raw / 269.6 KB gz (boundary overhead of splits + icon copies; critical-path bytes down ~200 KB)
 - Tests: **796 passed, 2231 assertions** (+2 new tracking tests, loader test updated); Pint/PHPStan/vue-tsc clean; browser 0 console errors at both viewports
+## Round 17: Final confirmation round — zero gains, ceiling confirmed
+
+### Full-area sweep, nothing kept (this is the goal's stop round)
+
+1. **Modulepreload (last boot-serialization candidate) — premise disproven, no change.** Laravel 13 core `@vite` already emits `<link rel=modulepreload>` for the entry + its static import closure (`app → inertia → rolldown-runtime`; `Vite::resolveImports`, static `imports` only — lazy chunks correctly excluded). Rendered HTML contains 7 modulepreloads incl. the 239 KB inertia chunk. Throttled cold-load proof (CDP, 80 ms RTT / 1.6 Mbps, 3 runs): all eager JS fetch starts ≤1 ms apart at HTML-parse time, no double fetches, no lazy chunks in the boot window, hero H1 median 2,761 ms, 0 console errors. A blade-level reimplementation would add duplicate URLs and a per-request manifest read for zero gain. The Round 16 "no JS preloads" note was based on the blade, not the rendered HTML. **Rule: never hand-add modulepreload to app.blade.php.**
+2. **Backend re-confirmation** — byte table identical to Round 16 (11.5/9.2/9.5 KB, 924 B sitemap, 3.0 KB analytics, 4.5 KB projects) except an unactionable ~100 B head-epoch jitter on privacy-edit (gz identical); query floors re-proven via DB::listen (public 1×4, deferred homepage 9 by design, analytics 3, projects 4); TrackPageView's sitemap exclusion verified through the real HTTP kernel (`/sitemap.xml` → 200 with +0 page_views inserts); `.env.example` resolves session/cache/queue to redis.
+3. **Infra re-verification** — `docker buildx build --check` clean; `docker/zz-opcache.ini` + `.dockerignore` negation proven via scratch builds (ini COPY succeeds, storage/app and .env COPYs fail as intended); all 14 action pins resolve to real upstream commits with exact-tag SHA matches (zizmor-safe); both compose files valid; `.htaccess`/`robots.txt` clean; deploy cache write/read refs symmetric.
+4. **Harness re-verification** — determinism 3/3 on all 14 endpoints (bytes AND bytes_gz); queries at floor; bundle 869.4/269.6 stable; `php -l` + Pint clean. New trap documented: measuring dashboard endpoints FIRST in a fresh process under-measures them by exactly the head block (1,376 B) — canonical public-first order is production-true (rule recorded in `.ai/rules/benchmarks.md`).
+
+### Verdict
+Every area swept, every candidate measured, zero changes kept. The project is at its measured ceiling.
+
+---
+
+## Cumulative summary (rounds 13-17 of this goal run; original baseline from rounds 1-12 retained in earlier entries)
+
+| Metric | Original baseline | Current | Net change |
+|---|---|---|---|
+| `/` queries | 7.2 | **1.0** | −86% |
+| `/posts` queries | 4.0 | **1.0** | −75% |
+| Post show queries | 5.0 | **1.0** | −80% |
+| Sitemap queries | 4.0 | **1.0** | −75% |
+| Dashboard analytics queries | 6 | **3.0** | −50% |
+| Dashboard projects queries | n/a (4) | **4.0** | proven irreducible |
+| Eager JS boot chain | 550.7 KB (Round 13) | **278.6 KB raw / ~95 KB gz** | **−272 KB raw** |
+| Eager module graph | inertia+utils+reka-ui+gsap | **[inertia]** | lucide/sonner/reka-ui/gsap/utils all lazy |
+| Wire bytes (new metric) | — | `/` 11.5 KB raw / 2.6 KB gz; posts 9.2/2.3; show 9.5/2.1; sitemap 924 B/279 B | floor (incl. head + SEO JSON-LD) |
+| Bundle total | 863.4 KB | 869.4 KB raw / 269.6 KB gz | +0.7% (boundary overhead of splits) |
+| Server-side time | 9.5-30 ms medians | 24-27 ms medians (machine-load dependent; deterministic wins are queries/bytes) | see query/bytes rows |
+| Production runtime | opcache defaults, JIT off, dead PHP_OPCACHE_* envs | **JIT tracing 64M, validate_timestamps=0, 20k files** (verified in built image) | expected 5-15% CPU-bound |
+| CI | 2 workflows | 1 + DAST on PRs/nightly only, composer+npm caches everywhere, parallel tests | ~5-10 min saved/push |
+| Deploy build | registry cache written but never read (cold every build) | cache-from reads IMAGE-cache | est. 3-8 min/job |
+| Docker context | 208 MB repo into image | 1.71 MB (+ JIT ini baked) | −99% context, PII hygiene |
+| Dev/CI env template | SESSION/CACHE/QUEUE=database (silent 2-3 extra queries/request) | redis + REDIS_PERSISTENT | latent bug fixed |
+| Indexes | ad-hoc | composite screenshots (proj, sort_order); 3 redundant singles dropped | filesort eliminated |
+| Bugs fixed this run | — | InfiniteScroll scroll prop, sitemap cache header overwritten by Caddy, sitemap analytics pollution, loader test staleness, teaser null-body (r12) | 5 |
+| Tests | 791 | **796 passed, 2231 assertions** (+5 net) | green |
+| Rules recorded | — | .ai/rules: controllers, components, posts, migrations, site, lib, benchmarks, workflows + index | durable guidance |
+
+### Deliberately excluded (needs user judgment, not code)
+- `laravel/tinker` → require-dev (−4.8 MB prod image) — ops-debugging tradeoff
+- `skills.category` single-column index drop — dev-only composite drift is not canonical schema
+- Redundant `pageviews` KPI card in dashboard analytics (~105 B) — visible UI, not a wire trim
+- CDN / edge caching / image transformation pipeline / service worker — external infrastructure
+- prod-VM verification of JIT gain — no prod access
+
+### Baseline final numbers (Round 17, median of runs)
+`/` 26.35 ms / 11.5 KB / 1.0 q · `/posts` 27.00 / 9.2 KB / 1.0 q · post show 26.87 / 9.5 KB / 1.0 q · sitemap 24.92 ms / 924 B / 1.0 q · analytics 3.04 ms / 3.0 q · projects 2.75 ms / 4.0 q · bundle 869.4 KB / 269.6 KB gz · tests 796 passed

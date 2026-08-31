@@ -4,6 +4,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| benchmarks/** | .ai/rules/benchmarks.md |
 | resources/js/components/CookieConsentBanner.vue | .ai/rules/components.md |
 | app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php | .ai/rules/controllers.md |
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
