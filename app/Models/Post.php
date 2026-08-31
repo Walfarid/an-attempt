@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  * @property string $teaser_text list teaser, set before serialization by controllers
  * @property string $body_html Markdown body rendered to HTML, set before serialization
  * @property string|null $body_preview Substring of body for teaser computation
+ * @property string $recent_json JSON array of recent posts ({id, slug, title}), set by the post page query
  */
 class Post extends Model
 {

@@ -42,6 +42,25 @@ test('draft posts are not found on the public site', function () {
     $this->get("/posts/{$post->slug}")->assertNotFound();
 });
 
+test('the post page includes recent published posts', function () {
+    Post::factory()->create([
+        'title' => 'An older note',
+        'published_at' => now()->subDays(2),
+    ]);
+    $newer = Post::factory()->create([
+        'title' => 'A newer note',
+        'published_at' => now()->subDay(),
+    ]);
+
+    // `recent` is inlined into the post query as JSON — keep the shape covered.
+    $this->get("/posts/{$newer->slug}")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('posts/Show')
+            ->where('recent.0.title', 'An older note')
+            ->where('recent.0.slug', Post::query()->where('title', 'An older note')->value('slug')));
+});
+
 test('future-dated posts are not found until their publish time', function () {
     $post = Post::factory()->create(['published_at' => now()->addWeek()]);
 

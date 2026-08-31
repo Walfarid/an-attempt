@@ -24,7 +24,7 @@ Route::get('sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 
 Route::get('posts', [BlogController::class, 'index'])->name('posts.index')
     ->withHead(title: 'Blog', description: 'Thoughts on software development, APIs, and deployment platforms.');
-Route::get('posts/{post:slug}', [BlogController::class, 'show'])->name('posts.show');
+Route::get('posts/{post}', [BlogController::class, 'show'])->name('posts.show');
 
 Route::get('privacy', [PrivacyController::class, 'show'])->name('privacy')
     ->withHead(title: 'Privacy', description: 'What this site collects, which third-party analytics it uses, and how to change your consent choice.');
