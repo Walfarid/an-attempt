@@ -19,6 +19,9 @@
  *   a lower-bound wire-weight proxy (the edge serves zstd/br/gzip). Per-request
  *   session identifiers (csrf-token meta, devtools ULID) are masked before
  *   gzipping so the metric is reproducible across runs.
+ * - Deferred props: partial-reload payload for Inertia::defer() groups,
+ *   measured with the exact X-Inertia partial headers (this is the largest
+ *   public payload and does not appear in the initial-page measurement)
  * - Gzipped bundle size (wire weight)
  */
 
@@ -33,6 +36,7 @@ use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\ProjectController;
 use App\Http\Controllers\Dashboard\PublicationController;
 use App\Http\Controllers\Dashboard\SkillController;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Post;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\Request;
@@ -201,6 +205,89 @@ function benchmarkRoutes(array $routes): array
 }
 
 /**
+ * Benchmark an Inertia deferred-props partial reload — the second request the
+ * frontend makes for Inertia::defer() groups (loadDeferredProps('default')).
+ * Sends the exact partial-reload headers and measures the JSON payload the
+ * browser actually receives. Runs between the public routes and the dashboard
+ * controllers so the head-prop ordering rule still holds.
+ *
+ * @param  list<array{0: string, 1: string, 2: string, 3: string}>  $partials  [method, uri, component, comma-separated prop keys]
+ * @return array<string, array{method: string, median_ms: float, mean_ms: float, min_ms: float, p95_ms: float, avg_queries: float, queries: list<int>, bytes: int, bytes_gz: int}>
+ */
+function benchmarkDeferredProps(array $partials): array
+{
+    global $app;
+    $results = [];
+    $middleware = new HandleInertiaRequests;
+
+    foreach ($partials as [$method, $uri, $component, $only]) {
+        $makeRequest = function () use ($method, $uri, $component, $only, $middleware) {
+            $request = Request::create($uri, $method);
+            $request->headers->set(Header::INERTIA, 'true');
+            $request->headers->set(Header::PARTIAL_COMPONENT, $component);
+            $request->headers->set(Header::PARTIAL_ONLY, $only);
+            $version = $middleware->version($request);
+            if ($version !== null) {
+                $request->headers->set(Header::VERSION, $version);
+            }
+
+            return $request;
+        };
+
+        $app->forgetScopedInstances();
+
+        // Warmup: run once to warm caches, discard result
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        try {
+            $request = $makeRequest();
+            $response = $app->handle($request);
+            $app->terminate($request, $response);
+        } catch (Throwable) {
+            // Warmup error is okay, we're just warming caches
+        }
+        DB::disableQueryLog();
+
+        $times = [];
+        $queryCounts = [];
+        $bytes = 0;
+        $bytesGz = 0;
+
+        $iterations = 7;
+
+        for ($i = 0; $i < $iterations; $i++) {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+
+            $request = $makeRequest();
+
+            $start = microtime(true);
+            $response = null;
+            try {
+                $response = $app->handle($request);
+                $app->terminate($request, $response);
+            } catch (Throwable) {
+                // Measure time even on error.
+            }
+            $elapsed = (microtime(true) - $start) * 1000;
+            $content = $response !== null ? $response->getContent() : '';
+            $bytes = strlen($content);
+            $bytesGz = strlen(gzencode(maskPerRequestIdentifiers($content), 9));
+
+            $queries = DB::getQueryLog();
+            DB::disableQueryLog();
+
+            $times[] = $elapsed;
+            $queryCounts[] = count($queries);
+        }
+
+        $results["{$uri} (deferred: {$only})"] = formatResult($method, $times, $queryCounts, $bytes, $bytesGz);
+    }
+
+    return $results;
+}
+
+/**
  * Measure the serialized response size (raw and gzipped) of a controller result.
  *
  * Inertia responses are serialized through toResponse() with an X-Inertia
@@ -333,11 +420,20 @@ $publicRoutes = [
     ['GET', '/'],
     ['GET', '/posts'],
     ['GET', '/posts/what-clean-architecture-means-in-practice'],
+    ['GET', '/privacy'],
     ['GET', '/sitemap.xml'],
 ];
 
 $publicResults = benchmarkRoutes($publicRoutes);
 printResults($publicResults, 'Public routes');
+
+// --- Deferred props (partial reload payloads, exact Inertia headers) ---
+$deferredProps = [
+    ['GET', '/', 'Welcome', 'skills,experiences,projects,educations,publications,posts'],
+];
+
+$deferredResults = benchmarkDeferredProps($deferredProps);
+printResults($deferredResults, 'Deferred props');
 
 // --- Dashboard endpoints (direct controller calls, bypasses auth) ---
 $dashboardEndpoints = [
@@ -406,6 +502,7 @@ echo sprintf(
 $output = [
     'timestamp' => now()->toIso8601String(),
     'routes' => $publicResults,
+    'deferred' => $deferredResults,
     'dashboard' => $dashboardResults,
     'bundle' => [
         'total_kb' => round($bundleSize / 1024, 1),
