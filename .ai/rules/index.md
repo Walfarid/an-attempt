@@ -5,7 +5,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | Applies to | Rule file |
 | --- | --- |
 | resources/js/components/CookieConsentBanner.vue | .ai/rules/components.md |
-| app/Http/Controllers/BlogController.php | .ai/rules/controllers.md |
+| app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php | .ai/rules/controllers.md |
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
 | compose.prod.yaml | .ai/rules/general.md |
 | database/migrations/** | .ai/rules/migrations.md |

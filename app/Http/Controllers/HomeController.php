@@ -78,7 +78,7 @@ class HomeController extends Controller
             'projects' => Inertia::defer(fn () => Project::query()
                 ->select(['id', 'title', 'description', 'year', 'live_url', 'repo_url'])
                 ->published()
-                ->with(['skills' => fn ($q) => $q->select(['skills.id', 'skills.name', 'skills.category']), 'screenshots' => fn ($q) => $q->select(['id', 'project_id', 'path', 'alt'])])
+                ->with(['skills' => fn ($q) => $q->select(['skills.id', 'skills.name']), 'screenshots' => fn ($q) => $q->select(['id', 'project_id', 'path', 'alt'])])
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get()
