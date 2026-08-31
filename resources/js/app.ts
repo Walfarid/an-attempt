@@ -3,7 +3,6 @@ import { createApp, defineAsyncComponent, defineComponent, h } from 'vue';
 import CookieConsentBanner from '@/components/CookieConsentBanner.vue';
 import PageDrawLoader from '@/components/site/PageDrawLoader.vue';
 import { initializeTheme } from '@/composables/useAppearance';
-import { initAutoClickTracker } from '@/composables/useClickTracker';
 import { initRouteTransition } from '@/composables/useRouteTransition';
 import { initializeFlashToast } from '@/lib/flashToast';
 
@@ -72,6 +71,3 @@ initializeTheme();
 
 // This will listen for flash toast data from the server...
 initializeFlashToast();
-
-// Auto-track clicks on elements with data-track attribute...
-initAutoClickTracker();
