@@ -598,3 +598,30 @@
 - Database connection pooling (beyond Octane's per-worker connections)
 - Image transformation pipeline (WebP conversion, responsive sizes)
 - Service Worker for offline caching
+
+## Round 13: Harness fidelity upgrade + payload trim + index + CI/ops hardening
+
+### Changes applied
+1. **Benchmark harness rebuilt for fidelity** (`benchmarks/baseline.php`) — warmup request per route/endpoint before timing (eliminates cold-cache outliers: `/` max/min ratio went from 6.3x to 1.08x), **median as headline metric** (mean/min/p95 kept in JSON), adaptive iterations (7 public, 15 for sub-5ms dashboard endpoints), and gzipped bundle sizes (wire weight). CLI contract unchanged. **Note:** headline numbers from this round on are medians with warmup and are not directly comparable to earlier means.
+2. **Dashboard projects payload trim** — `category` removed from both the project `skills` eager load and the top-level skills selector list (still used for ordering server-side; UI never displays it). Payload −1177 bytes (−25%). `Skill.category` is now optional in TS; `Welcome.vue` guards the public grouping (homepage still sends category).
+3. **PHPStan fix** — `Dashboard\PostController::show()` documented return array shape.
+4. **Composite index** `project_screenshots (project_id, sort_order)` — eliminates temp-B-tree/filesort for screenshot ordering in eager loads (EXPLAIN before: index `project_id` + temp B-tree for ORDER BY; after: composite index only). Confirmed serving both single-project and IN-clause lookups on MariaDB.
+5. **DAST trigger change** — removed `push: [main]` (5-10 min duplicate of ci.yml per push); now runs on **pull_request + nightly schedule + manual dispatch**. Rule recorded in `.ai/rules/workflows.md` + mapped in `.ai/rules/index.md`.
+6. **Production log bounds** — `compose.prod.yaml`: `json-file` driver, `max-size: 10m`, `max-file: 3` on app, queue, valkey (max 90 MB total).
+
+### Investigated, reverted or rejected
+- **Vue/Inertia chunk separation** — the 233.5 KB `inertia` chunk contains Vue core (Rolldown's `manualChunks` function form does not separate `@inertiajs/vue3`'s transitive `vue` imports). Migrating to `codeSplitting.groups` separated Vue (115.8 KB) but raised total bundle +1.46 KB → reverted, no gain.
+- **Dashboard projects 4 queries** — verified irreducible: projects + skills (attached) + screenshots + all-skills (selector) are four distinct datasets.
+- **Homepage 2 queries** — verified irreducible: `profiles` row + `experiences` aggregate are different tables.
+- **Redundant single-column indexes** (`page_views.viewed_at`, `project_screenshots.project_id`, `skills.category`) — fully covered by existing composites; left in place (migration churn not worth it on tiny tables), flagged for future cleanup.
+- Classic hot paths already covered by rounds 1-12; no new O(n²), N+1, or unused serialized fields found anywhere else (all 17 controllers re-audited).
+
+### Results after Round 13 (new harness, median of 3 runs)
+- `/`: 9.83ms median / 9.79ms mean / p95 10.20ms | 2.0 queries
+- `/posts`: 9.61ms / 9.60ms / 9.75ms | 1.0 queries
+- Post show: 9.59ms / 9.54ms / 9.67ms | 2.0 queries
+- `/sitemap.xml`: 6.68ms / 6.95ms / 7.50ms | 1.0 queries
+- Dashboard analytics: 2.19ms | 3.0 queries; projects: 1.95ms | 4.0 queries; posts: 0.28ms | 1.0; others: 0.27-0.94ms | 1.0 queries
+- Bundle: 869.8 KB raw / **268.8 KB gzipped** (69% compression)
+- Tests: full suite green (verified by orchestrator); Pint, PHPStan, vue-tsc clean
+- CI: ~5-10 min saved per push (DAST off push); PRs still scanned before merge
