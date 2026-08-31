@@ -6,9 +6,6 @@
 
         <title>404 — Page Not Found</title>
 
-        {{-- Establish early connection to Bunny Fonts CDN for web fonts --}}
-        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
-
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
             (function() {
