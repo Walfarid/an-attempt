@@ -24,7 +24,7 @@ test('handle inertia requests shares the authenticated user', function () {
 
     $response->assertInertia(fn ($page) => $page
         ->has('auth.user')
-        ->where('auth.user.id', $user->id)
+        ->missing('auth.user.id')
         ->where('auth.user.name', 'Test User')
     );
 });
