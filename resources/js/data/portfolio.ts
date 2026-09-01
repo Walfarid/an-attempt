@@ -90,7 +90,6 @@ export type Post = {
     excerpt?: string | null;
     body?: string;
     cover_url: string | null;
-    diagram_url?: string | null;
     published_at: string | null;
 };
 

@@ -7,7 +7,6 @@ import {
     Plus,
     SquarePen,
     Trash2,
-    Workflow,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import Heading from '@/components/Heading.vue';
@@ -39,7 +38,6 @@ import { Label } from '@/components/ui/label';
 import type { Post } from '@/data/portfolio';
 import postsRoute from '@/routes/dashboard/posts';
 import coverRoute from '@/routes/dashboard/posts/cover';
-import diagramRoute from '@/routes/dashboard/posts/diagram';
 
 defineOptions({
     layout: {
@@ -96,15 +94,6 @@ const coverPost = computed(
 );
 const coverForm = useForm({
     cover: null as File | null,
-});
-
-const diagramPostId = ref<number | null>(null);
-const diagramOpen = ref(false);
-const diagramPost = computed(
-    () => posts.find((p) => p.id === diagramPostId.value) ?? null,
-);
-const diagramForm = useForm({
-    diagram: null as File | null,
 });
 
 function startCreate() {
@@ -202,40 +191,6 @@ function saveCover() {
     coverForm.put(coverRoute.update.url({ post: postId }), {
         forceFormData: true,
         onSuccess: () => coverForm.reset(),
-    });
-}
-
-function openDiagram(post: Post) {
-    diagramPostId.value = post.id;
-    diagramForm.reset();
-    diagramOpen.value = true;
-}
-
-function saveDiagram() {
-    const postId = diagramPostId.value;
-
-    if (!postId || !diagramForm.diagram) {
-        return;
-    }
-
-    diagramForm.put(diagramRoute.update.url({ post: postId }), {
-        forceFormData: true,
-        onSuccess: () => diagramForm.reset(),
-    });
-}
-
-const diagramDeleteOpen = ref(false);
-
-function confirmRemoveDiagram() {
-    const postId = diagramPostId.value;
-
-    if (!postId) {
-        return;
-    }
-
-    diagramDeleteOpen.value = false;
-    diagramForm.delete(diagramRoute.destroy.url({ post: postId }), {
-        preserveScroll: true,
     });
 }
 
@@ -481,105 +436,6 @@ function publishLabel(post: Post): string {
                     </form>
                 </DialogContent>
             </Dialog>
-
-            <!-- Diagram dialog -->
-            <Dialog v-model:open="diagramOpen">
-                <DialogContent class="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Interactive diagram</DialogTitle>
-                        <DialogDescription>
-                            {{ diagramPost?.title ?? '' }}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <iframe
-                        v-if="diagramPost?.diagram_url"
-                        :src="diagramPost.diagram_url"
-                        title=""
-                        loading="lazy"
-                        class="h-64 w-full border border-[var(--rule)] bg-white"
-                    />
-
-                    <form class="space-y-3" @submit.prevent="saveDiagram">
-                        <div class="grid gap-2">
-                            <Label for="post-diagram" class="d-label"
-                                >HTML file</Label
-                            >
-                            <Input
-                                id="post-diagram"
-                                type="file"
-                                accept="text/html,.html,.htm"
-                                @change="
-                                    diagramForm.diagram =
-                                        ($event.target as HTMLInputElement)
-                                            .files?.[0] ?? null
-                                "
-                                class="d-sharp"
-                            />
-                            <p class="d-ink-soft text-xs">
-                                Embed it in the body with
-                                <code
-                                    class="rounded bg-[var(--surface)] px-1 font-mono text-[11px] text-[var(--ink)]"
-                                    >@@diagram {{ diagramPost?.slug ?? '' }}@@</code
-                                >
-                            </p>
-                            <InputError :message="diagramForm.errors.diagram" />
-                        </div>
-                        <div class="flex gap-2">
-                            <Button
-                                type="submit"
-                                variant="secondary"
-                                :disabled="diagramForm.processing"
-                                class="flex-1"
-                            >
-                                <LoaderCircle
-                                    v-if="diagramForm.processing"
-                                    class="size-4 animate-spin"
-                                    aria-hidden="true"
-                                />
-                                <Workflow v-else class="size-4" />
-                                {{ diagramPost?.diagram_url ? 'Replace' : 'Upload' }}
-                            </Button>
-                            <Button
-                                v-if="diagramPost?.diagram_url"
-                                type="button"
-                                variant="destructive"
-                                :disabled="diagramForm.processing"
-                                @click="diagramDeleteOpen = true"
-                            >
-                                <Trash2 class="size-4" />
-                                Remove
-                            </Button>
-
-                            <AlertDialog v-model:open="diagramDeleteOpen">
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                            Remove diagram?
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            The diagram of “{{
-                                                diagramPost?.title
-                                            }}” will be permanently removed.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel
-                                            >Cancel</AlertDialogCancel
-                                        >
-                                        <AlertDialogAction
-                                            variant="destructive"
-                                            @click="confirmRemoveDiagram"
-                                        >
-                                            Remove
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
-                    </form>
-                </DialogContent>
-            </Dialog>
         </div>
 
         <!-- Delete post confirm -->
@@ -588,8 +444,8 @@ function publishLabel(post: Post): string {
                 <AlertDialogHeader>
                     <AlertDialogTitle>Delete post?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        “{{ deleteTarget?.title }}” and its cover image and
-                        diagram will be permanently removed.
+                        “{{ deleteTarget?.title }}” and its cover image will be
+                        permanently removed.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -645,16 +501,6 @@ function publishLabel(post: Post): string {
                                     <ImageUp class="size-4" />
                                     <span class="sr-only"
                                         >Cover of {{ post.title }}</span
-                                    >
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    @click="openDiagram(post)"
-                                >
-                                    <Workflow class="size-4" />
-                                    <span class="sr-only"
-                                        >Diagram of {{ post.title }}</span
                                     >
                                 </Button>
                                 <Button
