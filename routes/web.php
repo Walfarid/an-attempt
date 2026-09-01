@@ -15,18 +15,27 @@ use App\Http\Controllers\Dashboard\ScreenshotController;
 use App\Http\Controllers\Dashboard\SkillController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrivacyController;
+use App\Http\Middleware\CachePublicResponses;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])
+    ->middleware(CachePublicResponses::class)
+    ->name('home');
 
 Route::get('sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 
-Route::get('posts', [BlogController::class, 'index'])->name('posts.index')
+Route::get('posts', [BlogController::class, 'index'])
+    ->middleware(CachePublicResponses::class)
+    ->name('posts.index')
     ->withHead(title: 'Blog', description: 'Thoughts on software development, APIs, and deployment platforms.');
-Route::get('posts/{post}', [BlogController::class, 'show'])->name('posts.show');
+Route::get('posts/{post}', [BlogController::class, 'show'])
+    ->middleware(CachePublicResponses::class)
+    ->name('posts.show');
 
-Route::get('privacy', [PrivacyController::class, 'show'])->name('privacy')
+Route::get('privacy', [PrivacyController::class, 'show'])
+    ->middleware(CachePublicResponses::class)
+    ->name('privacy')
     ->withHead(title: 'Privacy', description: 'What this site collects, which third-party analytics it uses, and how to change your consent choice.');
 
 Route::post('contact', [ContactController::class, 'store'])
