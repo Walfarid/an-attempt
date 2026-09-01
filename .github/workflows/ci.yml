@@ -139,8 +139,10 @@ jobs:
           persist-credentials: false
 
       - name: Grant parallel-test database privileges
+        env:
+          MARIADB_CONTAINER_ID: ${{ job.services.mariadb.id }}
         run: |
-          docker exec ${{ job.services.mariadb.id }} mariadb -uroot -proot -e \
+          docker exec "$MARIADB_CONTAINER_ID" mariadb -uroot -proot -e \
             "GRANT ALL PRIVILEGES ON \`walfa_testing%\`.* TO 'laravel'@'%'; FLUSH PRIVILEGES;"
 
       - name: Set up PHP
