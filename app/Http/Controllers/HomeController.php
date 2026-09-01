@@ -22,7 +22,7 @@ class HomeController extends Controller
     /**
      * The public portfolio homepage.
      *
-     * The hero, stats, and contact form ship with the initial page; the
+     * The hero and stats ship with the initial page; the
      * below-the-fold sections are deferred so the first paint stays fast.
      * `once()` keeps them cached client-side for back/forward visits.
      *
@@ -83,7 +83,7 @@ class HomeController extends Controller
         return Inertia::render('Welcome', [
             'profile' => $resolveProfile,
             'stats' => fn () => $this->stats($resolveProfile()),
-            'turnstile_site_key' => config('contact.turnstile_site_key'),
+            'contact_email' => config('contact.notification_email'),
             'skills' => Inertia::defer(fn () => Skill::query()
                 ->select(['id', 'name', 'category'])
                 ->orderBy('category')
@@ -103,6 +103,9 @@ class HomeController extends Controller
                 ->each(function (Project $project): void {
                     // Public cards render screenshots[0] url/alt only (id is
                     // dashboard-only, needed for deletion) — keep it off the wire.
+                    // Only keep the first screenshot to reduce payload.
+                    $firstScreenshot = $project->screenshots->first();
+                    $project->setRelation('screenshots', $firstScreenshot ? collect([$firstScreenshot]) : collect());
                     $project->screenshots->each->makeHidden([
                         'id', 'project_id', 'path', 'sort_order', 'created_at', 'updated_at',
                     ]);
