@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Post;
+use App\Models\PrivacyPolicy;
 
 test('sitemap returns xml content', function () {
     $response = $this->get('/sitemap.xml');
@@ -33,4 +34,14 @@ test('sitemap excludes unpublished posts', function () {
 
     $response->assertOk()
         ->assertDontSee(route('posts.show', $post->slug));
+});
+
+test('sitemap includes privacy page', function () {
+    $privacy = PrivacyPolicy::factory()->create(['body' => 'Sample privacy body.']);
+
+    $response = $this->get('/sitemap.xml');
+
+    $response->assertOk()
+        ->assertSee(url('/privacy'))
+        ->assertSee($privacy->updated_at->toW3cString());
 });
