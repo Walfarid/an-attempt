@@ -100,6 +100,7 @@ export function initRouteTransition(root: HTMLElement | null) {
 
         if (path === '/') {
             gsap.set(root, { autoAlpha: 1, y: 0 });
+            root.style.removeProperty('transform');
 
             return;
         }
@@ -110,6 +111,15 @@ export function initRouteTransition(root: HTMLElement | null) {
             duration: REVEAL_DURATION,
             ease: 'power2.out',
             overwrite: true,
+            onComplete: () => {
+                // GSAP leaves `transform: translateY(0px)` as an inline
+                // style even after the animation ends. Any `transform` —
+                // even a zero-value one — creates a new containing block,
+                // which breaks `position: fixed` for descendants (the
+                // dashboard sidebar scrolls with the page instead of
+                // staying pinned). Clear it once the reveal is done.
+                root.style.removeProperty('transform');
+            },
         });
     };
 
@@ -121,6 +131,7 @@ export function initRouteTransition(root: HTMLElement | null) {
         active = false;
         const gsap = await loadGsap();
         gsap.set(root, { autoAlpha: 1, y: 0 });
+        root.style.removeProperty('transform');
     };
 
     // Listeners live for the lifetime of the app — deliberate.
