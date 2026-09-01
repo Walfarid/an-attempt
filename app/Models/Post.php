@@ -46,6 +46,7 @@ class Post extends Model
         'excerpt',
         'body',
         'cover_image_path',
+        'diagram_path',
         'published_at',
     ];
 
@@ -99,6 +100,22 @@ class Post extends Model
             }
 
             return Storage::disk('media')->url($this->cover_image_path);
+        })->shouldCache();
+    }
+
+    /**
+     * The embeddable diagram URL, when a diagram is attached.
+     *
+     * @return Attribute<string|null, never>
+     */
+    protected function diagramUrl(): Attribute
+    {
+        return Attribute::make(get: function () {
+            if ($this->diagram_path === null) {
+                return null;
+            }
+
+            return route('diagrams.show', ['diagram' => $this->slug]);
         })->shouldCache();
     }
 
