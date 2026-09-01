@@ -201,28 +201,6 @@ test('handles setext-style headings', function () {
     expect($html)->toContain('<h1>Heading</h1>');
 });
 
-test('renders the diagram token as a same-origin iframe', function () {
-    $html = Markdown::toHtml('@@diagram richardson-maturity@@');
-
-    expect($html)->toEqual(
-        '<p><iframe src="/diagrams/richardson-maturity" class="diagram-embed" title="Interactive diagram: richardson-maturity" loading="lazy" allowfullscreen=""></iframe></p>'."\n"
-    );
-});
-
-test('diagram tokens with unsafe characters are left untouched', function () {
-    $html = Markdown::toHtml('@@diagram ../../secrets@@');
-
-    expect($html)->not->toContain('<iframe')
-        ->and($html)->toContain('@@diagram ../../secrets@@');
-});
-
-test('diagram tokens inside code blocks are not rendered', function () {
-    $html = Markdown::toHtml("```\n@@diagram richardson-maturity@@\n```");
-
-    expect($html)->not->toContain('<iframe')
-        ->and($html)->toContain('@@diagram richardson-maturity@@');
-});
-
 test('converts automatic links', function () {
     $html = Markdown::toHtml('<https://example.com>');
 

@@ -2,16 +2,11 @@
 
 namespace App\Support;
 
-use App\Support\Markdown\DiagramInlineParser;
-use App\Support\Markdown\DiagramNode;
-use App\Support\Markdown\DiagramRenderer;
-use League\CommonMark\Environment\Environment;
-use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
-use League\CommonMark\MarkdownConverter;
+use League\CommonMark\CommonMarkConverter;
 
 class Markdown
 {
-    private static ?MarkdownConverter $converter = null;
+    private static ?CommonMarkConverter $converter = null;
 
     /** @var array<string, string> In-memory cache for rendered Markdown */
     private static array $cache = [];
@@ -26,17 +21,11 @@ class Markdown
         }
 
         if (self::$converter === null) {
-            $environment = new Environment([
+            self::$converter = new CommonMarkConverter([
                 'html_input' => 'strip',
                 'allow_unsafe_links' => false,
                 'max_nesting_level' => 20,
             ]);
-
-            $environment->addExtension(new CommonMarkCoreExtension);
-            $environment->addInlineParser(new DiagramInlineParser);
-            $environment->addRenderer(DiagramNode::class, new DiagramRenderer);
-
-            self::$converter = new MarkdownConverter($environment);
         }
 
         $html = (string) self::$converter->convert($markdown);

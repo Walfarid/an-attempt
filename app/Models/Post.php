@@ -59,13 +59,12 @@ class Post extends Model
         '/[*_`]{1,3}/',
         '/!\[.*?\]\(.+?\)/',
         '/\[(.+?)\]\(.+?\)/',
-        '/@@diagram\s+[a-z0-9-]+@@/',
     ];
 
     /**
      * @var list<string>
      */
-    private const TEASER_REPLACEMENTS = ['$1', '', '', '', ''];
+    private const TEASER_REPLACEMENTS = ['$1', '', '', ''];
 
     protected function casts(): array
     {
