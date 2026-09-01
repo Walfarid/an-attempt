@@ -69,6 +69,10 @@ return [
         | it targets Oracle Cloud's S3-compatible endpoint — switching is an
         | AWS_* .env change only, no code changes.
         |
+        | Reads (public URLs) are served through MEDIA_URL — the CDN in
+        | production (https://media.walfa.my.id), Garage in dev. Writes go
+        | directly to the S3 endpoint (AWS_ENDPOINT), bypassing the CDN.
+        |
         */
 
         'media' => [
@@ -77,7 +81,7 @@ return [
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
+            'url' => env('MEDIA_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => true,
