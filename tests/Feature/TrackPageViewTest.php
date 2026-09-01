@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\PageView;
 use App\Models\Post;
 use App\Models\Profile;
-use Illuminate\Http\Request;
 
 test('page views are recorded for public pages', function () {
     Profile::factory()->create();
@@ -22,24 +20,6 @@ test('machine-facing resources are not recorded as page views', function () {
 
     expect(PageView::where('path', 'sitemap.xml')->count())->toBe(0);
 });
-
-/**
- * Inertia headers mirroring what the real client sends; the version header is
- * only needed when a build manifest exists (local dev), absent in CI.
- *
- * @param  array<string, string>  $extra
- * @return array<string, string>
- */
-function inertiaHeaders(array $extra = []): array
-{
-    $version = (new HandleInertiaRequests)->version(Request::create('/'));
-
-    return array_filter([
-        'X-Inertia' => 'true',
-        'X-Inertia-Version' => $version,
-        ...$extra,
-    ]);
-}
 
 test('inertia partial reloads are not recorded as page views', function () {
     Profile::factory()->create();

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 /*
@@ -47,4 +49,22 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Inertia headers mirroring what the real client sends; the version header is
+ * only needed when a build manifest exists (local dev), absent in CI.
+ *
+ * @param  array<string, string>  $extra
+ * @return array<string, string>
+ */
+function inertiaHeaders(array $extra = []): array
+{
+    $version = (new HandleInertiaRequests)->version(Request::create('/'));
+
+    return array_filter([
+        'X-Inertia' => 'true',
+        'X-Inertia-Version' => $version,
+        ...$extra,
+    ]);
 }

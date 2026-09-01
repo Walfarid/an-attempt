@@ -18,7 +18,7 @@ class PrivacyPolicyFactory extends Factory
     public function definition(): array
     {
         return [
-            'body' => "## Privacy disclosure\n\n".fake()->paragraphs(3, true),
+            'body' => "## Privacy disclosure\n\n".fake()->text(500),
         ];
     }
 }
