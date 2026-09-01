@@ -38,7 +38,9 @@ function isWebpSupported(): boolean {
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
-        cachedWebpSupported = canvas.toDataURL('image/webp').startsWith('data:image/webp');
+        cachedWebpSupported = canvas
+            .toDataURL('image/webp')
+            .startsWith('data:image/webp');
     } catch {
         cachedWebpSupported = false;
     }

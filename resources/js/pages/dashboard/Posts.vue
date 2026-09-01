@@ -401,16 +401,24 @@ Some *thoughts*…"
                             <Button
                                 type="submit"
                                 variant="secondary"
-                                :disabled="coverForm.processing || coverProcessing"
+                                :disabled="
+                                    coverForm.processing || coverProcessing
+                                "
                                 class="flex-1"
                             >
                                 <LoaderCircle
-                                    v-if="coverForm.processing || coverProcessing"
+                                    v-if="
+                                        coverForm.processing || coverProcessing
+                                    "
                                     class="size-4 animate-spin"
                                     aria-hidden="true"
                                 />
                                 <ImageUp v-else class="size-4" />
-                                {{ coverProcessing ? 'Processing...' : 'Upload / replace' }}
+                                {{
+                                    coverProcessing
+                                        ? 'Processing...'
+                                        : 'Upload / replace'
+                                }}
                             </Button>
                             <Button
                                 v-if="coverPost?.cover_url"

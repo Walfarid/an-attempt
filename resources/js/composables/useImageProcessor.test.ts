@@ -5,10 +5,13 @@ import { processImage, resetWebpSupportCache } from './useImageProcessor';
 
 function makeFakeImage(): File {
     // A minimal 1x1 PNG as base; dimensions are controlled via the mock.
-    const pngBytes = Uint8Array.from(atob(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8'
-        + '/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
-    ), c => c.charCodeAt(0));
+    const pngBytes = Uint8Array.from(
+        atob(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8' +
+                '/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
+        ),
+        (c) => c.charCodeAt(0),
+    );
 
     return new File([pngBytes], 'original-name.png', { type: 'image/png' });
 }
@@ -24,11 +27,14 @@ describe('processImage', () => {
         const file = makeFakeImage();
 
         // Mock createImageBitmap to return a bitmap with known dimensions.
-        vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
-            width: 100,
-            height: 100,
-            close: vi.fn(),
-        }));
+        vi.stubGlobal(
+            'createImageBitmap',
+            vi.fn().mockResolvedValue({
+                width: 100,
+                height: 100,
+                close: vi.fn(),
+            }),
+        );
 
         const result = await processImage(file);
 
@@ -42,23 +48,28 @@ describe('processImage', () => {
         const file = makeFakeImage();
 
         const closeSpy = vi.fn();
-        vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
-            width: 100,
-            height: 100,
-            close: closeSpy,
-        }));
+        vi.stubGlobal(
+            'createImageBitmap',
+            vi.fn().mockResolvedValue({
+                width: 100,
+                height: 100,
+                close: closeSpy,
+            }),
+        );
 
         const toBlobSpy = vi.fn();
         const originalCreateElement = document.createElement.bind(document);
-        vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-            const el = originalCreateElement(tag);
+        vi.spyOn(document, 'createElement').mockImplementation(
+            (tag: string) => {
+                const el = originalCreateElement(tag);
 
-            if (tag === 'canvas') {
-                (el as HTMLCanvasElement).toBlob = toBlobSpy;
-            }
+                if (tag === 'canvas') {
+                    (el as HTMLCanvasElement).toBlob = toBlobSpy;
+                }
 
-            return el;
-        });
+                return el;
+            },
+        );
 
         await processImage(file);
 
@@ -71,30 +82,39 @@ describe('processImage', () => {
     it('resizes images that exceed max dimension', async () => {
         const file = makeFakeImage();
 
-        vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
-            width: 4000,
-            height: 3000,
-            close: vi.fn(),
-        }));
+        vi.stubGlobal(
+            'createImageBitmap',
+            vi.fn().mockResolvedValue({
+                width: 4000,
+                height: 3000,
+                close: vi.fn(),
+            }),
+        );
 
         let capturedCallback: BlobCallback | null = null;
         const originalCreateElement = document.createElement.bind(document);
-        vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-            const el = originalCreateElement(tag);
+        vi.spyOn(document, 'createElement').mockImplementation(
+            (tag: string) => {
+                const el = originalCreateElement(tag);
 
-            if (tag === 'canvas') {
-                (el as HTMLCanvasElement).getContext = vi.fn().mockReturnValue({
-                    imageSmoothingEnabled: false,
-                    imageSmoothingQuality: 'low',
-                    drawImage: vi.fn(),
-                });
-                (el as HTMLCanvasElement).toBlob = vi.fn((cb: BlobCallback) => {
-                    capturedCallback = cb;
-                });
-            }
+                if (tag === 'canvas') {
+                    (el as HTMLCanvasElement).getContext = vi
+                        .fn()
+                        .mockReturnValue({
+                            imageSmoothingEnabled: false,
+                            imageSmoothingQuality: 'low',
+                            drawImage: vi.fn(),
+                        });
+                    (el as HTMLCanvasElement).toBlob = vi.fn(
+                        (cb: BlobCallback) => {
+                            capturedCallback = cb;
+                        },
+                    );
+                }
 
-            return el;
-        });
+                return el;
+            },
+        );
 
         const resultPromise = processImage(file, { maxDimension: 2048 });
 
@@ -117,31 +137,42 @@ describe('processImage', () => {
     it('falls back to JPEG when WebP is not supported', async () => {
         const file = makeFakeImage();
 
-        vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
-            width: 4000,
-            height: 3000,
-            close: vi.fn(),
-        }));
+        vi.stubGlobal(
+            'createImageBitmap',
+            vi.fn().mockResolvedValue({
+                width: 4000,
+                height: 3000,
+                close: vi.fn(),
+            }),
+        );
 
         const originalCreateElement = document.createElement.bind(document);
-        vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
-            const el = originalCreateElement(tag);
+        vi.spyOn(document, 'createElement').mockImplementation(
+            (tag: string) => {
+                const el = originalCreateElement(tag);
 
-            if (tag === 'canvas') {
-                // toDataURL with webp returns a PNG data URL → WebP not supported.
-                (el as HTMLCanvasElement).toDataURL = vi.fn(() => 'data:image/png;base64,abc');
-                (el as HTMLCanvasElement).getContext = vi.fn().mockReturnValue({
-                    imageSmoothingEnabled: false,
-                    imageSmoothingQuality: 'low',
-                    drawImage: vi.fn(),
-                });
-                (el as HTMLCanvasElement).toBlob = vi.fn((cb: BlobCallback) => {
-                    cb(new Blob(['fake'], { type: 'image/jpeg' }));
-                });
-            }
+                if (tag === 'canvas') {
+                    // toDataURL with webp returns a PNG data URL → WebP not supported.
+                    (el as HTMLCanvasElement).toDataURL = vi.fn(
+                        () => 'data:image/png;base64,abc',
+                    );
+                    (el as HTMLCanvasElement).getContext = vi
+                        .fn()
+                        .mockReturnValue({
+                            imageSmoothingEnabled: false,
+                            imageSmoothingQuality: 'low',
+                            drawImage: vi.fn(),
+                        });
+                    (el as HTMLCanvasElement).toBlob = vi.fn(
+                        (cb: BlobCallback) => {
+                            cb(new Blob(['fake'], { type: 'image/jpeg' }));
+                        },
+                    );
+                }
 
-            return el;
-        });
+                return el;
+            },
+        );
 
         const result = await processImage(file, { maxDimension: 2048 });
 
@@ -151,13 +182,18 @@ describe('processImage', () => {
 
     it('preserves original file bytes for images within max dimensions', async () => {
         const originalBytes = new Uint8Array([1, 2, 3, 4, 5]);
-        const file = new File([originalBytes], 'test.png', { type: 'image/png' });
+        const file = new File([originalBytes], 'test.png', {
+            type: 'image/png',
+        });
 
-        vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({
-            width: 100,
-            height: 100,
-            close: vi.fn(),
-        }));
+        vi.stubGlobal(
+            'createImageBitmap',
+            vi.fn().mockResolvedValue({
+                width: 100,
+                height: 100,
+                close: vi.fn(),
+            }),
+        );
 
         const result = await processImage(file);
 
