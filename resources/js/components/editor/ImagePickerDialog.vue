@@ -8,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { processImage } from '@/composables/useImageProcessor';
 import type { Media } from '@/data/portfolio';
 import mediaRoute from '@/routes/dashboard/media';
 
@@ -66,8 +67,19 @@ async function handleUpload(event: Event) {
     uploading.value = true;
     error.value = null;
 
+    let processedFile: File;
+
+    try {
+        processedFile = await processImage(file);
+    } catch {
+        error.value = 'Failed to process image.';
+        uploading.value = false;
+
+        return;
+    }
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', processedFile);
 
     try {
         const response = await fetch(mediaRoute.store.url(), {

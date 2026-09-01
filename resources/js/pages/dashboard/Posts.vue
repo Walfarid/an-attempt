@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { processImage } from '@/composables/useImageProcessor';
 import type { Post } from '@/data/portfolio';
 import postsRoute from '@/routes/dashboard/posts';
 import coverRoute from '@/routes/dashboard/posts/cover';
@@ -96,6 +97,7 @@ const coverPost = computed(
 const coverForm = useForm({
     cover: null as File | null,
 });
+const coverProcessing = ref(false);
 
 function startCreate() {
     editingId.value = null;
@@ -182,12 +184,24 @@ function openCover(post: Post) {
     coverOpen.value = true;
 }
 
-function saveCover() {
+async function saveCover() {
     const postId = coverPostId.value;
 
     if (!postId || !coverForm.cover) {
         return;
     }
+
+    coverProcessing.value = true;
+
+    try {
+        coverForm.cover = await processImage(coverForm.cover);
+    } catch {
+        coverProcessing.value = false;
+
+        return;
+    }
+
+    coverProcessing.value = false;
 
     coverForm.put(coverRoute.update.url({ post: postId }), {
         forceFormData: true,
@@ -387,16 +401,16 @@ Some *thoughts*…"
                             <Button
                                 type="submit"
                                 variant="secondary"
-                                :disabled="coverForm.processing"
+                                :disabled="coverForm.processing || coverProcessing"
                                 class="flex-1"
                             >
                                 <LoaderCircle
-                                    v-if="coverForm.processing"
+                                    v-if="coverForm.processing || coverProcessing"
                                     class="size-4 animate-spin"
                                     aria-hidden="true"
                                 />
                                 <ImageUp v-else class="size-4" />
-                                Upload / replace
+                                {{ coverProcessing ? 'Processing...' : 'Upload / replace' }}
                             </Button>
                             <Button
                                 v-if="coverPost?.cover_url"

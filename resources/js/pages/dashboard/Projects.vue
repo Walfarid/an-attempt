@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { processImage } from '@/composables/useImageProcessor';
 import type { Project, ProjectScreenshot, Skill } from '@/data/portfolio';
 import projectsRoute from '@/routes/dashboard/projects';
 import screenshotsRoute from '@/routes/dashboard/projects/screenshots';
@@ -77,6 +78,7 @@ const upload = useForm({
 });
 
 const errors = reactive<Record<string, string | undefined>>({});
+const imageProcessing = ref(false);
 
 function startCreate() {
     editingId.value = null;
@@ -159,7 +161,7 @@ function openShots(project: Project) {
     shotsOpen.value = true;
 }
 
-function uploadShot() {
+async function uploadShot() {
     const projectId = shotProjectId.value;
 
     if (!projectId) {
@@ -173,6 +175,19 @@ function uploadShot() {
     }
 
     delete errors.image;
+    imageProcessing.value = true;
+
+    try {
+        upload.image = await processImage(upload.image);
+    } catch {
+        errors.image = 'Failed to process image.';
+        imageProcessing.value = false;
+
+        return;
+    }
+
+    imageProcessing.value = false;
+
     upload.post(screenshotsRoute.store.url({ project: projectId }), {
         forceFormData: true,
         onSuccess: () => upload.reset(),
@@ -500,16 +515,16 @@ function confirmShotDelete() {
                         <Button
                             type="submit"
                             variant="secondary"
-                            :disabled="upload.processing"
+                            :disabled="upload.processing || imageProcessing"
                             class="w-full"
                         >
                             <LoaderCircle
-                                v-if="upload.processing"
+                                v-if="upload.processing || imageProcessing"
                                 class="size-4 animate-spin"
                                 aria-hidden="true"
                             />
                             <ImagePlus v-else class="size-4" />
-                            Upload
+                            {{ imageProcessing ? 'Processing...' : 'Upload' }}
                         </Button>
                     </form>
                 </DialogContent>
