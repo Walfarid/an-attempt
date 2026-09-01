@@ -133,7 +133,10 @@ const totalCtr = computed(() => {
 // same value and delta, so the server no longer sends a duplicate entry.
 const derivedKpis = computed(() => {
     const visitorsKpi = props.kpis.find((k) => k.key === 'visitors');
-    if (!visitorsKpi) return props.kpis;
+
+    if (!visitorsKpi) {
+        return props.kpis;
+    }
 
     return [
         ...props.kpis,
