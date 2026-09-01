@@ -26,7 +26,6 @@ defineOptions({
             variant="small"
             title="Appearance settings"
             description="Update the appearance settings for your account"
-            section-number="01"
         />
         <div class="d-surface p-4">
             <div class="space-y-3">

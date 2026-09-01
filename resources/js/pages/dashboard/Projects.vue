@@ -230,7 +230,6 @@ function confirmShotDelete() {
             <Heading
                 title="Projects"
                 description="Manage the projects shown on your public site."
-                section-number="03"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>

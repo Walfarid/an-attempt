@@ -21,7 +21,6 @@ import {
             variant="small"
             title="Delete account"
             description="Delete your account and all of its resources"
-            section-number="02"
         />
         <div class="d-surface">
             <div class="border-b border-destructive/30 p-4">

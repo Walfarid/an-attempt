@@ -131,7 +131,6 @@ function confirmDelete() {
             <Heading
                 title="Education"
                 description="Academic records shown on your public site."
-                section-number="07"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>

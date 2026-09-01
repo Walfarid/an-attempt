@@ -41,7 +41,6 @@ function save() {
         <Heading
             title="Profile"
             description="Your public bio shown on the homepage."
-            section-number="02"
         />
 
         <div class="d-surface max-w-2xl">

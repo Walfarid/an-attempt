@@ -121,7 +121,7 @@ const rightNavItems: NavItem[] = [];
                             >
                                 <nav class="-mx-3 space-y-1">
                                     <Link
-                                        v-for="(item, index) in mainNavItems"
+                                        v-for="item in mainNavItems"
                                         :key="item.title"
                                         :href="item.href"
                                         class="flex items-center gap-x-3 px-3 py-2 font-mono text-sm font-medium hover:bg-(--accent-soft)"
@@ -132,9 +132,6 @@ const rightNavItems: NavItem[] = [];
                                             )
                                         "
                                     >
-                                        <span class="d-section text-[10px]">{{
-                                            String(index + 1).padStart(2, '0')
-                                        }}</span>
                                         <component
                                             v-if="item.icon"
                                             :is="item.icon"
@@ -176,8 +173,8 @@ const rightNavItems: NavItem[] = [];
                             class="flex h-full items-stretch space-x-1"
                         >
                             <NavigationMenuItem
-                                v-for="(item, index) in mainNavItems"
-                                :key="index"
+                                v-for="item in mainNavItems"
+                                :key="item.title"
                                 class="relative flex h-full items-center"
                             >
                                 <Link
@@ -191,9 +188,6 @@ const rightNavItems: NavItem[] = [];
                                     ]"
                                     :href="item.href"
                                 >
-                                    <span class="d-section mr-2 text-[10px]">{{
-                                        String(index + 1).padStart(2, '0')
-                                    }}</span>
                                     <component
                                         v-if="item.icon"
                                         :is="item.icon"

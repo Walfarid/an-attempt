@@ -41,7 +41,6 @@ const user = computed(() => page.props.auth.user);
             variant="small"
             title="Profile"
             description="Update your name and email address"
-            section-number="01"
         />
 
         <Form

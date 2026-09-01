@@ -119,7 +119,6 @@ function confirmDelete() {
             <Heading
                 title="Publications"
                 description="Papers and articles with their DOI links."
-                section-number="08"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>

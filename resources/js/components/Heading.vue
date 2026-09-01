@@ -3,7 +3,6 @@ type Props = {
     title: string;
     description?: string;
     variant?: 'default' | 'small';
-    sectionNumber?: string;
 };
 
 withDefaults(defineProps<Props>(), {
@@ -20,9 +19,6 @@ withDefaults(defineProps<Props>(), {
         "
     >
         <div class="flex items-baseline gap-3">
-            <span v-if="sectionNumber" class="d-section">
-                {{ sectionNumber }}
-            </span>
             <h2
                 :class="
                     variant === 'small'

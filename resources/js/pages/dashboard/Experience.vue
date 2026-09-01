@@ -135,7 +135,6 @@ function confirmDelete() {
             <Heading
                 title="Experience"
                 description="Manage the roles on your career timeline."
-                section-number="06"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>

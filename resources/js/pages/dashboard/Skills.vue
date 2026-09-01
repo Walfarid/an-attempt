@@ -129,7 +129,6 @@ function confirmDelete() {
             <Heading
                 title="Skills"
                 description="Manage the skills you list in your toolset."
-                section-number="05"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>

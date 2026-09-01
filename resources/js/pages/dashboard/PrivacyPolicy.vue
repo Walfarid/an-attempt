@@ -34,7 +34,6 @@ function save() {
         <Heading
             title="Privacy Policy"
             description="The public privacy disclosure shown on /privacy."
-            section-number="09"
         />
 
         <div class="d-surface max-w-2xl">

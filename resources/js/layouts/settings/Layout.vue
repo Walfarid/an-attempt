@@ -28,7 +28,6 @@ const { isCurrentOrParentUrl } = useCurrentUrl();
         <Heading
             title="Settings"
             description="Manage your profile and account settings"
-            section-number="01"
         />
 
         <div class="flex flex-col lg:flex-row lg:space-x-12">

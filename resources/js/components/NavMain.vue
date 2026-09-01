@@ -23,7 +23,7 @@ const { isCurrentUrl } = useCurrentUrl();
             >Navigation</SidebarGroupLabel
         >
         <SidebarMenu>
-            <SidebarMenuItem v-for="(item, index) in items" :key="item.title">
+            <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton
                     as-child
                     :is-active="isCurrentUrl(item.href)"
@@ -34,9 +34,6 @@ const { isCurrentUrl } = useCurrentUrl();
                         prefetch
                         class="flex items-center gap-3"
                     >
-                        <span class="d-section text-[10px]">{{
-                            String(index + 1).padStart(2, '0')
-                        }}</span>
                         <component :is="item.icon" class="size-4" />
                         <span>{{ item.title }}</span>
                     </Link>

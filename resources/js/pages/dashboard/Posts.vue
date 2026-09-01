@@ -232,7 +232,6 @@ function publishLabel(post: Post): string {
             <Heading
                 title="Posts"
                 description="Your writing — drafts and published ramblings."
-                section-number="04"
             />
             <Dialog v-model:open="open">
                 <DialogTrigger as-child>

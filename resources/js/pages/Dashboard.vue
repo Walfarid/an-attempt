@@ -205,13 +205,12 @@ onUnmounted(() => {
         <Heading
             title="Overview"
             description="A snapshot of how the public site is performing over the last two weeks."
-            section-number="01"
         />
 
         <!-- KPI Grid -->
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-motion-group>
             <div
-                v-for="kpi in kpis"
+                v-for="kpi in derivedKpis"
                 :key="kpi.key"
                 class="d-surface p-4 transition-shadow hover:shadow-sm"
                 data-motion
