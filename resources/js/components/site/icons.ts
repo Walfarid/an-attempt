@@ -49,6 +49,11 @@ export const Briefcase = makeIcon([
     ['rect', { width: '20', height: '14', x: '2', y: '6', rx: '2' }],
 ]);
 
+export const Mail = makeIcon([
+    ['rect', { width: '20', height: '16', x: '2', y: '4', rx: '2' }],
+    ['path', { d: 'm22 7-8.97 5.72a2 2 0 0 1-2.06 0L2 7' }],
+]);
+
 export const MapPin = makeIcon([
     [
         'path',
