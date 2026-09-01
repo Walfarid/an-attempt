@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\ContactMessage;
 use App\Models\Education;
 use App\Models\Experience;
 use App\Models\Post;
@@ -49,17 +48,12 @@ class DatabaseSeeder extends Seeder
         $this->seedPublication();
 
         // Placeholder content only outside production: a live site should not
-        // be seeded with fake posts or messages (and the factory requires the
-        // faker dev dependency, which the production image does not ship).
+        // be seeded with fake posts (and the factory requires the faker dev
+        // dependency, which the production image does not ship).
         if (app()->environment('local', 'staging')) {
             if (Post::count() === 0) {
                 Post::factory()->count(3)->create();
                 Post::factory()->draft()->count(1)->create();
-            }
-
-            if (ContactMessage::count() === 0) {
-                ContactMessage::factory()->count(2)->create();
-                ContactMessage::factory()->read()->count(1)->create();
             }
         }
     }
@@ -89,7 +83,7 @@ class DatabaseSeeder extends Seeder
 
                 ## What the site owner collects
 
-                - **Contact form submissions** — when you send a message through the contact form, the name, email address, and message you provide are stored so the site owner can reply. Nothing else is attached to it.
+                - **Contact emails** — when you email the site owner through the "Send email" link, your email client handles delivery directly. No data is stored server-side.
                 - **First-party analytics** — the site keeps its own lightweight counters of page views and outbound-link clicks (page path, referrer, user-agent, coarse device type, approximate country from IP, and a non-reversible hash of the IP used only to count unique visitors). These are aggregate numbers, not personal profiles.
 
                 ## Third-party analytics
@@ -126,7 +120,7 @@ class DatabaseSeeder extends Seeder
 
                 ## Your choices
 
-                Because the analytics tools only run with your consent, declining is the simplest opt-out and can be reversed in either direction at any time. For site content, data collected through the contact form can be removed on request — reach out through the contact form and ask.
+                Because the analytics tools only run with your consent, declining is the simplest opt-out and can be reversed in either direction at any time.
                 MD,
         ]);
     }

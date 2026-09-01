@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BlogController;
-use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Dashboard\AnalyticsController;
 use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
@@ -37,10 +36,6 @@ Route::get('privacy', [PrivacyController::class, 'show'])
     ->middleware(CachePublicResponses::class)
     ->name('privacy')
     ->withHead(title: 'Privacy', description: 'What this site collects, which third-party analytics it uses, and how to change your consent choice.');
-
-Route::post('contact', [ContactController::class, 'store'])
-    ->middleware('throttle:5,1')
-    ->name('contact.store');
 
 Route::middleware([
     'auth',
