@@ -212,3 +212,101 @@ test('converts automatic email links', function () {
 
     expect($html)->toContain('<a href="mailto:test@example.com"');
 });
+
+test('converts GFM tables', function () {
+    $markdown = "| Header 1 | Header 2 |\n|----------|----------|\n| Cell 1   | Cell 2   |";
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<table>')
+        ->and($html)->toContain('<thead>')
+        ->and($html)->toContain('<th>Header 1</th>')
+        ->and($html)->toContain('<th>Header 2</th>')
+        ->and($html)->toContain('<tbody>')
+        ->and($html)->toContain('<td>Cell 1</td>')
+        ->and($html)->toContain('<td>Cell 2</td>');
+});
+
+test('converts GFM strikethrough', function () {
+    $html = Markdown::toHtml('~~deleted text~~');
+
+    expect($html)->toContain('<del>deleted text</del>');
+});
+
+test('converts GFM task lists', function () {
+    $markdown = "- [x] Done task\n- [ ] Pending task";
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<input')
+        ->and($html)->toContain('checked')
+        ->and($html)->toContain('Done task')
+        ->and($html)->toContain('Pending task');
+});
+
+test('preprocesses bold-wrapped headings', function () {
+    $html = Markdown::toHtml('**## Heading**');
+
+    expect($html)->toContain('<h2>Heading</h2>')
+        ->and($html)->not->toContain('<strong>');
+});
+
+test('preprocesses bold-wrapped headings at multiple levels', function () {
+    $markdown = "**## Level 2**\n\n**### Level 3**";
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<h2>Level 2</h2>')
+        ->and($html)->toContain('<h3>Level 3</h3>')
+        ->and($html)->not->toContain('<strong>');
+});
+
+test('does not alter legitimate bold text', function () {
+    $html = Markdown::toHtml('**just bold**');
+
+    expect($html)->toContain('<strong>just bold</strong>');
+});
+
+test('does not alter bold text that merely contains hash symbols', function () {
+    $html = Markdown::toHtml('**#tag in bold**');
+
+    expect($html)->toContain('<strong>#tag in bold</strong>');
+});
+
+test('preprocesses bold-wrapped horizontal rules', function () {
+    expect(Markdown::toHtml('**---**'))->toContain('<hr')
+        ->and(Markdown::toHtml('**___**'))->toContain('<hr')
+        ->and(Markdown::toHtml('*******'))->toContain('<hr');
+});
+
+test('renders inline svg in markdown', function () {
+    $markdown = 'Before <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect width="10" height="10" fill="#ccc"/></svg> after';
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<svg')
+        ->and($html)->toContain('<rect')
+        ->and($html)->toContain('fill="#ccc"');
+});
+
+test('strips script tags from inline svg in markdown', function () {
+    $markdown = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/><script>alert("xss")</script></svg>';
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<svg')
+        ->and($html)->toContain('<rect')
+        ->and($html)->not->toContain('<script>')
+        ->and($html)->not->toContain('alert');
+});
+
+test('strips event handlers from inline svg in markdown', function () {
+    $markdown = '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" onload="alert(1)"/></svg>';
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<svg')
+        ->and($html)->not->toContain('onload')
+        ->and($html)->not->toContain('alert');
+});
+
+test('still strips non-svg html tags', function () {
+    $html = Markdown::toHtml('<div class="evil">content</div>');
+
+    expect($html)->not->toContain('<div>')
+        ->and($html)->not->toContain('class="evil"');
+});
