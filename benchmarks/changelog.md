@@ -1,5 +1,20 @@
 # Performance Optimization Changelog
 
+## 2026-09-01: Optimize deferred props screenshot payload
+
+**Change**: HomeController projects query now only keeps the first screenshot per project before serialization, reducing payload size and serialization overhead.
+
+**Before**:
+- Deferred props: 20.06ms median, 8 queries, 6.9KB raw / 2.4KB gz
+
+**After**:
+- Deferred props: 19.48ms median, 8 queries, 6.9KB raw / 2.4KB gz
+- Improvement: 2.9% faster (0.58ms)
+
+**Impact**: Small but measurable improvement. The screenshot reduction minimizes serialization overhead.
+
+**Note**: This project has already been heavily optimized through multiple prior rounds (see history below). Gains are now diminishing as the codebase approaches its performance ceiling. Further improvements would require infrastructure-level changes (CDN, edge caching, database connection pooling) rather than code optimizations.
+
 ## Baseline (before any changes)
 - `/`: 30.26ms avg, 7.2 queries
 - `/posts`: 31.89ms avg, 4.0 queries

@@ -1,12 +1,12 @@
 {
-    "timestamp": "2026-09-01T09:41:15+00:00",
+    "timestamp": "2026-09-01T11:54:39+00:00",
     "routes": {
         "/": {
             "method": "GET",
-            "median_ms": 8.86,
-            "mean_ms": 9.04,
-            "min_ms": 8.62,
-            "p95_ms": 9.69,
+            "median_ms": 9.63,
+            "mean_ms": 9.73,
+            "min_ms": 9.41,
+            "p95_ms": 10.14,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -17,15 +17,15 @@
                 1,
                 1
             ],
-            "bytes": 11732,
-            "bytes_gz": 2618
+            "bytes": 10997,
+            "bytes_gz": 2536
         },
         "/posts": {
             "method": "GET",
-            "median_ms": 10.03,
-            "mean_ms": 10.09,
-            "min_ms": 9.76,
-            "p95_ms": 10.38,
+            "median_ms": 10.53,
+            "mean_ms": 11.37,
+            "min_ms": 10.35,
+            "p95_ms": 14.07,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -36,15 +36,15 @@
                 1,
                 1
             ],
-            "bytes": 9626,
-            "bytes_gz": 2349
+            "bytes": 8892,
+            "bytes_gz": 2266
         },
         "/posts/what-clean-architecture-means-in-practice": {
             "method": "GET",
-            "median_ms": 8.89,
-            "mean_ms": 9.03,
-            "min_ms": 8.56,
-            "p95_ms": 9.57,
+            "median_ms": 10.22,
+            "mean_ms": 11.16,
+            "min_ms": 9.45,
+            "p95_ms": 12.97,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -55,15 +55,15 @@
                 1,
                 1
             ],
-            "bytes": 9731,
-            "bytes_gz": 2114
+            "bytes": 8998,
+            "bytes_gz": 2035
         },
         "/privacy": {
             "method": "GET",
-            "median_ms": 9.01,
-            "mean_ms": 9.06,
-            "min_ms": 8.69,
-            "p95_ms": 9.6,
+            "median_ms": 9.07,
+            "mean_ms": 9.21,
+            "min_ms": 8.72,
+            "p95_ms": 10.11,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -74,15 +74,15 @@
                 1,
                 1
             ],
-            "bytes": 12846,
-            "bytes_gz": 3516
+            "bytes": 12199,
+            "bytes_gz": 3436
         },
         "/sitemap.xml": {
             "method": "GET",
-            "median_ms": 6.79,
-            "mean_ms": 6.71,
-            "min_ms": 6.32,
-            "p95_ms": 7.11,
+            "median_ms": 7.13,
+            "mean_ms": 7.18,
+            "min_ms": 6.8,
+            "p95_ms": 7.49,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -100,10 +100,10 @@
     "deferred": {
         "/ (deferred: skills,experiences,projects,educations,publications,posts)": {
             "method": "GET",
-            "median_ms": 20.29,
-            "mean_ms": 20.14,
-            "min_ms": 19.58,
-            "p95_ms": 20.65,
+            "median_ms": 21.3,
+            "mean_ms": 21.6,
+            "min_ms": 20.26,
+            "p95_ms": 22.94,
             "avg_queries": 8,
             "queries": [
                 8,
@@ -115,16 +115,16 @@
                 8
             ],
             "bytes": 7063,
-            "bytes_gz": 2444
+            "bytes_gz": 2443
         }
     },
     "dashboard": {
         "dashboard (analytics)": {
             "method": "GET",
-            "median_ms": 2.38,
-            "mean_ms": 2.38,
-            "min_ms": 2.29,
-            "p95_ms": 2.47,
+            "median_ms": 2.49,
+            "mean_ms": 2.52,
+            "min_ms": 2.41,
+            "p95_ms": 2.71,
             "avg_queries": 3,
             "queries": [
                 3,
@@ -143,15 +143,15 @@
                 3,
                 3
             ],
-            "bytes": 2982,
-            "bytes_gz": 806
+            "bytes": 2975,
+            "bytes_gz": 802
         },
         "dashboard/posts": {
             "method": "GET",
-            "median_ms": 0.31,
-            "mean_ms": 0.32,
-            "min_ms": 0.29,
-            "p95_ms": 0.35,
+            "median_ms": 0.35,
+            "mean_ms": 0.4,
+            "min_ms": 0.3,
+            "p95_ms": 0.75,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -171,14 +171,14 @@
                 1
             ],
             "bytes": 2454,
-            "bytes_gz": 791
+            "bytes_gz": 793
         },
         "dashboard/posts/{id}": {
             "method": "GET",
             "median_ms": 0.2,
-            "mean_ms": 0.2,
+            "mean_ms": 0.21,
             "min_ms": 0.18,
-            "p95_ms": 0.22,
+            "p95_ms": 0.29,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -203,9 +203,9 @@
         "dashboard/projects": {
             "method": "GET",
             "median_ms": 2.14,
-            "mean_ms": 2.14,
-            "min_ms": 2.04,
-            "p95_ms": 2.2,
+            "mean_ms": 2.15,
+            "min_ms": 2.07,
+            "p95_ms": 2.27,
             "avg_queries": 4,
             "queries": [
                 4,
@@ -225,7 +225,7 @@
                 4
             ],
             "bytes": 4515,
-            "bytes_gz": 1487
+            "bytes_gz": 1485
         },
         "dashboard/skills": {
             "method": "GET",
@@ -252,11 +252,11 @@
                 1
             ],
             "bytes": 3608,
-            "bytes_gz": 1060
+            "bytes_gz": 1059
         },
         "dashboard/experience": {
             "method": "GET",
-            "median_ms": 0.26,
+            "median_ms": 0.25,
             "mean_ms": 0.27,
             "min_ms": 0.24,
             "p95_ms": 0.32,
@@ -279,14 +279,14 @@
                 1
             ],
             "bytes": 2934,
-            "bytes_gz": 1260
+            "bytes_gz": 1259
         },
         "dashboard/educations": {
             "method": "GET",
-            "median_ms": 0.27,
-            "mean_ms": 0.27,
-            "min_ms": 0.24,
-            "p95_ms": 0.32,
+            "median_ms": 0.25,
+            "mean_ms": 0.26,
+            "min_ms": 0.23,
+            "p95_ms": 0.29,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -310,10 +310,10 @@
         },
         "dashboard/publications": {
             "method": "GET",
-            "median_ms": 0.3,
-            "mean_ms": 0.29,
-            "min_ms": 0.25,
-            "p95_ms": 0.32,
+            "median_ms": 0.25,
+            "mean_ms": 0.27,
+            "min_ms": 0.24,
+            "p95_ms": 0.3,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -340,7 +340,7 @@
             "median_ms": 0.24,
             "mean_ms": 0.25,
             "min_ms": 0.22,
-            "p95_ms": 0.27,
+            "p95_ms": 0.29,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -360,14 +360,14 @@
                 1
             ],
             "bytes": 2228,
-            "bytes_gz": 880
+            "bytes_gz": 879
         },
         "dashboard/privacy/edit": {
             "method": "GET",
             "median_ms": 0.28,
             "mean_ms": 0.29,
             "min_ms": 0.26,
-            "p95_ms": 0.35,
+            "p95_ms": 0.32,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -387,120 +387,120 @@
                 1
             ],
             "bytes": 5289,
-            "bytes_gz": 2078
+            "bytes_gz": 2076
         }
     },
     "bundle": {
-        "total_kb": 867.3,
-        "total_gzipped_kb": 269.1,
+        "total_kb": 882.2,
+        "total_gzipped_kb": 270.2,
         "files": {
             "assets/inertia-K8WJoa5r.js": 239099,
-            "assets/HomeSections-C8d1r2Vt.js": 12313,
+            "assets/profile-C_43X2XV.js": 978,
+            "assets/SiteHeader-L_Ld7xAG.js": 9036,
+            "assets/Label-Dy-WO-nb.js": 993,
             "assets/gsap-DM2PPtBZ.js": 113471,
-            "assets/educations-CU4_P_cl.js": 2681,
-            "assets/privacy-DWfIKrVE.js": 978,
-            "assets/publications-cUyS9pT0.js": 2729,
-            "assets/Experience-BgiCHwom.js": 7534,
-            "assets/Layout-LMJQtyNh.js": 1979,
-            "assets/Label-DpKIx5I9.js": 704,
-            "assets/Publications-DRusH66N.js": 6230,
+            "assets/posts-C0EWPQrY.js": 1176,
+            "assets/Skills-EknesOuH.js": 11162,
+            "assets/Privacy-DfytRsWg.js": 1752,
+            "assets/AppLayout-CntcNUs3.js": 32544,
+            "assets/Show-n3JwPnzS.js": 3060,
+            "assets/PrivacyPolicy-DstDRAjr.js": 1534,
+            "assets/Welcome-DO9Uzvo7.js": 34345,
             "assets/dialog-B-yNT7en.js": 4437,
             "assets/rolldown-runtime-DK3Fl9T5.js": 158,
-            "assets/InputError-BFD02oUw.js": 350,
-            "assets/experience-cmjsr8Gj.js": 2701,
-            "assets/projects-BdZ8sCxQ.js": 4176,
             "assets/button-7QYQsMKh.js": 2017,
-            "assets/Skills-DxHlOjkc.js": 11222,
+            "assets/posts-BNZGOFYi.js": 4945,
             "assets/useCurrentUrl-Bq1Sct9s.js": 541,
+            "assets/Profile-C_FEK56u.js": 4031,
             "assets/AppLayout-Ds1aFT64.css": 14910,
             "assets/utils-BxB35Ul8.js": 27830,
             "assets/badge-hecbh906.js": 1466,
-            "assets/Show-Bbu8FC2Z.js": 3060,
             "assets/app-CSSHo_-t.css": 585,
-            "assets/Posts-ROOmX0rr.js": 9878,
-            "assets/Educations-CXJln6UY.js": 6655,
-            "assets/PrivacyPolicy-2TKjBu0W.js": 1594,
-            "assets/SiteHeader-ofeFmwBZ.js": 8915,
-            "assets/Appearance-DFX5dvGw.js": 1585,
-            "assets/skills-CXrxjMfP.js": 2585,
-            "assets/app-BE2FR024.js": 16066,
-            "assets/Heading-KB03IBQd.js": 727,
-            "assets/profile-BvqvcUWj.js": 978,
+            "assets/Posts-Dhd1dmCf.js": 9818,
+            "assets/Appearance-Dx60n5H1.js": 1563,
+            "assets/privacy-fJYdbOC-.js": 978,
+            "assets/projects-CtbGR-hd.js": 4176,
+            "assets/experience-CIHVNFQr.js": 2701,
+            "assets/skills-BtB7OY4c.js": 2585,
             "assets/fonts-DMTc6bNq.css": 3246,
-            "assets/Dashboard-Do3Zjnlb.js": 6892,
+            "assets/app-D13D7W_x.js": 16179,
             "assets/Input-0qDqtDy0.js": 1179,
-            "assets/Index-BSLtCV14.js": 2424,
             "assets/alert-dialog-BuRMgQ-W.js": 3948,
-            "assets/posts-ByJhKs2N.js": 1176,
             "assets/lib-BzUh-h1_.js": 22600,
-            "assets/Privacy-PHrycePq.js": 1757,
-            "assets/AppLayout-EV3KkH_d.js": 33007,
-            "assets/Profile-DULwF7l7.js": 4091,
-            "assets/app-Bv48XKLK.css": 110257,
+            "assets/Experience-BGwsRQd0.js": 7474,
+            "assets/app-_uYh7gWy.css": 109979,
+            "assets/Dashboard-CH8LF0Oc.js": 7033,
+            "assets/publications-CR-W9q4n.js": 2729,
+            "assets/profile-Mk0XfgIY.js": 1427,
             "assets/lucide-CDTjgLMp.js": 11088,
-            "assets/posts-DsrYf5aE.js": 4945,
-            "assets/Welcome-vYGRAS2V.js": 17983,
+            "assets/Layout-C7CZoT_L.js": 1957,
+            "assets/Welcome-uM_SV5sc.css": 119,
+            "assets/educations-Da5YgbOr.js": 2681,
+            "assets/Educations-njzvJ8Nz.js": 6595,
+            "assets/Index-BLgbC__-.js": 2424,
             "assets/portfolio-CzseIob3.js": 150,
+            "assets/Heading-Dch0eCiP.js": 618,
             "assets/reka-ui-B7-SJm89.js": 131324,
-            "assets/Projects-CBc5JT6y.js": 12650,
-            "assets/profile-CreYT6EB.js": 1427,
-            "assets/Profile-CBmpZ9-u.js": 5863,
-            "assets/appearance-Dc6upJyr.js": 503,
+            "assets/Projects-D2CEqTzs.js": 12590,
+            "assets/HomeSections-DtPDbE0h.js": 12313,
+            "assets/appearance-Vmt610St.js": 503,
+            "assets/Publications-BC4jjUg6.js": 6170,
+            "assets/Profile-CGg3WFdr.js": 5778,
             "assets/useScrollAnimations-CbJXX2zO.js": 1423
         },
         "files_gzipped": {
             "assets/inertia-K8WJoa5r.js": 81180,
-            "assets/HomeSections-C8d1r2Vt.js": 3689,
+            "assets/profile-C_43X2XV.js": 361,
+            "assets/SiteHeader-L_Ld7xAG.js": 2923,
+            "assets/Label-Dy-WO-nb.js": 602,
             "assets/gsap-DM2PPtBZ.js": 43987,
-            "assets/educations-CU4_P_cl.js": 683,
-            "assets/privacy-DWfIKrVE.js": 361,
-            "assets/publications-cUyS9pT0.js": 685,
-            "assets/Experience-BgiCHwom.js": 2610,
-            "assets/Layout-LMJQtyNh.js": 1035,
-            "assets/Label-DpKIx5I9.js": 454,
-            "assets/Publications-DRusH66N.js": 2387,
+            "assets/posts-C0EWPQrY.js": 463,
+            "assets/Skills-EknesOuH.js": 3793,
+            "assets/Privacy-DfytRsWg.js": 967,
+            "assets/AppLayout-CntcNUs3.js": 8254,
+            "assets/Show-n3JwPnzS.js": 1604,
+            "assets/PrivacyPolicy-DstDRAjr.js": 872,
+            "assets/Welcome-DO9Uzvo7.js": 7142,
             "assets/dialog-B-yNT7en.js": 1482,
             "assets/rolldown-runtime-DK3Fl9T5.js": 154,
-            "assets/InputError-BFD02oUw.js": 271,
-            "assets/experience-cmjsr8Gj.js": 683,
-            "assets/projects-BdZ8sCxQ.js": 919,
             "assets/button-7QYQsMKh.js": 937,
-            "assets/Skills-DxHlOjkc.js": 3826,
+            "assets/posts-BNZGOFYi.js": 945,
             "assets/useCurrentUrl-Bq1Sct9s.js": 343,
+            "assets/Profile-C_FEK56u.js": 1395,
             "assets/AppLayout-Ds1aFT64.css": 3038,
             "assets/utils-BxB35Ul8.js": 8792,
             "assets/badge-hecbh906.js": 733,
-            "assets/Show-Bbu8FC2Z.js": 1600,
             "assets/app-CSSHo_-t.css": 271,
-            "assets/Posts-ROOmX0rr.js": 3365,
-            "assets/Educations-CXJln6UY.js": 2470,
-            "assets/PrivacyPolicy-2TKjBu0W.js": 908,
-            "assets/SiteHeader-ofeFmwBZ.js": 2884,
-            "assets/Appearance-DFX5dvGw.js": 855,
-            "assets/skills-CXrxjMfP.js": 678,
-            "assets/app-BE2FR024.js": 5789,
-            "assets/Heading-KB03IBQd.js": 432,
-            "assets/profile-BvqvcUWj.js": 360,
+            "assets/Posts-Dhd1dmCf.js": 3334,
+            "assets/Appearance-Dx60n5H1.js": 838,
+            "assets/privacy-fJYdbOC-.js": 362,
+            "assets/projects-CtbGR-hd.js": 925,
+            "assets/experience-CIHVNFQr.js": 687,
+            "assets/skills-BtB7OY4c.js": 680,
             "assets/fonts-DMTc6bNq.css": 445,
-            "assets/Dashboard-Do3Zjnlb.js": 2726,
+            "assets/app-D13D7W_x.js": 5809,
             "assets/Input-0qDqtDy0.js": 654,
-            "assets/Index-BSLtCV14.js": 1271,
             "assets/alert-dialog-BuRMgQ-W.js": 1214,
-            "assets/posts-ByJhKs2N.js": 459,
             "assets/lib-BzUh-h1_.js": 7353,
-            "assets/Privacy-PHrycePq.js": 971,
-            "assets/AppLayout-EV3KkH_d.js": 8517,
-            "assets/Profile-DULwF7l7.js": 1427,
-            "assets/app-Bv48XKLK.css": 18119,
+            "assets/Experience-BGwsRQd0.js": 2579,
+            "assets/app-_uYh7gWy.css": 18127,
+            "assets/Dashboard-CH8LF0Oc.js": 2763,
+            "assets/publications-CR-W9q4n.js": 688,
+            "assets/profile-Mk0XfgIY.js": 409,
             "assets/lucide-CDTjgLMp.js": 4269,
-            "assets/posts-DsrYf5aE.js": 939,
-            "assets/Welcome-vYGRAS2V.js": 5544,
+            "assets/Layout-C7CZoT_L.js": 1022,
+            "assets/Welcome-uM_SV5sc.css": 88,
+            "assets/educations-Da5YgbOr.js": 686,
+            "assets/Educations-njzvJ8Nz.js": 2438,
+            "assets/Index-BLgbC__-.js": 1272,
             "assets/portfolio-CzseIob3.js": 151,
+            "assets/Heading-Dch0eCiP.js": 393,
             "assets/reka-ui-B7-SJm89.js": 36236,
-            "assets/Projects-CBc5JT6y.js": 3995,
-            "assets/profile-CreYT6EB.js": 409,
-            "assets/Profile-CBmpZ9-u.js": 1983,
-            "assets/appearance-Dc6upJyr.js": 270,
+            "assets/Projects-D2CEqTzs.js": 3962,
+            "assets/HomeSections-DtPDbE0h.js": 3690,
+            "assets/appearance-Vmt610St.js": 271,
+            "assets/Publications-BC4jjUg6.js": 2358,
+            "assets/Profile-CGg3WFdr.js": 1945,
             "assets/useScrollAnimations-CbJXX2zO.js": 796
         }
     }
