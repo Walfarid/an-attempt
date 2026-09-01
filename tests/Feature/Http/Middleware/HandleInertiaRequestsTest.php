@@ -39,10 +39,21 @@ test('handle inertia requests shares null user for guests', function () {
     );
 });
 
-test('sidebar is open by default when no cookie is set', function () {
+test('sidebar is absent for guests on public pages', function () {
     Profile::factory()->create();
 
     $response = $this->get('/');
+
+    $response->assertInertia(fn ($page) => $page
+        ->missing('sidebarOpen')
+    );
+});
+
+test('sidebar is open by default for authenticated users when no cookie is set', function () {
+    Profile::factory()->create();
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/');
 
     $response->assertInertia(fn ($page) => $page
         ->where('sidebarOpen', true)
@@ -51,8 +62,9 @@ test('sidebar is open by default when no cookie is set', function () {
 
 test('sidebar respects the sidebar_state cookie set to true', function () {
     Profile::factory()->create();
+    $user = User::factory()->create();
 
-    $response = $this->withUnencryptedCookie('sidebar_state', 'true')->get('/');
+    $response = $this->actingAs($user)->withUnencryptedCookie('sidebar_state', 'true')->get('/');
 
     $response->assertInertia(fn ($page) => $page
         ->where('sidebarOpen', true)
@@ -61,18 +73,31 @@ test('sidebar respects the sidebar_state cookie set to true', function () {
 
 test('sidebar is closed when the sidebar_state cookie is false', function () {
     Profile::factory()->create();
+    $user = User::factory()->create();
 
-    $response = $this->withUnencryptedCookie('sidebar_state', 'false')->get('/');
+    $response = $this->actingAs($user)->withUnencryptedCookie('sidebar_state', 'false')->get('/');
 
     $response->assertInertia(fn ($page) => $page
         ->where('sidebarOpen', false)
     );
 });
 
-test('share method returns expected keys', function () {
+test('share method returns expected keys for guests', function () {
     $middleware = new HandleInertiaRequests;
     $request = Request::create('/');
     $request->setUserResolver(fn () => null);
+
+    $shared = $middleware->share($request);
+
+    expect($shared)->toHaveKeys(['name', 'auth'])
+        ->and($shared)->not->toHaveKey('sidebarOpen');
+});
+
+test('share method includes sidebarOpen for authenticated users', function () {
+    $middleware = new HandleInertiaRequests;
+    $request = Request::create('/');
+    $user = User::factory()->make();
+    $request->setUserResolver(fn () => $user);
 
     $shared = $middleware->share($request);
 

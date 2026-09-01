@@ -11,7 +11,7 @@ withDefaults(defineProps<Props>(), {
     variant: 'sidebar',
 });
 
-const isOpen = usePage().props.sidebarOpen;
+const isOpen = usePage().props.sidebarOpen ?? true;
 </script>
 
 <template>

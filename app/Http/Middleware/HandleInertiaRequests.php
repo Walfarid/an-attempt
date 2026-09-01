@@ -25,13 +25,23 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
+        $shared = [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user()?->only(['name', 'email', 'avatar']),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+
+        // Dashboard-only: the sidebar lives inside the authenticated
+        // AppShell layout. Public pages never render it, so keeping the
+        // key off the wire for unauthenticated visits saves ~17 B per
+        // response.
+        if ($request->user() !== null) {
+            $shared['sidebarOpen'] = ! $request->hasCookie('sidebar_state')
+                || $request->cookie('sidebar_state') === 'true';
+        }
+
+        return $shared;
     }
 }
