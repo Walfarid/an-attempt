@@ -129,6 +129,24 @@ const totalCtr = computed(() => {
     return kpi?.value ?? 0;
 });
 
+// Derive the Pageviews KPI from Visitors on the client — they carry the
+// same value and delta, so the server no longer sends a duplicate entry.
+const derivedKpis = computed(() => {
+    const visitorsKpi = props.kpis.find((k) => k.key === 'visitors');
+    if (!visitorsKpi) return props.kpis;
+
+    return [
+        ...props.kpis,
+        {
+            key: 'pageviews',
+            label: 'Pageviews',
+            value: visitorsKpi.value,
+            delta: visitorsKpi.delta,
+            format: 'number' as const,
+        },
+    ];
+});
+
 useScrollAnimations();
 
 /* One-time chart draw-in -------------------------------------------------- */

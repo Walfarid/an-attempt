@@ -64,7 +64,6 @@ class AnalyticsController extends Controller
             ['key' => 'visitors', 'label' => 'Visitors', 'value' => $totalVisitors, 'delta' => $this->delta($totalVisitors, $prevVisitors), 'format' => 'number'],
             ['key' => 'clicks', 'label' => 'Clicks', 'value' => $totalClicks, 'delta' => $this->delta($totalClicks, $prevClicks), 'format' => 'number'],
             ['key' => 'ctr', 'label' => 'Click-through rate', 'value' => round($ctr, 1), 'delta' => $this->delta($ctr, $prevCtr), 'format' => 'percent'],
-            ['key' => 'pageviews', 'label' => 'Pageviews', 'value' => $totalVisitors, 'delta' => $this->delta($totalVisitors, $prevVisitors), 'format' => 'number'],
         ];
 
         return inertia('Dashboard', [
