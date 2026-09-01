@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from '@lucide/vue';
+import MarkdownEditor from '@/components/editor/MarkdownEditor.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -42,11 +43,10 @@ function save() {
                     <Label for="privacy-body" class="d-label">
                         Body (Markdown)
                     </Label>
-                    <textarea
+                    <MarkdownEditor
                         id="privacy-body"
                         v-model="form.body"
-                        rows="24"
-                        class="d-textarea w-full"
+                        min-height="30rem"
                     />
                     <InputError :message="form.errors.body" />
                 </div>

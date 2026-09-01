@@ -9,6 +9,7 @@ import {
     Trash2,
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
+import MarkdownEditor from '@/components/editor/MarkdownEditor.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import {
@@ -315,12 +316,13 @@ function publishLabel(post: Post): string {
                                 <Label for="post-body" class="d-label"
                                     >Body (Markdown)</Label
                                 >
-                                <textarea
+                                <MarkdownEditor
                                     id="post-body"
                                     v-model="form.body"
-                                    rows="12"
-                                    placeholder="## A heading&#10;&#10;Some *thoughts*…"
-                                    class="d-textarea w-full"
+                                    placeholder="## A heading
+
+Some *thoughts*…"
+                                    min-height="18rem"
                                 />
                                 <InputError :message="form.errors.body" />
                             </div>

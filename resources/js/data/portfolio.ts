@@ -70,6 +70,16 @@ export type Publication = {
     doi_url: string;
 };
 
+/** A dashboard upload: image stored on the media disk, referenced by markdown. */
+export type Media = {
+    id: number;
+    name: string;
+    url: string | null;
+    mime: string;
+    size: number; // bytes
+    created_at: string | null;
+};
+
 export type Profile = {
     name: string;
     headline: string;

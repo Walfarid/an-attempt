@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from '@lucide/vue';
+import MarkdownEditor from '@/components/editor/MarkdownEditor.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -97,11 +98,10 @@ function save() {
                             <Label for="profile-bio" class="d-label"
                                 >Bio (Markdown)</Label
                             >
-                            <textarea
+                            <MarkdownEditor
                                 id="profile-bio"
                                 v-model="form.bio"
-                                rows="6"
-                                class="d-textarea w-full"
+                                min-height="10rem"
                             />
                             <InputError :message="form.errors.bio" />
                         </div>
