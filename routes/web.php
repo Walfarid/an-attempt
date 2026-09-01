@@ -6,14 +6,12 @@ use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\PostCoverController;
-use App\Http\Controllers\Dashboard\PostDiagramController;
 use App\Http\Controllers\Dashboard\PrivacyPolicyController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\ProjectController;
 use App\Http\Controllers\Dashboard\PublicationController;
 use App\Http\Controllers\Dashboard\ScreenshotController;
 use App\Http\Controllers\Dashboard\SkillController;
-use App\Http\Controllers\DiagramController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Middleware\CachePublicResponses;
@@ -33,11 +31,6 @@ Route::get('posts', [BlogController::class, 'index'])
 Route::get('posts/{post}', [BlogController::class, 'show'])
     ->middleware(CachePublicResponses::class)
     ->name('posts.show');
-
-Route::get('diagrams/{diagram}', [DiagramController::class, 'show'])
-    ->where('diagram', '[a-z0-9-]+')
-    ->middleware(CachePublicResponses::class)
-    ->name('diagrams.show');
 
 Route::get('privacy', [PrivacyController::class, 'show'])
     ->middleware(CachePublicResponses::class)
@@ -63,9 +56,6 @@ Route::middleware([
 
     Route::put('dashboard/posts/{post}/cover', [PostCoverController::class, 'update'])->name('dashboard.posts.cover.update');
     Route::delete('dashboard/posts/{post}/cover', [PostCoverController::class, 'destroy'])->name('dashboard.posts.cover.destroy');
-
-    Route::put('dashboard/posts/{post}/diagram', [PostDiagramController::class, 'update'])->name('dashboard.posts.diagram.update');
-    Route::delete('dashboard/posts/{post}/diagram', [PostDiagramController::class, 'destroy'])->name('dashboard.posts.diagram.destroy');
 
     Route::scopeBindings()->group(function () {
         Route::resource('dashboard/projects.screenshots', ScreenshotController::class)

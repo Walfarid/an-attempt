@@ -19,11 +19,11 @@ class PostController extends Controller
     {
         return Inertia::render('dashboard/Posts', [
             'posts' => Post::query()
-                ->select(['id', 'slug', 'title', 'cover_image_path', 'diagram_path', 'published_at'])
+                ->select(['id', 'slug', 'title', 'cover_image_path', 'published_at'])
                 ->latest()
                 ->get()
                 ->each(function (Post $post): void {
-                    $post->append('cover_url', 'diagram_url')->makeHidden(['cover_image_path', 'diagram_path']);
+                    $post->append('cover_url')->makeHidden(['cover_image_path']);
                 }),
         ]);
     }
@@ -71,16 +71,12 @@ class PostController extends Controller
     }
 
     /**
-     * Delete a post along with its cover image and diagram files.
+     * Delete a post along with its cover image file.
      */
     public function destroy(Post $post): RedirectResponse
     {
         if ($post->cover_image_path !== null) {
             Storage::disk('media')->delete($post->cover_image_path);
-        }
-
-        if ($post->diagram_path !== null) {
-            Storage::disk('media')->delete($post->diagram_path);
         }
 
         $post->delete();
