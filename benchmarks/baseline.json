@@ -1,12 +1,12 @@
 {
-    "timestamp": "2026-08-31T10:35:41+00:00",
+    "timestamp": "2026-09-01T09:41:15+00:00",
     "routes": {
         "/": {
             "method": "GET",
-            "median_ms": 21.66,
-            "mean_ms": 22.13,
-            "min_ms": 21.54,
-            "p95_ms": 23.98,
+            "median_ms": 8.86,
+            "mean_ms": 9.04,
+            "min_ms": 8.62,
+            "p95_ms": 9.69,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -17,15 +17,15 @@
                 1,
                 1
             ],
-            "bytes": 11765,
-            "bytes_gz": 2632
+            "bytes": 11732,
+            "bytes_gz": 2618
         },
         "/posts": {
             "method": "GET",
-            "median_ms": 22.77,
-            "mean_ms": 24.06,
-            "min_ms": 22.21,
-            "p95_ms": 29.51,
+            "median_ms": 10.03,
+            "mean_ms": 10.09,
+            "min_ms": 9.76,
+            "p95_ms": 10.38,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -36,15 +36,15 @@
                 1,
                 1
             ],
-            "bytes": 9422,
-            "bytes_gz": 2306
+            "bytes": 9626,
+            "bytes_gz": 2349
         },
         "/posts/what-clean-architecture-means-in-practice": {
             "method": "GET",
-            "median_ms": 22.67,
-            "mean_ms": 22.71,
-            "min_ms": 22.11,
-            "p95_ms": 23.42,
+            "median_ms": 8.89,
+            "mean_ms": 9.03,
+            "min_ms": 8.56,
+            "p95_ms": 9.57,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -55,15 +55,15 @@
                 1,
                 1
             ],
-            "bytes": 9772,
-            "bytes_gz": 2110
+            "bytes": 9731,
+            "bytes_gz": 2114
         },
         "/privacy": {
             "method": "GET",
-            "median_ms": 21.74,
-            "mean_ms": 22.79,
-            "min_ms": 21.19,
-            "p95_ms": 27.46,
+            "median_ms": 9.01,
+            "mean_ms": 9.06,
+            "min_ms": 8.69,
+            "p95_ms": 9.6,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -74,15 +74,15 @@
                 1,
                 1
             ],
-            "bytes": 12879,
-            "bytes_gz": 3530
+            "bytes": 12846,
+            "bytes_gz": 3516
         },
         "/sitemap.xml": {
             "method": "GET",
-            "median_ms": 20.77,
-            "mean_ms": 20.64,
-            "min_ms": 20.03,
-            "p95_ms": 21.11,
+            "median_ms": 6.79,
+            "mean_ms": 6.71,
+            "min_ms": 6.32,
+            "p95_ms": 7.11,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -93,17 +93,17 @@
                 1,
                 1
             ],
-            "bytes": 924,
-            "bytes_gz": 279
+            "bytes": 1270,
+            "bytes_gz": 309
         }
     },
     "deferred": {
         "/ (deferred: skills,experiences,projects,educations,publications,posts)": {
             "method": "GET",
-            "median_ms": 32.39,
-            "mean_ms": 33.16,
-            "min_ms": 31.58,
-            "p95_ms": 35.89,
+            "median_ms": 20.29,
+            "mean_ms": 20.14,
+            "min_ms": 19.58,
+            "p95_ms": 20.65,
             "avg_queries": 8,
             "queries": [
                 8,
@@ -114,17 +114,17 @@
                 8,
                 8
             ],
-            "bytes": 7453,
-            "bytes_gz": 2587
+            "bytes": 7063,
+            "bytes_gz": 2444
         }
     },
     "dashboard": {
         "dashboard (analytics)": {
             "method": "GET",
-            "median_ms": 2.37,
-            "mean_ms": 2.37,
-            "min_ms": 2.24,
-            "p95_ms": 2.48,
+            "median_ms": 2.38,
+            "mean_ms": 2.38,
+            "min_ms": 2.29,
+            "p95_ms": 2.47,
             "avg_queries": 3,
             "queries": [
                 3,
@@ -143,15 +143,15 @@
                 3,
                 3
             ],
-            "bytes": 3099,
-            "bytes_gz": 831
+            "bytes": 2982,
+            "bytes_gz": 806
         },
         "dashboard/posts": {
             "method": "GET",
-            "median_ms": 0.28,
-            "mean_ms": 0.29,
-            "min_ms": 0.27,
-            "p95_ms": 0.32,
+            "median_ms": 0.31,
+            "mean_ms": 0.32,
+            "min_ms": 0.29,
+            "p95_ms": 0.35,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -170,15 +170,15 @@
                 1,
                 1
             ],
-            "bytes": 2275,
-            "bytes_gz": 765
+            "bytes": 2454,
+            "bytes_gz": 791
         },
         "dashboard/posts/{id}": {
             "method": "GET",
             "median_ms": 0.2,
             "mean_ms": 0.2,
             "min_ms": 0.18,
-            "p95_ms": 0.25,
+            "p95_ms": 0.22,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -203,9 +203,9 @@
         "dashboard/projects": {
             "method": "GET",
             "median_ms": 2.14,
-            "mean_ms": 2.2,
-            "min_ms": 2.05,
-            "p95_ms": 2.46,
+            "mean_ms": 2.14,
+            "min_ms": 2.04,
+            "p95_ms": 2.2,
             "avg_queries": 4,
             "queries": [
                 4,
@@ -224,15 +224,15 @@
                 4,
                 4
             ],
-            "bytes": 4548,
-            "bytes_gz": 1497
+            "bytes": 4515,
+            "bytes_gz": 1487
         },
         "dashboard/skills": {
             "method": "GET",
-            "median_ms": 0.64,
+            "median_ms": 0.63,
             "mean_ms": 0.64,
             "min_ms": 0.59,
-            "p95_ms": 0.71,
+            "p95_ms": 0.69,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -251,15 +251,15 @@
                 1,
                 1
             ],
-            "bytes": 3641,
-            "bytes_gz": 1075
+            "bytes": 3608,
+            "bytes_gz": 1060
         },
         "dashboard/experience": {
             "method": "GET",
             "median_ms": 0.26,
-            "mean_ms": 0.26,
+            "mean_ms": 0.27,
             "min_ms": 0.24,
-            "p95_ms": 0.3,
+            "p95_ms": 0.32,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -278,15 +278,15 @@
                 1,
                 1
             ],
-            "bytes": 2967,
-            "bytes_gz": 1276
+            "bytes": 2934,
+            "bytes_gz": 1260
         },
         "dashboard/educations": {
             "method": "GET",
-            "median_ms": 0.25,
-            "mean_ms": 0.26,
-            "min_ms": 0.23,
-            "p95_ms": 0.29,
+            "median_ms": 0.27,
+            "mean_ms": 0.27,
+            "min_ms": 0.24,
+            "p95_ms": 0.32,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -305,15 +305,15 @@
                 1,
                 1
             ],
-            "bytes": 2067,
-            "bytes_gz": 806
+            "bytes": 2034,
+            "bytes_gz": 788
         },
         "dashboard/publications": {
             "method": "GET",
-            "median_ms": 0.25,
-            "mean_ms": 0.26,
-            "min_ms": 0.24,
-            "p95_ms": 0.29,
+            "median_ms": 0.3,
+            "mean_ms": 0.29,
+            "min_ms": 0.25,
+            "p95_ms": 0.32,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -332,13 +332,13 @@
                 1,
                 1
             ],
-            "bytes": 1762,
-            "bytes_gz": 688
+            "bytes": 1729,
+            "bytes_gz": 672
         },
         "dashboard/profile/edit": {
             "method": "GET",
-            "median_ms": 0.23,
-            "mean_ms": 0.24,
+            "median_ms": 0.24,
+            "mean_ms": 0.25,
             "min_ms": 0.22,
             "p95_ms": 0.27,
             "avg_queries": 1,
@@ -359,15 +359,15 @@
                 1,
                 1
             ],
-            "bytes": 2261,
-            "bytes_gz": 893
+            "bytes": 2228,
+            "bytes_gz": 880
         },
         "dashboard/privacy/edit": {
             "method": "GET",
-            "median_ms": 0.29,
+            "median_ms": 0.28,
             "mean_ms": 0.29,
-            "min_ms": 0.25,
-            "p95_ms": 0.33,
+            "min_ms": 0.26,
+            "p95_ms": 0.35,
             "avg_queries": 1,
             "queries": [
                 1,
@@ -386,8 +386,8 @@
                 1,
                 1
             ],
-            "bytes": 5322,
-            "bytes_gz": 2094
+            "bytes": 5289,
+            "bytes_gz": 2078
         }
     },
     "bundle": {
