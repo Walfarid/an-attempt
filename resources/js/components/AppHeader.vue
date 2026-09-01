@@ -113,7 +113,7 @@ const rightNavItems: NavItem[] = [];
                                 class="flex justify-start border-b border-(--rule) pb-4 text-left"
                             >
                                 <AppLogoIcon
-                                    class="size-6 fill-current text-(--accent)"
+                                    class="size-6 stroke-current text-(--accent)"
                                 />
                             </SheetHeader>
                             <div

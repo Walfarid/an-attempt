@@ -9,7 +9,7 @@ const name = usePage().props.name;
     <div
         class="flex aspect-square size-8 items-center justify-center border border-(--accent) bg-(--accent)"
     >
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
+        <AppLogoIcon class="size-5 stroke-current text-white dark:text-black" />
     </div>
     <div class="ml-1 grid flex-1 text-left text-sm">
         <span
