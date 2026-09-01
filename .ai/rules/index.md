@@ -16,5 +16,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/pages/posts/*.vue | .ai/rules/posts.md |
 | routes/web.php | .ai/rules/routes.md |
 | resources/js/components/site/** | .ai/rules/site.md |
+| app/Support/Markdown.php | .ai/rules/support.md |
 | tests/** | .ai/rules/tests.md |
 | .github/workflows/deploy.yml, .github/workflows/dast.yml | .ai/rules/workflows.md |
