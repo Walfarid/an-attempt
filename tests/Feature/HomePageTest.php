@@ -18,7 +18,7 @@ test('the home page renders for guests', function () {
             ->has('stats.years_active')
             ->has('stats.projects_count')
             ->has('stats.skills_count')
-            ->has('turnstile_site_key')
+            ->has('contact_email')
             ->loadDeferredProps('default', fn ($page) => $page
                 ->has('experiences')
                 ->has('skills')
