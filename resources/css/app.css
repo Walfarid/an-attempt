@@ -86,11 +86,12 @@
 :root {
     --paper: #fafaf5;
     --ink: #1a1a18;
-    --ink-soft: #6b6b65;
+    --ink-soft: #63635d;
     --rule: #dddad2;
     --accent: #17594a;
     --accent-hover: #0f4638;
     --accent-soft: #e8f0ec;
+    --accent-foreground: #fafaf5;
     --surface: #ffffff;
 
     --background: #fafaf5;
@@ -104,7 +105,7 @@
     --secondary: #e8f0ec;
     --secondary-foreground: #1a1a18;
     --muted: #e8f0ec;
-    --muted-foreground: #6b6b65;
+    --muted-foreground: #63635d;
     --accent-primary: #17594a;
     --accent-secondary: #3b7a57;
     --destructive: #b91c1c;
@@ -136,6 +137,7 @@
     --accent: #5bb89a;
     --accent-hover: #7dcca9;
     --accent-soft: #1a2f26;
+    --accent-foreground: #141413;
     --surface: #1c1c1a;
 
     --background: #141413;
@@ -149,7 +151,7 @@
     --secondary: #1a2f26;
     --secondary-foreground: #ece9e2;
     --muted: #1a2f26;
-    --muted-foreground: #9a9790;
+    --muted-foreground: #98948d;
     --accent-primary: #5bb89a;
     --accent-secondary: #6fbf8d;
     --destructive: #ef4444;

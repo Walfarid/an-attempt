@@ -28,7 +28,7 @@ import {
                     <p class="text-xs font-semibold tracking-wider uppercase">
                         ⚠ Warning
                     </p>
-                    <p class="text-xs text-destructive/80">
+                    <p class="text-xs text-destructive">
                         Please proceed with caution, this cannot be undone.
                     </p>
                 </div>
