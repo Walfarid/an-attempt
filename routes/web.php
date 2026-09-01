@@ -4,6 +4,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Dashboard\AnalyticsController;
 use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
+use App\Http\Controllers\Dashboard\MediaController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\PostCoverController;
 use App\Http\Controllers\Dashboard\PrivacyPolicyController;
@@ -56,6 +57,10 @@ Route::middleware([
 
     Route::put('dashboard/posts/{post}/cover', [PostCoverController::class, 'update'])->name('dashboard.posts.cover.update');
     Route::delete('dashboard/posts/{post}/cover', [PostCoverController::class, 'destroy'])->name('dashboard.posts.cover.destroy');
+
+    Route::resource('dashboard/media', MediaController::class)
+        ->only(['index', 'store', 'destroy'])
+        ->names('dashboard.media');
 
     Route::scopeBindings()->group(function () {
         Route::resource('dashboard/projects.screenshots', ScreenshotController::class)
