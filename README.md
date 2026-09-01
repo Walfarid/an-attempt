@@ -1,7 +1,7 @@
 # Walfa
 
 Personal portfolio: public site (home + blog), authenticated content dashboard,
-contact form, first-party analytics. Laravel 13, Inertia v3, Vue 3.
+mailto contact CTA, first-party analytics. Laravel 13, Inertia v3, Vue 3.
 
 [![Laravel](https://img.shields.io/badge/Laravel-13-F5325C?logo=laravel&logoColor=white)](https://laravel.com/docs/13.x)
 [![Vue](https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
@@ -35,7 +35,7 @@ contact form, first-party analytics. Laravel 13, Inertia v3, Vue 3.
 
 - Home page: hero, animated stats, skills, experience, projects, education, publications, latest posts
 - Blog index and post pages at `/posts` and `/posts/{slug}`
-- Contact form behind Cloudflare Turnstile (disabled when no secret is configured)
+- mailto CTA that opens the visitor's email client (address from `config('contact.notification_email')`)
 - `sitemap.xml` and security headers (CSP, HSTS) applied globally
 - Page-view tracking middleware and outbound-click endpoint, plus Microsoft Clarity and GA4 via env keys
 
@@ -72,9 +72,8 @@ contact form, first-party analytics. Laravel 13, Inertia v3, Vue 3.
 ```
 app/
   Http/Controllers/          public site + Dashboard/* and Settings/* controllers
-  Mail/                      contact-form notification
   Models/                    Profile, Project (+Screenshot), Post, Skill, Experience,
-                             Education, Publication, ContactMessage, PageView, Click, User
+                             Education, Publication, PageView, Click, User
   Middleware/                SecurityHeaders, TrackPageView, HandleInertiaRequests
 routes/web.php               all public + authenticated routes
 resources/js/pages/          Inertia pages: Welcome, posts/, dashboard/
