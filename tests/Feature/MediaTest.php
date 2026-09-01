@@ -110,14 +110,24 @@ test('destroy removes file and record', function () {
         ->and(Storage::disk('media')->exists($media->path))->toBeFalse();
 });
 
-test('store accepts jpg, jpeg, png, webp, gif, and avif', function (string $extension) {
+test('store accepts jpg, jpeg, png, webp, gif, avif, and svg', function (string $extension) {
     Storage::fake('media');
     $this->actingAs(User::factory()->create());
 
-    $this->post('/dashboard/media', [
-        'file' => UploadedFile::fake()->image("test.{$extension}", 800, 600),
-    ])->assertCreated();
-})->with(['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif']);
+    if ($extension === 'svg') {
+        $tmp = tempnam(sys_get_temp_dir(), 'svg');
+        file_put_contents($tmp, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>');
+        $file = new UploadedFile($tmp, 'test.svg', 'image/svg+xml', null, true);
+
+        $this->post('/dashboard/media', [
+            'file' => $file,
+        ])->assertCreated();
+    } else {
+        $this->post('/dashboard/media', [
+            'file' => UploadedFile::fake()->image("test.{$extension}", 800, 600),
+        ])->assertCreated();
+    }
+})->with(['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg']);
 
 test('store accepts file at exactly 4096 kilobytes', function () {
     Storage::fake('media');
