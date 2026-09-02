@@ -14,6 +14,11 @@ export interface ImageProcessorOptions {
     maxDimension?: number;
     /** Output quality for lossy formats (0–1). Default: 0.85. */
     quality?: number;
+    /**
+     * Max file size in bytes. Images over this size are always re-encoded
+     * even if dimensions are within limits. Default: 2 MB.
+     */
+    maxFileSize?: number;
 }
 
 let cachedWebpSupported: boolean | null = null;
@@ -72,14 +77,17 @@ export async function processImage(
 ): Promise<File> {
     const maxDimension = options.maxDimension ?? 2048;
     const quality = options.quality ?? 0.85;
+    const maxFileSize = options.maxFileSize ?? 2 * 1024 * 1024; // 2 MB
 
     const bitmap = await createImageBitmap(file);
 
     const { width, height } = bitmap;
     const longestEdge = Math.max(width, height);
+    const needsResize = longestEdge > maxDimension;
+    const needsReencode = file.size > maxFileSize;
 
-    // If the image fits within max dimensions, just rename it.
-    if (longestEdge <= maxDimension) {
+    // If the image fits within max dimensions and file size, just rename it.
+    if (!needsResize && !needsReencode) {
         bitmap.close();
         const { extension } = getOutputFormat();
         const randomName = `${crypto.randomUUID()}.${extension}`;
@@ -88,7 +96,7 @@ export async function processImage(
     }
 
     // Calculate new dimensions preserving aspect ratio.
-    const scale = maxDimension / longestEdge;
+    const scale = needsResize ? maxDimension / longestEdge : 1;
     const newWidth = Math.round(width * scale);
     const newHeight = Math.round(height * scale);
 
