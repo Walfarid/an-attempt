@@ -106,34 +106,73 @@ class PostController extends Controller
         }
 
         $tagIds = DB::transaction(function () use ($names): array {
+            $baseSlugs = [];
+
             foreach ($names as $name) {
-                Tag::firstOrCreate(
-                    ['name' => $name],
-                    ['slug' => $this->uniqueTagSlug(Str::slug($name))],
-                );
+                $base = Str::slug($name);
+                $baseSlugs[$name] = $base !== '' ? $base : Str::random(8);
             }
 
-            /** @var list<int> */
-            return Tag::whereIn('name', $names)->pluck('id')->all();
+            $taken = array_flip(
+                Tag::whereIn('slug', array_values($baseSlugs))->pluck('slug')->all(),
+            );
+
+            $finalSlugs = [];
+
+            foreach ($baseSlugs as $name => $slug) {
+                $base = $slug;
+                $suffix = 0;
+
+                while (isset($taken[$slug])) {
+                    $slug = $base.'-'.(++$suffix);
+                }
+
+                $taken[$slug] = true;
+                $finalSlugs[$name] = $slug;
+            }
+
+            $existingNames = Tag::whereIn('name', $names)->pluck('name')->all();
+            $now = now();
+            $rows = [];
+
+            foreach ($names as $name) {
+                if (! in_array($name, $existingNames, true)) {
+                    $rows[] = [
+                        'name' => $name,
+                        'slug' => $finalSlugs[$name],
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+            }
+
+            if ($rows !== []) {
+                Tag::insertOrIgnore($rows);
+            }
+
+            $tagIds = Tag::whereIn('name', $names)->pluck('id')->all();
+
+            if (count($tagIds) < count($names)) {
+                $foundNames = Tag::whereIn('name', $names)->pluck('name')->all();
+
+                foreach (array_diff($names, $foundNames) as $missing) {
+                    $slug = Str::slug($missing) ?: Str::random(8);
+                    $counter = 0;
+
+                    while (Tag::where('slug', $slug)->exists()) {
+                        $slug = $slug.'-'.(++$counter);
+                    }
+
+                    Tag::create(['name' => $missing, 'slug' => $slug]);
+                }
+
+                $tagIds = Tag::whereIn('name', $names)->pluck('id')->all();
+            }
+
+            return $tagIds;
         });
 
         $post->tags()->sync($tagIds);
-    }
-
-    /**
-     * A tag slug that is unique among existing tags: slug collisions
-     * are kept impossible so /posts/tag/{slug} stays unambiguous.
-     */
-    private function uniqueTagSlug(string $base): string
-    {
-        $slug = $base !== '' ? $base : Str::random(8);
-        $suffix = 0;
-
-        while (Tag::where('slug', $slug)->exists()) {
-            $slug = $base.'-'.(++$suffix);
-        }
-
-        return $slug;
     }
 
     /**

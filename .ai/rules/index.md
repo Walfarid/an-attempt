@@ -6,12 +6,12 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | benchmarks/** | .ai/rules/benchmarks.md |
 | resources/js/components/CookieConsentBanner.vue | .ai/rules/components.md |
-| resources/js/components/editor/**, resources/js/pages/dashboard/Profile.vue, resources/js/pages/dashboard/Posts.vue, resources/js/pages/dashboard/Guides.vue, resources/js/pages/dashboard/PrivacyPolicy.vue | .ai/rules/editor.md |
 | config/cache.php | .ai/rules/config.md |
 | app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php, app/Http/Controllers/HomeController.php, routes/web.php | .ai/rules/controllers.md |
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
+| resources/js/components/editor/**, resources/js/pages/dashboard/Profile.vue, resources/js/pages/dashboard/Posts.vue, resources/js/pages/dashboard/Guides.vue, resources/js/pages/dashboard/PrivacyPolicy.vue | .ai/rules/editor.md |
 | compose.prod.yaml, .env.example, vite.config.ts | .ai/rules/general.md |
-| app/Models/Guide.php, app/Http/Controllers/Dashboard/GuideController.php, app/Http/Controllers/Dashboard/GuideCoverController.php, app/Http/Controllers/GuideController.php, app/Http/Requests/Dashboard/GuideRequest.php, app/Http/Requests/Dashboard/UploadGuideCoverRequest.php, resources/js/pages/dashboard/Guides.vue, resources/js/pages/guides/** | .ai/rules/guides.md |
+| app/Models/Guide.php, app/Http/Controllers/Dashboard/GuideController.php, app/Http/Controllers/Dashboard/GuideCoverController.php, app/Http/Controllers/GuideController.php, app/Http/Requests/Dashboard/GuideRequest.php, app/Http/Requests/Dashboard/UploadGuideCoverRequest.php, resources/js/pages/dashboard/Guides.vue, resources/js/pages/guides/**, app/Http/Controllers/Dashboard/** | .ai/rules/guides.md |
 | resources/js/lib/flashToast.ts | .ai/rules/lib.md |
 | app/Http/Middleware/TrackPageView.php, app/Http/Middleware/CachePublicResponses.php, app/Http/Middleware/HandleInertiaRequests.php, app/Http/Middleware/HandleConsent.php | .ai/rules/middleware.md |
 | database/migrations/** | .ai/rules/migrations.md |

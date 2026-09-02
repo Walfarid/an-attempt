@@ -113,6 +113,67 @@ test('individual tag names are length-limited', function () {
     ])->assertInvalid('tags.0');
 });
 
+test('tags with identical slugs get distinct suffixed slugs', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->post('/dashboard/posts', [
+        'title' => 'First post',
+        'body' => 'Body.',
+        'tags' => ['Foo Bar'],
+    ])->assertRedirect(route('dashboard.posts.index'));
+
+    $this->post('/dashboard/posts', [
+        'title' => 'Second post',
+        'body' => 'Body.',
+        'tags' => ['foo-bar'],
+    ])->assertRedirect(route('dashboard.posts.index'));
+
+    $tag1 = Tag::where('name', 'Foo Bar')->firstOrFail();
+    $tag2 = Tag::where('name', 'foo-bar')->firstOrFail();
+
+    expect($tag1->slug)->toBe('foo-bar')
+        ->and($tag2->slug)->toBe('foo-bar-1')
+        ->and($tag1->id)->not->toBe($tag2->id);
+
+    $post1 = Post::where('slug', 'first-post')->firstOrFail();
+    $post2 = Post::where('slug', 'second-post')->firstOrFail();
+
+    expect($post1->tags->pluck('name')->all())->toBe(['Foo Bar'])
+        ->and($post2->tags->pluck('name')->all())->toBe(['foo-bar']);
+});
+
+test('creating a post with several new tags creates all of them at once', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->post('/dashboard/posts', [
+        'title' => 'Multi tag',
+        'body' => 'Body.',
+        'tags' => ['Alpha', 'Beta', 'Gamma', 'Delta'],
+    ])->assertRedirect(route('dashboard.posts.index'));
+
+    $post = Post::where('slug', 'multi-tag')->firstOrFail();
+
+    expect($post->tags)->toHaveCount(4)
+        ->and(Tag::whereIn('name', ['Alpha', 'Beta', 'Gamma', 'Delta'])->count())->toBe(4);
+});
+
+test('tags with colliding slugs in the same batch get distinct slugs', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->post('/dashboard/posts', [
+        'title' => 'Collision batch',
+        'body' => 'Body.',
+        'tags' => ['Hello World', 'hello-world'],
+    ])->assertRedirect(route('dashboard.posts.index'));
+
+    $tag1 = Tag::where('name', 'Hello World')->firstOrFail();
+    $tag2 = Tag::where('name', 'hello-world')->firstOrFail();
+
+    expect($tag1->slug)->not->toBe($tag2->slug)
+        ->and($tag1->slug)->toBe('hello-world')
+        ->and($tag2->slug)->toBe('hello-world-1');
+});
+
 test('deleting a post detaches its tags but keeps shared tags', function () {
     $post = Post::factory()->create();
     $other = Post::factory()->create();

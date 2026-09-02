@@ -1,13 +1,14 @@
 ---
 paths:
-  - 'app/Models/Guide.php'
-  - 'app/Http/Controllers/Dashboard/GuideController.php'
-  - 'app/Http/Controllers/Dashboard/GuideCoverController.php'
-  - 'app/Http/Controllers/GuideController.php'
-  - 'app/Http/Requests/Dashboard/GuideRequest.php'
-  - 'app/Http/Requests/Dashboard/UploadGuideCoverRequest.php'
-  - 'resources/js/pages/dashboard/Guides.vue'
+  - app/Models/Guide.php
+  - app/Http/Controllers/Dashboard/GuideController.php
+  - app/Http/Controllers/Dashboard/GuideCoverController.php
+  - app/Http/Controllers/GuideController.php
+  - app/Http/Requests/Dashboard/GuideRequest.php
+  - app/Http/Requests/Dashboard/UploadGuideCoverRequest.php
+  - resources/js/pages/dashboard/Guides.vue
   - 'resources/js/pages/guides/**'
+  - 'app/Http/Controllers/Dashboard/**'
 ---
 
 # Guides
@@ -29,3 +30,6 @@ Guides are tutorial-style content with step-by-step markdown body, prerequisites
 ## Cross-references
 - `Guide::posts()` ↔ `Post::guides()` via `guide_post` pivot (cascadeOnDelete both sides).
 - Dashboard form includes a post multiselect (`PostPicker`) for linking; the store/update controller syncs `validated('posts', [])`.
+
+## Bulk upsert BelongsToMany inputs instead of per-row firstOrCreate in controllers
+syncTags-style methods that create tags/related rows from request input must not loop firstOrCreate: each iteration costs a SELECT+INSERT and races on slug uniqueness under concurrent writes. Resolve slugs against one whereIn('slug') query, insert missing rows with a single insertOrIgnore inside a DB::transaction, then one whereIn('name')->pluck('id') and one sync(). If a name is still missing after the insert (slug race with a different name), recreate it once with a suffixed slug. Keep tags.name and tags.slug unique. See PostController::syncTags (PostController.php) for the canonical implementation.
