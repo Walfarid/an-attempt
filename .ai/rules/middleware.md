@@ -3,6 +3,7 @@ paths:
   - app/Http/Middleware/TrackPageView.php
   - app/Http/Middleware/CachePublicResponses.php
   - app/Http/Middleware/HandleInertiaRequests.php
+  - app/Http/Middleware/HandleConsent.php
 ---
 
 # Middleware
@@ -18,3 +19,6 @@ Shared Inertia props that are only consumed by dashboard/settings layouts (like 
 
 ## Consent-gated analytics markup: keep pages must-revalidate
 Middleware emits public, max-age=60, stale-while-revalidate=300, must-revalidate for guests. must-revalidate + SWR means an expired cached page is never reused stale when it could be revalidated — a consent cookie change (decline→accepted or vice versa) must produce the matching analytics markup on the next navigation. Without must-revalidate, CDN/browser could replay a stale analytics variant to a user who declined, causing the beacon/clarity console errors. The @fonts inline <style> in app.blade.php is not covered by the Vite preload dedup, so font preloads duplicate per page.
+
+## Consent middleware uses simple consent cookie for Google Consent Mode v2
+HandleConsent reads the `consent` cookie (accepted | declined) to gate analytics (Clarity, GA4) and AdSense scripts. The cookie is set by the client-side Vue banner. On the Blade side, `app.blade.php` sets Google Consent Mode v2 defaults to `denied` on every page, and updates to `granted` only when `$consent === 'accepted'`. This makes the site AdSense-ready: when the user sets `ADSENSE_CLIENT_ID` in `.env`, the AdSense script loads behind the same consent gate.
