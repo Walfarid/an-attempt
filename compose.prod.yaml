@@ -59,6 +59,25 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  scheduler:
+    image: sin.ocir.io/axcrmi3rzxfh/walfa-app:latest
+    restart: unless-stopped
+    env_file: /opt/walfa/.env
+    command: ["php", "artisan", "schedule:work"]
+    # The FrankenPHP image ships a default healthcheck against the Caddy
+    # admin endpoint (:2019); the scheduler serves no HTTP, so disable it.
+    healthcheck:
+      disable: true
+    volumes:
+      - /opt/walfa/storage:/app/storage
+    depends_on:
+      - valkey
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   valkey:
     image: valkey/valkey:9.1
     restart: unless-stopped

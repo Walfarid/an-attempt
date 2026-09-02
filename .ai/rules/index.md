@@ -16,6 +16,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/lib/flashToast.ts | .ai/rules/lib.md |
 | app/Http/Middleware/TrackPageView.php, app/Http/Middleware/CachePublicResponses.php, app/Http/Middleware/HandleInertiaRequests.php, app/Http/Middleware/HandleConsent.php | .ai/rules/middleware.md |
 | database/migrations/** | .ai/rules/migrations.md |
+| compose.prod.yaml, routes/console.php, app/Models/PageView.php, app/Models/Click.php | .ai/rules/models.md |
 | resources/js/pages/Welcome.vue, resources/js/pages/** | .ai/rules/pages.md |
 | resources/js/pages/posts/*.vue | .ai/rules/posts.md |
 | app/Http/Requests/Dashboard/PostRequest.php | .ai/rules/requests-dashboard.md |

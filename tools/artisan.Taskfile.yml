@@ -29,3 +29,7 @@ tasks:
   config_clear:
     desc: Clear the cached configuration
     cmd: php artisan config:clear
+
+  schedule_work:
+    desc: Run the Laravel task scheduler in the foreground (dev parity for the prod scheduler service)
+    cmd: php artisan schedule:work
