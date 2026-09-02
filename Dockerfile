@@ -62,6 +62,7 @@ ENV APP_ENV=production
 # Real opcache config (the old PHP_OPCACHE_* env vars were never read by the
 # image; see docker/zz-opcache.ini for the verification record).
 COPY docker/zz-opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
+COPY docker/zz-upload.ini /usr/local/etc/php/conf.d/zz-upload.ini
 
 WORKDIR /app
 COPY --from=vendor /app /app

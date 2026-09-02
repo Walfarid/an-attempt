@@ -84,15 +84,24 @@ async function handleUpload(event: Event) {
     try {
         const response = await fetch(mediaRoute.store.url(), {
             method: 'POST',
+            headers: { Accept: 'application/json' },
             body: formData,
         });
 
         if (!response.ok) {
-            const json = (await response.json()) as {
-                errors?: { file?: string[] };
-            };
+            let message = `Upload failed (${response.status}).`;
 
-            throw new Error(json.errors?.file?.[0] ?? 'Upload failed.');
+            try {
+                const json = (await response.json()) as {
+                    errors?: { file?: string[] };
+                    message?: string;
+                };
+                message = json.errors?.file?.[0] ?? json.message ?? message;
+            } catch {
+                // Non-JSON error response (e.g. PHP/FrankenPHP error page).
+            }
+
+            throw new Error(message);
         }
 
         const json = (await response.json()) as Media;
