@@ -29,6 +29,8 @@ const makeIcon =
                 'stroke-width': 2,
                 'stroke-linecap': 'round',
                 'stroke-linejoin': 'round',
+                'aria-hidden': 'true',
+                role: 'img',
                 ...attrs,
             },
             nodes.map(([tag, nodeAttrs]) => h(tag, nodeAttrs)),

@@ -78,7 +78,7 @@ function onBackspace() {
                 class="opacity-60 transition-opacity hover:opacity-100"
                 @click="removeAt(i)"
             >
-                <X class="size-3" />
+                <X class="size-3" aria-hidden="true" />
             </button>
         </span>
 

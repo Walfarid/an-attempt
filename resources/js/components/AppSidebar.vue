@@ -121,7 +121,7 @@ const mainNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton as-child :tooltip="'View homepage'">
                         <Link :href="home()">
-                            <ArrowUpRight />
+                            <ArrowUpRight aria-hidden="true" />
                             <span>View homepage</span>
                         </Link>
                     </SidebarMenuButton>

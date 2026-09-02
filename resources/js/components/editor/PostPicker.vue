@@ -78,7 +78,7 @@ function onBackspace() {
                 class="opacity-60 transition-opacity hover:opacity-100"
                 @click="removeAt(i)"
             >
-                <X class="size-3" />
+                <X class="size-3" aria-hidden="true" />
             </button>
         </span>
 
@@ -87,6 +87,7 @@ function onBackspace() {
                 type="button"
                 class="w-full py-0.5 text-left text-sm outline-none"
                 placeholder="Search posts…"
+                aria-label="Toggle post picker"
                 aria-haspopup="listbox"
                 :aria-expanded="showingOptions"
                 @click="showingOptions = !showingOptions"
