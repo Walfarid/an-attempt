@@ -34,19 +34,25 @@ class AnalyticsController extends Controller
         $ctr = $totalVisitors > 0 ? ($totalClicks / $totalVisitors) * 100 : 0;
         $prevCtr = $prevVisitors > 0 ? ($prevClicks / $prevVisitors) * 100 : 0;
 
-        // Pre-aggregate top pages with click counts via a single correlated
-        // subquery instead of two separate queries (was: 1 for topPages + 1 for clicksByPath).
+        // Pre-aggregate clicks in a derived table and LEFT JOIN once,
+        // avoiding a correlated subquery per top-page row.
         $cutoff = now()->subDays($days);
 
         $topPages = PageView::select(
             'page_views.path',
             DB::raw('count(*) as visitors'),
+            DB::raw('COALESCE(MAX(c.clicks), 0) as clicks'),
         )
-            ->selectSub(
-                Click::selectRaw('count(*)')
-                    ->whereColumn('clicks.path', 'page_views.path')
-                    ->where('clicks.clicked_at', '>=', $cutoff),
-                'clicks',
+            ->joinSub(
+                Click::select('path')
+                    ->selectRaw('count(*) as clicks')
+                    ->where('clicked_at', '>=', $cutoff)
+                    ->groupBy('path'),
+                'c',
+                'c.path',
+                '=',
+                'page_views.path',
+                'left',
             )
             ->where('page_views.viewed_at', '>=', $cutoff)
             ->groupBy('page_views.path')

@@ -9,6 +9,7 @@ paths:
   - resources/js/pages/dashboard/Guides.vue
   - 'resources/js/pages/guides/**'
   - 'app/Http/Controllers/Dashboard/**'
+  - app/Http/Controllers/Dashboard/AnalyticsController.php
 ---
 
 # Guides
@@ -36,3 +37,6 @@ syncTags-style methods that create tags/related rows from request input must not
 
 ## Sitemap cache keys live in SitemapCache support class; controllers call invalidate()
 Sitemap cache keys (sitemap.xml + sitemap.last_modified) are defined once in App\Support\SitemapCache as constants; that class owns both keys and the invalidate() that forgets them. Dashboard controllers must never Cache::forget sitemap keys directly — call SitemapCache::invalidate() after any content mutation that changes public URLs or modified timestamps (posts, guides, privacy policy). HomeController::sitemap reads/writes through the same constants. Adding a new content type: invalidate there too, and update the sitemap builder collection.
+
+## Aggregate analytics clicks via one derived-table LEFT JOIN, not correlated selectSub
+topPages aggregates click counts with ONE query: joinSub a derived table (SELECT path, count(*) as clicks FROM clicks WHERE clicked_at >= ? GROUP BY path) as c on c.path = page_views.path (left), then COALESCE(MAX(c.clicks), 0) as clicks — MAX is a no-op per unique joined group and satisfies ONLY_FULL_GROUP_BY. Never reintroduce selectSub here: a correlated subquery runs once per top-page row (5 subqueries per dashboard load). Keep the topPages prop shape (path, title, visitors, clicks) intact.
