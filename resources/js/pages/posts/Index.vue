@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link } from '@inertiajs/vue3';
+import ContentCard from '@/components/site/ContentCard.vue';
 import { ArrowLeft } from '@/components/site/icons';
-import PostTags from '@/components/site/PostTags.vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
@@ -52,56 +52,25 @@ useScrollAnimations();
                     class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
                     data-motion-group
                 >
-                    <Link
+                    <ContentCard
                         v-for="post in posts.data"
                         :key="post.id"
                         :href="postShow.url({ post: post.slug })"
-                        prefetch
-                        cache-for="10s"
-                        class="d-surface d-card-hover flex flex-col no-underline"
-                        data-motion
-                    >
-                        <img
-                            v-if="post.cover_url"
-                            :src="post.cover_url"
-                            :alt="post.title"
-                            loading="lazy"
-                            decoding="async"
-                            class="aspect-video w-full border-b border-(--rule) object-cover"
-                        />
-
-                        <div class="flex flex-1 flex-col gap-2 p-5">
-                            <div
-                                class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"
-                            >
-                                <h2 class="font-display text-lg font-semibold">
-                                    {{ post.title }}
-                                </h2>
-                                <time class="d-label shrink-0">
-                                    {{
-                                        new Date(
-                                            post.published_at,
-                                        ).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric',
-                                        })
-                                    }}
-                                </time>
-                            </div>
-                            <p
-                                class="mt-1 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
-                            >
-                                {{ post.teaser_text }}
-                            </p>
-                            <div class="mt-auto pt-3">
-                                <PostTags
-                                    v-if="post.tags?.length"
-                                    :tags="post.tags"
-                                />
-                            </div>
-                        </div>
-                    </Link>
+                        :cover-url="post.cover_url"
+                        :title="post.title"
+                        :date="
+                            new Date(post.published_at).toLocaleDateString(
+                                'en-US',
+                                {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                },
+                            )
+                        "
+                        :description="post.teaser_text"
+                        :tags="post.tags"
+                    />
                 </div>
             </InfiniteScroll>
 

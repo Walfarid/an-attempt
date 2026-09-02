@@ -13,6 +13,7 @@ import {
     Shield,
 } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
+import ContentCard from '@/components/site/ContentCard.vue';
 import type {
     Education,
     Experience,
@@ -483,39 +484,27 @@ function toggleCategory(category: string) {
                 </div>
 
                 <div class="space-y-3" data-motion-group>
-                    <Link
+                    <ContentCard
                         v-for="post in sections.posts"
                         :key="post.id"
                         :href="postShow.url({ post: post.slug })"
-                        prefetch
-                        cache-for="10s"
-                        class="d-surface d-card-hover block p-5 no-underline sm:p-6"
-                        data-motion
-                    >
-                        <div
-                            class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"
-                        >
-                            <h3 class="font-display text-base font-semibold">
-                                {{ post.title }}
-                            </h3>
-                            <time class="d-label shrink-0">
-                                {{
-                                    new Date(
-                                        post.published_at,
-                                    ).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                    })
-                                }}
-                            </time>
-                        </div>
-                        <p
-                            class="mt-2 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
-                        >
-                            {{ post.teaser_text }}
-                        </p>
-                    </Link>
+                        :title="post.title"
+                        :date="
+                            new Date(post.published_at).toLocaleDateString(
+                                'en-US',
+                                {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                },
+                            )
+                        "
+                        :description="post.teaser_text"
+                        title-tag="h3"
+                        title-class="text-base"
+                        compact
+                        description-class="mt-2 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
+                    />
                 </div>
             </div>
         </section>

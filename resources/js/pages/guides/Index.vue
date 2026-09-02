@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import ContentCard from '@/components/site/ContentCard.vue';
 import { ArrowLeft } from '@/components/site/icons';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
@@ -61,50 +62,19 @@ function formatPublished(iso: string): string {
                 class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
                 data-motion-group
             >
-                <Link
+                <ContentCard
                     v-for="guide in guides.data"
                     :key="guide.slug"
                     :href="guideShow.url({ guide: guide.slug })"
-                    prefetch
-                    cache-for="10s"
-                    class="d-surface d-card-hover flex flex-col no-underline"
-                    data-motion
-                >
-                    <img
-                        v-if="guide.cover_url"
-                        :src="guide.cover_url"
-                        :alt="guide.title"
-                        loading="lazy"
-                        decoding="async"
-                        class="aspect-video w-full border-b border-(--rule) object-cover"
-                    />
-
-                    <div class="flex flex-1 flex-col gap-2 p-5">
-                        <div class="flex items-baseline justify-between gap-3">
-                            <p class="font-display text-lg font-semibold">
-                                {{ guide.title }}
-                            </p>
-                        </div>
-
-                        <p
-                            v-if="guide.estimated_time"
-                            class="d-label inline-flex w-fit items-center rounded-full border border-(--rule) px-2 py-0.5"
-                        >
-                            {{ guide.estimated_time }}
-                        </p>
-
-                        <p
-                            v-if="guide.teaser"
-                            class="mt-1 line-clamp-3 text-sm leading-relaxed text-(--ink-soft)"
-                        >
-                            {{ guide.teaser }}
-                        </p>
-
-                        <time class="d-label mt-auto pt-3">
-                            {{ formatPublished(guide.published_at) }}
-                        </time>
-                    </div>
-                </Link>
+                    :cover-url="guide.cover_url"
+                    :title="guide.title"
+                    :date="formatPublished(guide.published_at)"
+                    :description="guide.teaser ?? undefined"
+                    title-tag="p"
+                    date-position="bottom"
+                    :estimated-time="guide.estimated_time ?? undefined"
+                    description-class="mt-1 line-clamp-3 text-sm leading-relaxed text-(--ink-soft)"
+                />
             </div>
 
             <p
