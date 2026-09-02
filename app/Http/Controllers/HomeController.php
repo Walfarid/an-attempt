@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Skill;
 use App\Models\Tag;
+use App\Support\SitemapCache;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -187,8 +188,8 @@ class HomeController extends Controller
      */
     public function sitemap(Request $request): Response
     {
-        $cachedXml = Cache::get('sitemap.xml');
-        $cachedLastModified = Cache::get('sitemap.last_modified');
+        $cachedXml = Cache::get(SitemapCache::XML);
+        $cachedLastModified = Cache::get(SitemapCache::LAST_MODIFIED);
 
         if ($cachedXml !== null && $cachedLastModified !== null) {
             if ($this->isNotModified($request, $cachedLastModified)) {
@@ -256,8 +257,8 @@ class HomeController extends Controller
         /** @var CarbonInterface $lastModified */
         $lastModified = collect([$posts->max('updated_at'), $guides->max('updated_at'), $privacy->updated_at])->max() ?: now();
 
-        $xml = Cache::remember('sitemap.xml', now()->addHour(), fn () => view('sitemap', ['urls' => $urls])->render());
-        Cache::put('sitemap.last_modified', $lastModified, now()->addHour());
+        $xml = Cache::remember(SitemapCache::XML, now()->addHour(), fn () => view('sitemap', ['urls' => $urls])->render());
+        Cache::put(SitemapCache::LAST_MODIFIED, $lastModified, now()->addHour());
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml',

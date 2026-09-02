@@ -4,6 +4,8 @@ use App\Models\Guide;
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
 use App\Models\Tag;
+use App\Models\User;
+use App\Support\SitemapCache;
 use Illuminate\Support\Facades\Cache;
 
 test('sitemap returns xml content', function () {
@@ -111,13 +113,39 @@ test('sitemap reflects new posts after cache invalidation', function () {
 
     $this->get('/sitemap.xml')->assertOk();
 
-    // Simulate what the dashboard PostController does after a save.
-    Cache::forget('sitemap.xml');
-    Cache::forget('sitemap.last_modified');
+    SitemapCache::invalidate();
 
     $newPost = Post::factory()->create(['title' => 'Freshly Published']);
 
     $this->get('/sitemap.xml')
         ->assertOk()
         ->assertSee(route('posts.show', $newPost->slug));
+});
+
+test('sitemap cache invalidate removes both keys', function () {
+    Cache::put(SitemapCache::XML, '<xml/>', now()->addHour());
+    Cache::put(SitemapCache::LAST_MODIFIED, now(), now()->addHour());
+
+    expect(Cache::has(SitemapCache::XML))->toBeTrue()
+        ->and(Cache::has(SitemapCache::LAST_MODIFIED))->toBeTrue();
+
+    SitemapCache::invalidate();
+
+    expect(Cache::has(SitemapCache::XML))->toBeFalse()
+        ->and(Cache::has(SitemapCache::LAST_MODIFIED))->toBeFalse();
+});
+
+test('creating a post via the dashboard invalidates the sitemap cache', function () {
+    Cache::put(SitemapCache::XML, 'stale-xml', now()->addHour());
+    Cache::put(SitemapCache::LAST_MODIFIED, now(), now()->addHour());
+    $this->actingAs(User::factory()->create());
+
+    $this->post('/dashboard/posts', [
+        'title' => 'Cache Busting Post',
+        'body' => '## Body',
+        'published_at' => '2026-09-01 12:00:00',
+    ])->assertRedirect(route('dashboard.posts.index'));
+
+    expect(Cache::has(SitemapCache::XML))->toBeFalse()
+        ->and(Cache::has(SitemapCache::LAST_MODIFIED))->toBeFalse();
 });
