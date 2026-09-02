@@ -7,6 +7,7 @@ use App\Http\Requests\Dashboard\PostRequest;
 use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -64,6 +65,9 @@ class PostController extends Controller
 
         $this->syncTags($post, $request->validated('tags', []));
 
+        Cache::forget('sitemap.xml');
+        Cache::forget('sitemap.last_modified');
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Post added.')]);
 
         return to_route('dashboard.posts.index');
@@ -77,6 +81,9 @@ class PostController extends Controller
         $post->update($request->validated());
 
         $this->syncTags($post, $request->validated('tags', []));
+
+        Cache::forget('sitemap.xml');
+        Cache::forget('sitemap.last_modified');
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Post updated.')]);
 
@@ -139,6 +146,9 @@ class PostController extends Controller
         }
 
         $post->delete();
+
+        Cache::forget('sitemap.xml');
+        Cache::forget('sitemap.last_modified');
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Post deleted.')]);
 

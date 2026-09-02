@@ -8,6 +8,7 @@ use App\Models\Tag;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -112,7 +113,7 @@ class BlogController extends Controller
             ->og(type: OgType::Article, image: $post->cover_url ?? url('/og-default.png'))
             ->canonical();
 
-        $authorName = Profile::query()->value('name') ?? 'Walfa';
+        $authorName = Cache::remember('profile.name', now()->addHour(), fn (): string => Profile::query()->value('name') ?? 'Walfa');
 
         Head::schema(
             Schema::blogPosting()

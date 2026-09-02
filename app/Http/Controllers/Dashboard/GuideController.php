@@ -7,6 +7,7 @@ use App\Http\Requests\Dashboard\GuideRequest;
 use App\Models\Guide;
 use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -65,6 +66,9 @@ class GuideController extends Controller
 
         $guide->posts()->sync($request->validated('posts', []));
 
+        Cache::forget('sitemap.xml');
+        Cache::forget('sitemap.last_modified');
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Guide added.')]);
 
         return to_route('dashboard.guides.index');
@@ -78,6 +82,9 @@ class GuideController extends Controller
         $guide->update($request->validated());
 
         $guide->posts()->sync($request->validated('posts', []));
+
+        Cache::forget('sitemap.xml');
+        Cache::forget('sitemap.last_modified');
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Guide updated.')]);
 
@@ -94,6 +101,9 @@ class GuideController extends Controller
         }
 
         $guide->delete();
+
+        Cache::forget('sitemap.xml');
+        Cache::forget('sitemap.last_modified');
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Guide deleted.')]);
 

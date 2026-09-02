@@ -4,6 +4,7 @@ use App\Models\Guide;
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
 use App\Models\Tag;
+use Illuminate\Support\Facades\Cache;
 
 test('sitemap returns xml content', function () {
     $response = $this->get('/sitemap.xml');
@@ -88,4 +89,35 @@ test('sitemap excludes draft guides', function () {
     $this->get('/sitemap.xml')
         ->assertOk()
         ->assertDontSee(route('guides.show', $guide->slug));
+});
+
+test('sitemap returns 304 on a conditional request with a fresh If-Modified-Since', function () {
+    Post::factory()->create();
+
+    $response = $this->get('/sitemap.xml');
+    $response->assertOk();
+
+    $lastModified = $response->headers->get('Last-Modified');
+
+    expect($lastModified)->not->toBeNull();
+
+    $this->withHeader('If-Modified-Since', $lastModified)
+        ->get('/sitemap.xml')
+        ->assertStatus(304);
+});
+
+test('sitemap reflects new posts after cache invalidation', function () {
+    Post::factory()->create();
+
+    $this->get('/sitemap.xml')->assertOk();
+
+    // Simulate what the dashboard PostController does after a save.
+    Cache::forget('sitemap.xml');
+    Cache::forget('sitemap.last_modified');
+
+    $newPost = Post::factory()->create(['title' => 'Freshly Published']);
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertSee(route('posts.show', $newPost->slug));
 });

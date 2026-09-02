@@ -25,7 +25,9 @@ Route::get('/', [HomeController::class, 'index'])
     ->middleware(CachePublicResponses::class)
     ->name('home');
 
-Route::get('sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
+Route::get('sitemap.xml', [HomeController::class, 'sitemap'])
+    ->middleware(CachePublicResponses::class)
+    ->name('sitemap');
 
 Route::get('ads.txt', function () {
     $content = config('services.ads.txt');

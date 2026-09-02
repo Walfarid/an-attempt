@@ -12,8 +12,10 @@ use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Skill;
 use App\Models\Tag;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Inertia\Support\Header;
@@ -177,9 +179,29 @@ class HomeController extends Controller
 
     /**
      * Generate a dynamic XML sitemap of public pages.
+     *
+     * The rendered XML is cached for up to an hour; write invalidation in
+     * the dashboard controllers flushes it on every content change. A cache
+     * hit skips the four queries entirely. Conditional requests
+     * (If-Modified-Since) return 304 when the client copy is still fresh.
      */
-    public function sitemap(): Response
+    public function sitemap(Request $request): Response
     {
+        $cachedXml = Cache::get('sitemap.xml');
+        $cachedLastModified = Cache::get('sitemap.last_modified');
+
+        if ($cachedXml !== null && $cachedLastModified !== null) {
+            if ($this->isNotModified($request, $cachedLastModified)) {
+                abort(304);
+            }
+
+            return response($cachedXml, 200, [
+                'Content-Type' => 'application/xml',
+                'Cache-Control' => 'public, max-age=3600',
+                'Last-Modified' => $cachedLastModified->toRfc7231String(),
+            ]);
+        }
+
         $posts = Post::published()
             ->select(['slug', 'updated_at'])
             ->orderByDesc('published_at')
@@ -230,15 +252,32 @@ class HomeController extends Controller
             ];
         }
 
-        $xml = view('sitemap', ['urls' => $urls])->render();
-
         // Compute Last-Modified from the already-fetched posts and guides (no extra query).
+        /** @var CarbonInterface $lastModified */
         $lastModified = collect([$posts->max('updated_at'), $guides->max('updated_at'), $privacy->updated_at])->max() ?: now();
+
+        $xml = Cache::remember('sitemap.xml', now()->addHour(), fn () => view('sitemap', ['urls' => $urls])->render());
+        Cache::put('sitemap.last_modified', $lastModified, now()->addHour());
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml',
             'Cache-Control' => 'public, max-age=3600',
             'Last-Modified' => $lastModified->toRfc7231String(),
         ]);
+    }
+
+    /**
+     * Check whether the request's If-Modified-Since header matches the
+     * given timestamp (second precision, per HTTP spec).
+     */
+    private function isNotModified(Request $request, CarbonInterface $lastModified): bool
+    {
+        $since = $request->header('If-Modified-Since');
+
+        if ($since === null) {
+            return false;
+        }
+
+        return $lastModified->startOfSecond()->timestamp <= strtotime($since);
     }
 }

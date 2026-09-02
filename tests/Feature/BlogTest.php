@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\Post;
+use App\Models\Profile;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 test('the blog index lists published posts newest first', function () {
     $older = Post::factory()->create([
@@ -65,4 +68,27 @@ test('future-dated posts are not found until their publish time', function () {
     $post = Post::factory()->create(['published_at' => now()->addWeek()]);
 
     $this->get("/posts/{$post->slug}")->assertNotFound();
+});
+
+test('post show caches the profile name and skips the query on repeat visits', function () {
+    $profile = Profile::factory()->create(['name' => 'Cached Author']);
+    $post = Post::factory()->create();
+
+    // First request populates the cache.
+    $this->get("/posts/{$post->slug}")->assertOk();
+
+    expect(Cache::get('profile.name'))->toBe('Cached Author');
+
+    // Second request should not issue a Profile query.
+    $profileQueries = 0;
+    DB::listen(function ($query) use (&$profileQueries): void {
+        if (str_contains($query->sql, '`profiles`') && str_contains($query->sql, 'limit')) {
+            $profileQueries++;
+        }
+    });
+
+    $response = $this->get("/posts/{$post->slug}");
+    $response->assertOk();
+
+    expect($profileQueries)->toBe(0);
 });
