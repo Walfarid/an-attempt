@@ -10,6 +10,7 @@ use App\Models\Profile;
 use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Skill;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
@@ -64,9 +65,17 @@ class HomeController extends Controller
         if (! $request->hasHeader(Header::PARTIAL_COMPONENT)) {
             $profile = $resolveProfile();
 
+            $stats = $this->stats($profile);
+
+            $yearsPhrase = 'Software developer'
+                .($stats['years_active'] > 0
+                    ? " with over {$stats['years_active']} years of experience"
+                    : '');
+
             Head::title('Home')
-                ->description($profile->headline.' — '.'Software developer with over 6 years of experience in application development, API management, and deployment platforms.')
-                ->canonical();
+                ->description("{$yearsPhrase} in application development, API management, and deployment platforms.")
+                ->canonical()
+                ->ogImage(url('/og-default.png'));
 
             Head::schema(
                 Schema::person()
@@ -170,7 +179,18 @@ class HomeController extends Controller
      */
     public function sitemap(): Response
     {
-        $posts = Post::published()->select(['slug', 'updated_at'])->orderByDesc('published_at')->get();
+        $posts = Post::published()
+            ->select(['slug', 'updated_at'])
+            ->orderByDesc('published_at')
+            ->get();
+
+        // Tags of published posts only — tag pages for empty tags
+        // would be soft-404s in the eyes of crawlers.
+        $tags = Tag::query()
+            ->select(['slug'])
+            ->used()
+            ->orderBy('slug')
+            ->get();
 
         $privacy = PrivacyPolicy::current();
 
@@ -179,6 +199,13 @@ class HomeController extends Controller
             ['loc' => url('/posts'), 'priority' => '0.8'],
             ['loc' => url('/privacy'), 'priority' => '0.5', 'lastmod' => $privacy->updated_at->toW3cString()],
         ];
+
+        foreach ($tags as $tag) {
+            $urls[] = [
+                'loc' => route('posts.tag', $tag->slug),
+                'priority' => '0.4',
+            ];
+        }
 
         foreach ($posts as $post) {
             $urls[] = [

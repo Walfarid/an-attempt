@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Experience;
 use App\Models\Post;
 use App\Models\Profile;
 
@@ -75,4 +76,28 @@ test('the blog index renders server-side meta tags', function () {
         ->toContain('<title')
         ->toContain('Blog')
         ->toContain('name="description"');
+});
+
+test('the home description derives years of experience from experience rows', function () {
+    Profile::factory()->create();
+
+    Experience::factory()->create([
+        'started_at' => now()->subYears(4)->subMonths(6),
+        'ended_at' => null,
+    ]);
+
+    $html = $this->get('/')->getContent();
+
+    expect($html)->toContain('over 5 years of experience')
+        ->and($html)->not->toContain('over 6 years of experience');
+});
+
+test('the home page falls back to the default og image', function () {
+    Profile::factory()->create();
+
+    $html = $this->get('/')->getContent();
+
+    expect($html)
+        ->toContain('property="og:image"')
+        ->toContain('og-default.png');
 });
