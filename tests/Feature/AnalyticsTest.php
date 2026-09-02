@@ -4,6 +4,8 @@ use App\Models\Click;
 use App\Models\PageView;
 use App\Models\Profile;
 use App\Models\User;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\Cache;
 
 test('authenticated users can see the dashboard with analytics data', function () {
     $user = User::factory()->create();
@@ -119,4 +121,84 @@ test('page view tracking ignores dashboard pages', function () {
     $this->assertDatabaseMissing('page_views', [
         'path' => 'dashboard',
     ]);
+});
+
+test('click tracking rejects path over 500 characters', function () {
+    $user = User::factory()->create();
+
+    $this->withoutMiddleware(ThrottleRequests::class);
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => str_repeat('a', 501),
+        ])
+        ->assertInvalid('path');
+});
+
+test('click tracking rejects element over 200 characters', function () {
+    $user = User::factory()->create();
+
+    $this->withoutMiddleware(ThrottleRequests::class);
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => '/test',
+            'element' => str_repeat('b', 201),
+        ])
+        ->assertInvalid('element');
+});
+
+test('click tracking rejects label over 200 characters', function () {
+    $user = User::factory()->create();
+
+    $this->withoutMiddleware(ThrottleRequests::class);
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => '/test',
+            'label' => str_repeat('c', 201),
+        ])
+        ->assertInvalid('label');
+});
+
+test('click tracking accepts path at exactly 500 characters', function () {
+    $user = User::factory()->create();
+
+    $this->withoutMiddleware(ThrottleRequests::class);
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => str_repeat('a', 500),
+        ])
+        ->assertNoContent();
+});
+
+test('click tracking accepts element and label at exactly 200 characters', function () {
+    $user = User::factory()->create();
+
+    $this->withoutMiddleware(ThrottleRequests::class);
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => '/test',
+            'element' => str_repeat('b', 200),
+            'label' => str_repeat('c', 200),
+        ])
+        ->assertNoContent();
+});
+
+test('click tracking rate limits after 60 requests per minute', function () {
+    $user = User::factory()->create();
+
+    Cache::flush();
+
+    for ($i = 0; $i < 60; $i++) {
+        $this->actingAs($user)
+            ->post('/analytics/clicks', ['path' => '/test'])
+            ->assertNoContent();
+    }
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', ['path' => '/test'])
+        ->assertStatus(429);
 });
