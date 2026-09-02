@@ -82,8 +82,10 @@ class Markdown
     /**
      * Clean up known malformed markdown patterns before conversion.
      *
-     * Strips bold markers (**) from around heading lines and horizontal rules so that
-     * "**## Heading**" renders as <h2> and "**---**" renders as <hr> instead of <strong>.
+     * - Strips bold markers (**) from around heading lines and horizontal rules so that
+     *   "**## Heading**" renders as <h2> and "**---**" renders as <hr> instead of <strong>.
+     * - Collapses blank lines within GFM table blocks (contiguous lines starting with "|")
+     *   so that tables with accidental blank rows still parse correctly.
      */
     private static function preprocess(string $markdown): string
     {
@@ -93,9 +95,44 @@ class Markdown
             $markdown,
         );
 
-        return (string) preg_replace(
+        $markdown = (string) preg_replace(
             '/^\*\*([-_*]{3,})\*\*$/m',
             '$1',
+            $markdown,
+        );
+
+        return self::collapseTableBlankLines($markdown);
+    }
+
+    /**
+     * Remove blank lines between table rows so that GFM tables with accidental
+     * blank separators still parse as a single table block.
+     *
+     * Matches a table-like region (lines starting with "|" separated only by
+     * blank lines) and strips the interior blank lines.
+     */
+    private static function collapseTableBlankLines(string $markdown): string
+    {
+        // Match a block of lines that are either "|" rows or blank lines,
+        // containing at least one "|" row, with at least one blank line between
+        // "|" rows. Replace by removing the blank lines between "|" rows.
+        return (string) preg_replace_callback(
+            '/(?:^[ \t]*\|.*$\n?)(?:(?:^[ \t]*$\n)|(?:^[ \t]*\|.*$\n?))*/m',
+            function (array $match): string {
+                $block = $match[0];
+                $lines = explode("\n", $block);
+                $kept = [];
+
+                foreach ($lines as $line) {
+                    // Drop blank lines that sit between table rows.
+                    if (trim($line) === '' && count($kept) > 0 && str_starts_with(trim($kept[count($kept) - 1] ?? ''), '|')) {
+                        continue;
+                    }
+                    $kept[] = $line;
+                }
+
+                return implode("\n", $kept);
+            },
             $markdown,
         );
     }

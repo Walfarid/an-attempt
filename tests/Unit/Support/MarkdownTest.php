@@ -310,3 +310,21 @@ test('still strips non-svg html tags', function () {
     expect($html)->not->toContain('<div>')
         ->and($html)->not->toContain('class="evil"');
 });
+
+test('collapses blank lines within GFM table blocks', function () {
+    $markdown = "| Code Smell | What It Looks Like | A Fix to Try |\n\n|---|---|---|\n\n| Long Method | A function doing five jobs | Extract Method |";
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<table>')
+        ->and($html)->toContain('<th>Code Smell</th>')
+        ->and($html)->toContain('<td>Long Method</td>')
+        ->and($html)->not->toContain('<p>|');
+});
+
+test('does not break normal tables without blank lines', function () {
+    $markdown = "| A | B |\n|---|---|\n| 1 | 2 |";
+    $html = Markdown::toHtml($markdown);
+
+    expect($html)->toContain('<table>')
+        ->and($html)->toContain('<td>1</td>');
+});
