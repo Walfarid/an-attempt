@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCoverImage;
 use App\Support\Markdown;
 use Database\Factories\GuideFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /**
@@ -30,7 +29,7 @@ use Illuminate\Support\Str;
 class Guide extends Model
 {
     /** @use HasFactory<GuideFactory> */
-    use HasFactory;
+    use HasCoverImage, HasFactory;
 
     /**
      * @var list<string>
@@ -62,23 +61,6 @@ class Guide extends Model
     public function scopePublished(Builder $query): Builder
     {
         return $query->whereNotNull('published_at')->where('published_at', '<=', now());
-    }
-
-    /**
-     * The public URL of the cover image, when one is set and the media
-     * disk is configured. Null otherwise so pages degrade gracefully.
-     *
-     * @return Attribute<string|null, never>
-     */
-    protected function coverUrl(): Attribute
-    {
-        return Attribute::make(get: function () {
-            if ($this->cover_image_path === null || ! config('filesystems.disks.media.bucket')) {
-                return null;
-            }
-
-            return Storage::disk('media')->url($this->cover_image_path);
-        })->shouldCache();
     }
 
     /**
