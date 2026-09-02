@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
 import { useConsent } from '@/composables/useConsent';
 
 const { consent } = useConsent();

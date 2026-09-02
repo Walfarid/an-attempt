@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { ArrowLeft, ArrowUpRight } from '@/components/site/icons';
 import AdSlot from '@/components/site/AdSlot.vue';
+import { ArrowLeft, ArrowUpRight } from '@/components/site/icons';
 import PostTags from '@/components/site/PostTags.vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
