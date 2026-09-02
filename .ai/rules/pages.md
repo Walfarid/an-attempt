@@ -1,6 +1,7 @@
 ---
 paths:
   - resources/js/pages/Welcome.vue
+  - 'resources/js/pages/**'
 ---
 
 # Pages
@@ -10,3 +11,6 @@ HomeController ships hero+stats+contact eagerly; skills/experiences/projects/edu
 
 ## Home sections live in an async chunk (HomeSections.vue)
 The six below-the-fold sections are extracted to `components/site/HomeSections.vue`, loaded via `defineAsyncComponent` and warmed after first paint (double rAF — a `setTimeout(0)` warm puts the parse inside the boot chain and measurably delays LCP; never reintroduce it). The sections mount only when BOTH the deferred props have landed and the chunk is ready (v-if gate keeps the skeleton — never a blank gap between them). HomeSections emits `contentMounted` when its DOM commits; Welcome calls `useScrollAnimations.refresh()` there (the old props-watch fired pre-commit and the sections' reveal animations raced — always refresh from the child mount event).
+
+## Public pages use PublicLayout.vue; Welcome and AppSidebarLayout are deliberate exceptions
+All public pages (posts/Index|Tag|Show, guides/Index|Show, Privacy) share the site shell via resources/js/layouts/PublicLayout.vue (site d-dots-bg root, skip link, SiteHeader, main#main, SiteFooter) with an optional mainClass prop for full-width Show variants. Do not re-add a standalone header/footer/skip-link wrapper to those pages. EXCEPTIONS — do not convert to PublicLayout: Welcome.vue (needs a prop-bearing footer + root ref for useHeroScene/useCountUp composables; would force non-identical output or type changes), layouts/app/AppSidebarLayout.vue (dashboard-only AppShell/AppSidebar/AppContent, no SiteHeader/Footer at all).
