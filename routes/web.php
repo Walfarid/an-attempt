@@ -28,7 +28,13 @@ Route::get('/', [HomeController::class, 'index'])
 Route::get('sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 
 Route::get('ads.txt', function () {
-    return response("google.com, pub-8485092228763785, DIRECT, f08c47fec0942fa0\n", 200, [
+    $content = config('services.ads.txt');
+
+    if (empty($content)) {
+        abort(404);
+    }
+
+    return response($content . "\n", 200, [
         'Content-Type' => 'text/plain',
     ]);
 })->middleware(CachePublicResponses::class)->name('ads.txt');

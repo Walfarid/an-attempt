@@ -49,4 +49,8 @@ return [
         'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
     ],
 
+    'ads' => [
+        'txt' => env('ADSTXT_CONTENT'),
+    ],
+
 ];
