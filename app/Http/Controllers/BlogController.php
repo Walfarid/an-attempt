@@ -29,7 +29,7 @@ class BlogController extends Controller
             // reset/merge correctly on paginated visits.
             'posts' => Inertia::scroll(
                 Post::query()
-                    ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
+                    ->select(['id', 'slug', 'title', 'excerpt', 'cover_image_path', 'published_at'])
                     ->selectRaw('SUBSTRING(body, 1, 300) as body_preview')
                     ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
                     ->published()
@@ -37,7 +37,7 @@ class BlogController extends Controller
                     ->simplePaginate(10, ['*'], 'page')
                     ->through(function (Post $post): Post {
                         $post->teaser_text = $post->teaser();
-                        $post->makeHidden(['excerpt', 'body_preview']);
+                        $post->append('cover_url')->makeHidden(['excerpt', 'body_preview', 'cover_image_path']);
 
                         return $post;
                     })
@@ -168,7 +168,7 @@ class BlogController extends Controller
             'posts' => $tag->posts()
                 // posts.id is required for the tags eager load to match
                 // pivot rows; makeHidden below keeps it off the wire.
-                ->select(['posts.id', 'posts.slug', 'posts.title', 'posts.excerpt', 'posts.published_at'])
+                ->select(['posts.id', 'posts.slug', 'posts.title', 'posts.excerpt', 'posts.cover_image_path', 'posts.published_at'])
                 ->selectRaw('SUBSTRING(posts.body, 1, 300) as body_preview')
                 ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
                 ->published()
@@ -176,9 +176,10 @@ class BlogController extends Controller
                 ->get()
                 ->each(function (Post $post): void {
                     $post->teaser_text = $post->teaser();
+                    $post->append('cover_url');
                     // pivot and id stay off the public wire (the no-
                     // unused-IDs rule for public payloads).
-                    $post->makeHidden(['id', 'excerpt', 'body_preview', 'pivot']);
+                    $post->makeHidden(['id', 'cover_image_path', 'excerpt', 'body_preview', 'pivot']);
                 }),
         ]);
     }

@@ -112,6 +112,7 @@ export type PublicPost = {
     title: string;
     published_at: string;
     teaser_text?: string;
+    cover_url?: string | null;
     tags?: PublicTag[];
 };
 

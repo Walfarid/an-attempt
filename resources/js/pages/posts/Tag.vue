@@ -31,7 +31,7 @@ useScrollAnimations();
 
         <SiteHeader />
 
-        <main id="main" class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
+        <main id="main" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
             <div class="mb-10" data-motion>
                 <p class="d-section mb-2">Tag</p>
                 <h1
@@ -48,45 +48,60 @@ useScrollAnimations();
                 </p>
             </div>
 
-            <div v-if="posts.length" class="space-y-3" data-motion-group>
+            <div
+                v-if="posts.length"
+                class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+                data-motion-group
+            >
                 <Link
                     v-for="post in posts"
                     :key="post.id"
                     :href="postShow.url({ post: post.slug })"
                     prefetch
                     cache-for="10s"
-                    class="d-surface d-card-hover block p-5 no-underline sm:p-6"
+                    class="d-surface d-card-hover flex flex-col no-underline"
                     data-motion
                 >
-                    <div
-                        class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"
-                    >
-                        <h2 class="font-display text-lg font-semibold">
-                            {{ post.title }}
-                        </h2>
-                        <time class="d-label shrink-0">
-                            {{
-                                new Date(post.published_at).toLocaleDateString(
-                                    'en-US',
-                                    {
+                    <img
+                        v-if="post.cover_url"
+                        :src="post.cover_url"
+                        :alt="post.title"
+                        loading="lazy"
+                        decoding="async"
+                        class="aspect-video w-full border-b border-(--rule) object-cover"
+                    />
+
+                    <div class="flex flex-1 flex-col gap-2 p-5">
+                        <div
+                            class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"
+                        >
+                            <h2 class="font-display text-lg font-semibold">
+                                {{ post.title }}
+                            </h2>
+                            <time class="d-label shrink-0">
+                                {{
+                                    new Date(
+                                        post.published_at,
+                                    ).toLocaleDateString('en-US', {
                                         month: 'short',
                                         day: 'numeric',
                                         year: 'numeric',
-                                    },
-                                )
-                            }}
-                        </time>
+                                    })
+                                }}
+                            </time>
+                        </div>
+                        <p
+                            class="mt-1 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
+                        >
+                            {{ post.teaser_text }}
+                        </p>
+                        <div class="mt-auto pt-3">
+                            <PostTags
+                                v-if="post.tags?.length"
+                                :tags="post.tags"
+                            />
+                        </div>
                     </div>
-                    <p
-                        class="mt-2 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
-                    >
-                        {{ post.teaser_text }}
-                    </p>
-                    <PostTags
-                        v-if="post.tags?.length"
-                        :tags="post.tags"
-                        class="mt-3"
-                    />
                 </Link>
             </div>
 
