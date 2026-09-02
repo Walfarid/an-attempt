@@ -70,5 +70,11 @@ export function useConsent(): UseConsentReturn {
         bannerVisible.value = true;
     }
 
-    return { bannerVisible, consent, checkConsent, storeConsent, openCookieSettings };
+    return {
+        bannerVisible,
+        consent,
+        checkConsent,
+        storeConsent,
+        openCookieSettings,
+    };
 }
