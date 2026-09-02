@@ -18,8 +18,9 @@ function showAd() {
         return;
     }
 
-    const ezstandalone = (window as unknown as { ezstandalone?: { cmd?: unknown[] } })
-        .ezstandalone;
+    const ezstandalone = (
+        window as unknown as { ezstandalone?: { cmd?: unknown[] } }
+    ).ezstandalone;
 
     if (!ezstandalone?.cmd) {
         return;
@@ -37,7 +38,9 @@ function showAd() {
         // Ezoic fills the slot asynchronously; wait a beat for the first
         // ad element/iframe before deciding the slot stayed empty.
         window.setTimeout(() => {
-            const filled = slot.querySelector('iframe, ins, img, [id^="ezoic-pub-ad-placeholder-"] iframe, [class*="ad"]');
+            const filled = slot.querySelector(
+                'iframe, ins, img, [id^="ezoic-pub-ad-placeholder-"] iframe, [class*="ad"]',
+            );
 
             if (filled) {
                 isEmpty.value = false;

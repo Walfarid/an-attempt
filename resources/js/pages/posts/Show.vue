@@ -113,51 +113,51 @@ useScrollAnimations();
             -->
             <div class="post-layout">
                 <article data-motion class="w-full max-w-3xl">
-                <time class="d-label">
-                    {{ formatPublished(post.published_at) }}
-                </time>
-                <h1
-                    class="mt-3 font-display text-[clamp(1.9rem,4.5vw,3rem)] leading-[1.08] font-bold tracking-tight text-balance"
-                >
-                    {{ post.title }}
-                </h1>
+                    <time class="d-label">
+                        {{ formatPublished(post.published_at) }}
+                    </time>
+                    <h1
+                        class="mt-3 font-display text-[clamp(1.9rem,4.5vw,3rem)] leading-[1.08] font-bold tracking-tight text-balance"
+                    >
+                        {{ post.title }}
+                    </h1>
 
-                <PostTags
-                    v-if="post.tags?.length"
-                    :tags="post.tags"
-                    class="mt-5"
+                    <PostTags
+                        v-if="post.tags?.length"
+                        :tags="post.tags"
+                        class="mt-5"
+                    />
+
+                    <img
+                        v-if="post.cover_url"
+                        :src="post.cover_url"
+                        :alt="post.title"
+                        decoding="async"
+                        class="mt-8 aspect-video w-full border border-(--rule) object-cover"
+                    />
+
+                    <!-- eslint-disable-next-line vue/no-v-html — server-rendered sanitized Markdown -->
+                    <div
+                        class="prose-site mt-8 leading-relaxed"
+                        v-html="post.body_html"
+                    />
+                </article>
+
+                <!-- Wide screens: sticky side gutter to the right of the article. -->
+                <PostAdSlot
+                    v-if="gutterAd"
+                    :id="gutterAd.id"
+                    :class-name="gutterAd.className"
                 />
+            </div>
 
-                <img
-                    v-if="post.cover_url"
-                    :src="post.cover_url"
-                    :alt="post.title"
-                    decoding="async"
-                    class="mt-8 aspect-video w-full border border-(--rule) object-cover"
-                />
-
-                <!-- eslint-disable-next-line vue/no-v-html — server-rendered sanitized Markdown -->
-                <div
-                    class="prose-site mt-8 leading-relaxed"
-                    v-html="post.body_html"
-                />
-            </article>
-
-            <!-- Wide screens: sticky side gutter to the right of the article. -->
-            <PostAdSlot
-                v-if="gutterAd"
-                :id="gutterAd.id"
-                :class-name="gutterAd.className"
-            />
-        </div>
-
-        <!-- Narrow screens: the ad sits at the end of the article (outside
+            <!-- Narrow screens: the ad sits at the end of the article (outside
              the post-layout grid, so it stays visible below xl). -->
-        <PostAdSlot
-            v-if="inlineAd"
-            :id="inlineAd.id"
-            class="mx-auto mt-10 max-w-3xl xl:hidden"
-        />
+            <PostAdSlot
+                v-if="inlineAd"
+                :id="inlineAd.id"
+                class="mx-auto mt-10 max-w-3xl xl:hidden"
+            />
 
             <aside
                 v-if="recent.length"
