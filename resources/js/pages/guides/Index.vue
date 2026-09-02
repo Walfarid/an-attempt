@@ -40,7 +40,7 @@ function formatPublished(iso: string): string {
 
         <SiteHeader />
 
-        <main id="main" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+        <main id="main" class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
             <div class="mb-10" data-motion>
                 <p class="d-section mb-2">Guides</p>
                 <h1
@@ -56,18 +56,14 @@ function formatPublished(iso: string): string {
                 </p>
             </div>
 
-            <div
-                v-if="guides.data.length"
-                class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
-                data-motion-group
-            >
+            <div v-if="guides.data.length" class="space-y-3" data-motion-group>
                 <Link
                     v-for="guide in guides.data"
                     :key="guide.slug"
                     :href="guideShow.url({ guide: guide.slug })"
                     prefetch
                     cache-for="10s"
-                    class="d-surface d-card-hover flex flex-col no-underline"
+                    class="d-surface d-card-hover block no-underline"
                     data-motion
                 >
                     <img
@@ -79,11 +75,16 @@ function formatPublished(iso: string): string {
                         class="aspect-video w-full border-b border-(--rule) object-cover"
                     />
 
-                    <div class="flex flex-1 flex-col gap-2 p-5">
-                        <div class="flex items-baseline justify-between gap-3">
-                            <p class="font-display text-lg font-semibold">
+                    <div class="flex flex-col gap-2 p-5 sm:p-6">
+                        <div
+                            class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between"
+                        >
+                            <h2 class="font-display text-lg font-semibold">
                                 {{ guide.title }}
-                            </p>
+                            </h2>
+                            <time class="d-label shrink-0">
+                                {{ formatPublished(guide.published_at) }}
+                            </time>
                         </div>
 
                         <p
@@ -95,14 +96,10 @@ function formatPublished(iso: string): string {
 
                         <p
                             v-if="guide.teaser"
-                            class="mt-1 line-clamp-3 text-sm leading-relaxed text-(--ink-soft)"
+                            class="mt-1 line-clamp-2 text-sm leading-relaxed text-(--ink-soft)"
                         >
                             {{ guide.teaser }}
                         </p>
-
-                        <time class="d-label mt-auto pt-3">
-                            {{ formatPublished(guide.published_at) }}
-                        </time>
                     </div>
                 </Link>
             </div>
