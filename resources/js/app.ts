@@ -21,6 +21,7 @@ createInertiaApp({
             case name === 'Welcome':
             case name === 'Privacy':
             case name.startsWith('posts/'):
+            case name.startsWith('guides/'):
                 return null;
             case name.startsWith('settings/'):
                 return [AppLayout, SettingsLayout];
