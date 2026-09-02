@@ -15,7 +15,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Models/Guide.php, app/Http/Controllers/Dashboard/GuideController.php, app/Http/Controllers/Dashboard/GuideCoverController.php, app/Http/Controllers/GuideController.php, app/Http/Requests/Dashboard/GuideRequest.php, app/Http/Requests/Dashboard/UploadGuideCoverRequest.php, resources/js/pages/dashboard/Guides.vue, resources/js/pages/guides/**, app/Http/Controllers/Dashboard/**, app/Http/Controllers/Dashboard/AnalyticsController.php | .ai/rules/guides.md |
 | resources/js/**/*.vue | .ai/rules/js.md |
 | resources/js/lib/flashToast.ts | .ai/rules/lib.md |
-| app/Http/Middleware/TrackPageView.php, app/Http/Middleware/CachePublicResponses.php, app/Http/Middleware/HandleInertiaRequests.php, app/Http/Middleware/HandleConsent.php | .ai/rules/middleware.md |
+| app/Http/Middleware/TrackPageView.php, app/Http/Middleware/CachePublicResponses.php, app/Http/Middleware/HandleInertiaRequests.php, app/Http/Middleware/HandleConsent.php, app/Http/Middleware/SecurityHeaders.php | .ai/rules/middleware.md |
 | database/migrations/** | .ai/rules/migrations.md |
 | compose.prod.yaml, routes/console.php, app/Models/PageView.php, app/Models/Click.php | .ai/rules/models.md |
 | resources/js/pages/Welcome.vue, resources/js/pages/** | .ai/rules/pages.md |

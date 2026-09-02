@@ -4,6 +4,7 @@ paths:
   - app/Http/Middleware/CachePublicResponses.php
   - app/Http/Middleware/HandleInertiaRequests.php
   - app/Http/Middleware/HandleConsent.php
+  - app/Http/Middleware/SecurityHeaders.php
 ---
 
 # Middleware
@@ -22,3 +23,9 @@ Middleware emits public, max-age=60, stale-while-revalidate=300, must-revalidate
 
 ## Consent middleware uses simple consent cookie for Google Consent Mode v2
 HandleConsent reads the `consent` cookie (accepted | declined) to gate analytics (Clarity, GA4) and AdSense scripts. The cookie is set by the client-side Vue banner. On the Blade side, `app.blade.php` sets Google Consent Mode v2 defaults to `denied` on every page, and updates to `granted` only when `$consent === 'accepted'`. This makes the site AdSense-ready: when the user sets `ADSENSE_CLIENT_ID` in `.env`, the AdSense script loads behind the same consent gate.
+
+## SecurityHeaders sets headers before $next so error responses are covered
+SecurityHeaders must set headers BEFORE $next($request) so exception-rendered responses (404/500 via the exception handler) still carry them — the old after-$next code silently dropped headers on error pages. Keep the HSTS production check. The SecurityHeadersTest.extended 404 test guards this — do not regress to after-next-only.
+
+## SecurityHeaders is global middleware — never move it back to the web group
+CORRECTION to the previous rule: SecurityHeaders is registered as GLOBAL middleware (bootstrap/app.php $middleware->append), NOT in the web group — web-group middleware only runs on matched routes, so unmatched-route 404s bypassed it and error pages shipped without security headers. The after-$next header code is correct as-is; the registration was the bug. Keep it global and keep the after-$next response-header setting (setting headers on $request->headers does NOT propagate to the response). SecurityHeadersTest covers error responses.

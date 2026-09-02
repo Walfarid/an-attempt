@@ -20,8 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'consent']);
 
+        $middleware->append(SecurityHeaders::class);
+
         $middleware->web(append: [
-            SecurityHeaders::class,
             HandleAppearance::class,
             HandleConsent::class,
             HandleInertiaRequests::class,
