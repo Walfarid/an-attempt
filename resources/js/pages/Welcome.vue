@@ -116,14 +116,13 @@ useCountUp(siteRef);
         <SiteHeader />
 
         <main id="main">
-            <!-- ═══════════════════ HERO ═══════════════════ -->
+            <!-- HERO -->
             <section
+                id="hero"
                 aria-labelledby="hero-title"
                 class="relative overflow-hidden"
             >
-                <div
-                    class="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:px-6 sm:pt-24 sm:pb-28"
-                >
+                <div class="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:px-6 sm:pt-24 sm:pb-28">
                     <div
                         class="grid items-center gap-12 lg:grid-cols-[1.2fr_1fr]"
                     >
@@ -262,7 +261,7 @@ useCountUp(siteRef);
                 </template>
             </Deferred>
 
-            <!-- ═══════════════════ CONTACT ═══════════════════ -->
+            <!-- CONTACT -->
             <section
                 id="contact"
                 aria-labelledby="contact-title"
