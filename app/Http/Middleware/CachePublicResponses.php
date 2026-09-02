@@ -17,26 +17,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class CachePublicResponses
 {
-    /**
-     * @param  positive-int  $maxAge  Seconds the response is fresh.
-     * @param  positive-int  $staleWhileRevalidate  Seconds stale content may be served while revalidating.
-     */
-    public function __construct(
-        private readonly int $maxAge = 60,
-        private readonly int $staleWhileRevalidate = 300,
-    ) {}
-
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
 
         if ($request->user() === null) {
-            // 3p script files download once; the HTML page is revalidated
-            // before reuse so a consent state change always produces the
-            // matching analytics markup. Half-hour TTLs were fixed
-            // (5b3901b4) — service workers kept serving the analytics
-            // variant to visitors who had declined, because the page
-            // itself was cacheable for max-age=60/extended SWR.
+            // Max-age 60 with SWR 300: a missed cache is revalidated in
+            // the background while stale content is served, but never
+            // reused stale when revalidation is possible — a consent
+            // state change always produces the matching analytics markup.
+            // Longer half-hour TTLs (5b3901b4) let service workers serve
+            // the analytics variant to visitors who had declined.
             $response->headers->set(
                 'Cache-Control',
                 'public, max-age=60, stale-while-revalidate=300, must-revalidate',

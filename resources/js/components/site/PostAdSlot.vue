@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const props = defineProps<{
     id: number;
@@ -10,11 +10,6 @@ const el = ref<HTMLElement | null>(null);
 
 /** Empty meaning no ad content or iframe filled the slot (blocked/not served). */
 const isEmpty = ref(true);
-
-const visible = computed(() => {
-    const el = document.querySelector('.ezoic-ad-slot:not([data-empty])');
-    return !!el;
-});
 
 function showAd() {
     const slot = el.value;
