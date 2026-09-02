@@ -414,6 +414,45 @@
     background-color: transparent;
 }
 
+/* ---- Prose: tables (Markdown GFM) ---------------------------------- */
+
+.site .prose-site table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    font-variant-numeric: tabular-nums;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    border: 0.5px solid var(--rule);
+}
+
+.site .prose-site th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--ink-soft);
+    background-color: var(--accent-soft);
+    border-bottom: 0.5px solid var(--rule);
+    padding: 0.5em 0.75em;
+}
+
+.site .prose-site td {
+    border-bottom: 0.5px solid var(--rule);
+    padding: 0.5em 0.75em;
+    vertical-align: top;
+}
+
+.site .prose-site tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.site .prose-site tbody tr:hover {
+    background-color: var(--accent-soft);
+}
+
 /* ---- Motion respects reduced motion -------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -569,49 +608,5 @@
 
     [data-slot='navigation-menu'] {
         border-radius: 0 !important;
-    }
-}
-
-@layer utilities {
-    /* Post page with a side ad gutter (Ezoic): the article stays centered
-       in a max-w-3xl column; on xl+ screens a sticky gutter ad sits in the
-       space to its right. On narrow screens only the inline slot (below the
-       article) is shown. Living in @layer utilities so these display rules
-       win over the component's own flex utility. */
-    .post-layout {
-        display: block;
-        margin-inline: auto;
-        max-width: 56rem; /* 896px = the centered article column */
-    }
-
-    .post-layout .ezoic-ad-slot,
-    .post-layout .ezoic-gutter {
-        display: none;
-    }
-
-    @media (min-width: 80rem) {
-        /* 1280px+ (xl): the FIRST child (article) gets the wide track,
-           the SECOND (ad gutter) the fixed 256px track. */
-        .post-layout {
-            max-width: 75rem; /* 1200px */
-            display: grid;
-            grid-template-columns: minmax(0, 56rem) 16rem;
-            gap: 3rem;
-            justify-content: center;
-        }
-
-        .post-layout .ezoic-ad-slot {
-            display: block;
-        }
-
-        .post-layout .ezoic-gutter {
-            width: 100%;
-            position: sticky;
-            top: 6rem;
-        }
-    }
-
-    .ezoic-gutter {
-        min-width: 0;
     }
 }
