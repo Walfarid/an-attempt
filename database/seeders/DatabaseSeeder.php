@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Education;
 use App\Models\Experience;
+use App\Models\Guide;
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
 use App\Models\Profile;
@@ -48,12 +49,17 @@ class DatabaseSeeder extends Seeder
         $this->seedPublication();
 
         // Placeholder content only outside production: a live site should not
-        // be seeded with fake posts (and the factory requires the faker dev
-        // dependency, which the production image does not ship).
+        // be seeded with fake posts/guides (and the factory requires the faker
+        // dev dependency, which the production image does not ship).
         if (app()->environment('local', 'staging')) {
             if (Post::count() === 0) {
                 Post::factory()->count(3)->create();
                 Post::factory()->draft()->count(1)->create();
+            }
+
+            if (Guide::count() === 0) {
+                Guide::factory()->count(2)->create();
+                Guide::factory()->draft()->count(1)->create();
             }
         }
     }
