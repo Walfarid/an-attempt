@@ -50,6 +50,45 @@ test('analytics scripts load after consent is accepted', function () {
         ->and(str_contains($content, 'googletagmanager.com'))->toBeTrue();
 });
 
+test('adsense script is omitted without consent', function () {
+    config(['services.adsense.client_id' => 'ca-pub-test123']);
+    Profile::factory()->create();
+
+    $content = $this->get('/')->getContent();
+
+    expect(str_contains($content, 'pagead2.googlesyndication.com'))->toBeFalse();
+});
+
+test('adsense script loads after consent is accepted', function () {
+    config(['services.adsense.client_id' => 'ca-pub-test123']);
+    Profile::factory()->create();
+
+    $content = $this->withUnencryptedCookie('consent', 'accepted')->get('/')->getContent();
+
+    expect(str_contains($content, 'pagead2.googlesyndication.com'))->toBeTrue()
+        ->and(str_contains($content, 'ca-pub-test123'))->toBeTrue();
+});
+
+test('consent mode v2 defaults are present on every page', function () {
+    Profile::factory()->create();
+
+    $content = $this->get('/')->getContent();
+
+    expect(str_contains($content, "'consent', 'default'"))->toBeTrue()
+        ->and(str_contains($content, "'ad_storage': 'denied'"))->toBeTrue()
+        ->and(str_contains($content, "'analytics_storage': 'denied'"))->toBeTrue();
+});
+
+test('consent mode update to granted when accepted', function () {
+    Profile::factory()->create();
+
+    $content = $this->withUnencryptedCookie('consent', 'accepted')->get('/')->getContent();
+
+    expect(str_contains($content, "'consent', 'update'"))->toBeTrue()
+        ->and(str_contains($content, "'ad_storage': 'granted'"))->toBeTrue()
+        ->and(str_contains($content, "'analytics_storage': 'granted'"))->toBeTrue();
+});
+
 test('guests are redirected from the privacy policy dashboard pages', function () {
     $this->get('/dashboard/privacy/edit')->assertRedirect('/login');
     $this->put('/dashboard/privacy', ['body' => 'x'])->assertRedirect('/login');

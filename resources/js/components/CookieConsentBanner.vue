@@ -3,7 +3,7 @@ import { onMounted } from 'vue';
 import { useConsent } from '@/composables/useConsent';
 import { privacy } from '@/routes';
 
-const { bannerVisible, checkConsent, storeConsent } = useConsent();
+const { bannerVisible, checkConsent, acceptAll, declineAll } = useConsent();
 
 onMounted(checkConsent);
 
@@ -16,6 +16,8 @@ const acceptClasses =
     'd-sharp inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-3 font-mono text-sm font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] bg-(--accent) text-(--paper) hover:bg-(--accent-hover)';
 const declineClasses =
     'd-sharp inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap border border-(--rule) bg-(--paper) px-3 font-mono text-sm font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] hover:bg-(--accent) dark:bg-input/30 dark:hover:bg-input/50';
+const manageClasses =
+    'd-sharp inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-3 font-mono text-sm font-medium transition-colors outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] underline underline-offset-2 text-(--ink-soft) hover:text-(--ink)';
 </script>
 
 <template>
@@ -32,7 +34,7 @@ const declineClasses =
             <p class="text-sm leading-snug text-(--ink-soft)">
                 I use privacy-friendly analytics
                 <span class="text-(--ink)">(Clarity, GA4)</span>
-                to understand how the site is used.
+                and Google AdSense to help run this site.
                 <a
                     :href="privacy.url()"
                     class="font-medium text-(--ink) underline underline-offset-2 hover:text-(--accent)"
@@ -43,17 +45,23 @@ const declineClasses =
                 <button
                     type="button"
                     :class="acceptClasses"
-                    @click="storeConsent('accepted')"
+                    @click="acceptAll"
                 >
-                    Accept
+                    Consent
                 </button>
                 <button
                     type="button"
                     :class="declineClasses"
-                    @click="storeConsent('declined')"
+                    @click="declineAll"
                 >
-                    Decline
+                    Do not consent
                 </button>
+                <a
+                    :href="privacy.url()"
+                    :class="manageClasses"
+                >
+                    Manage
+                </a>
             </div>
         </div>
     </div>
