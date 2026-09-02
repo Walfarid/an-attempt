@@ -108,7 +108,9 @@ useScrollAnimations();
                             </div>
                             <div v-if="guide.prerequisites">
                                 <p class="d-label mb-1">Prerequisites</p>
-                                <p class="whitespace-pre-line text-(--ink-soft)">
+                                <p
+                                    class="whitespace-pre-line text-(--ink-soft)"
+                                >
                                     {{ guide.prerequisites }}
                                 </p>
                             </div>

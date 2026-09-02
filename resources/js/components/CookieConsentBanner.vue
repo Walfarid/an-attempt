@@ -42,11 +42,7 @@ const manageClasses =
                 >.
             </p>
             <div class="flex shrink-0 items-center gap-2">
-                <button
-                    type="button"
-                    :class="acceptClasses"
-                    @click="acceptAll"
-                >
+                <button type="button" :class="acceptClasses" @click="acceptAll">
                     Consent
                 </button>
                 <button
@@ -56,12 +52,7 @@ const manageClasses =
                 >
                     Do not consent
                 </button>
-                <a
-                    :href="privacy.url()"
-                    :class="manageClasses"
-                >
-                    Manage
-                </a>
+                <a :href="privacy.url()" :class="manageClasses"> Manage </a>
             </div>
         </div>
     </div>
