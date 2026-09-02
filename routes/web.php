@@ -34,7 +34,7 @@ Route::get('ads.txt', function () {
         abort(404);
     }
 
-    return response($content . "\n", 200, [
+    return response($content."\n", 200, [
         'Content-Type' => 'text/plain',
     ]);
 })->middleware(CachePublicResponses::class)->name('ads.txt');
