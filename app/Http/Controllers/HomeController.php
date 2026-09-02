@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Education;
 use App\Models\Experience;
+use App\Models\Guide;
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
 use App\Models\Profile;
@@ -192,11 +193,17 @@ class HomeController extends Controller
             ->orderBy('slug')
             ->get();
 
+        $guides = Guide::published()
+            ->select(['slug', 'updated_at'])
+            ->orderByDesc('published_at')
+            ->get();
+
         $privacy = PrivacyPolicy::current();
 
         $urls = [
             ['loc' => url('/'), 'priority' => '1.0'],
             ['loc' => url('/posts'), 'priority' => '0.8'],
+            ['loc' => url('/guides'), 'priority' => '0.8'],
             ['loc' => url('/privacy'), 'priority' => '0.5', 'lastmod' => $privacy->updated_at->toW3cString()],
         ];
 
@@ -215,10 +222,18 @@ class HomeController extends Controller
             ];
         }
 
+        foreach ($guides as $guide) {
+            $urls[] = [
+                'loc' => route('guides.show', $guide->slug),
+                'lastmod' => $guide->updated_at->toW3cString(),
+                'priority' => '0.6',
+            ];
+        }
+
         $xml = view('sitemap', ['urls' => $urls])->render();
 
-        // Compute Last-Modified from the already-fetched posts (no extra query).
-        $lastModified = collect([$posts->max('updated_at'), $privacy->updated_at])->max() ?: now();
+        // Compute Last-Modified from the already-fetched posts and guides (no extra query).
+        $lastModified = collect([$posts->max('updated_at'), $guides->max('updated_at'), $privacy->updated_at])->max() ?: now();
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml',

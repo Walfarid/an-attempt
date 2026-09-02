@@ -23,3 +23,6 @@ Eager loading tags (belongsToMany via post_tag) silently returns [] when the par
 
 ## Home meta description years derives from experiences aggregate
 Head-derived content (meta descriptions) should pull numbers from the same aggregate source the page renders: HomeController derives "X years of experience" from the experiences aggregate (MIN(started_at)/MAX(ended_at)) via stats(), not a hardcoded string — Hedberg-style drift (bio says 6 years, table says 4) is a rounding trap. Rounding rule: months/12 rounded up to whole years (max(1, ...))- matching hero stats.
+
+## Sitemap: guides and tags are part of it; keep them in
+HomeController::sitemap must include the guides index, every published guide (Guide::published(), lastmod from updated_at), and tag pages of tags on published posts (Tag::used() — empty tags are soft-404s). Never remove guides/tags from the sitemap when adding a public content type; extend it instead (same pattern: listing + per-item URLs, priorities per type, Last-Modified header from max of all fetched updated_at). Pinned by tests/Feature/SitemapTest.php.

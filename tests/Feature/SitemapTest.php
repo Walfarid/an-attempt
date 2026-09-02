@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Guide;
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
 use App\Models\Tag;
@@ -65,4 +66,26 @@ test('sitemap excludes tags without published posts', function () {
     $this->get('/sitemap.xml')
         ->assertOk()
         ->assertDontSee('/posts/tag/lonely');
+});
+
+test('sitemap includes guides index', function () {
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertSee(url('/guides'));
+});
+
+test('sitemap includes published guides', function () {
+    $guide = Guide::factory()->create(['title' => 'Sitemap Test Guide']);
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertSee(route('guides.show', $guide->slug));
+});
+
+test('sitemap excludes draft guides', function () {
+    $guide = Guide::factory()->create(['published_at' => null]);
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertDontSee(route('guides.show', $guide->slug));
 });
