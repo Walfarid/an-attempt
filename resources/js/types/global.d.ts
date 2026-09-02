@@ -19,6 +19,8 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen?: boolean;
+            adsenseClientId?: string;
+            adsenseSlotId?: string;
             [key: string]: unknown;
         };
     }
@@ -31,3 +33,16 @@ declare module 'vue' {
         $headManager: ReturnType<typeof createHeadManager>;
     }
 }
+
+declare global {
+    interface Window {
+        gtag?: (
+            command: string,
+            action: string,
+            params?: Record<string, string>,
+        ) => void;
+        adsbygoogle?: Record<string, unknown>[];
+    }
+}
+
+export {};

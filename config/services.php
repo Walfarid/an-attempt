@@ -51,6 +51,7 @@ return [
 
     'adsense' => [
         'client_id' => env('ADSENSE_CLIENT_ID'),
+        'slot_id' => env('ADSENSE_SLOT_ID'),
     ],
 
     'ads' => [

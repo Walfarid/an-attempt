@@ -33,6 +33,20 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
 
+        // AdSense slot ID — only shared when consent is accepted, so the
+        // client-side ad component can render without a second round-trip.
+        if ($request->cookie('consent') === 'accepted') {
+            $adClientId = config('services.adsense.client_id');
+            $adSlotId = config('services.adsense.slot_id');
+
+            if ($adClientId) {
+                $shared['adsenseClientId'] = $adClientId;
+            }
+            if ($adSlotId) {
+                $shared['adsenseSlotId'] = $adSlotId;
+            }
+        }
+
         // Dashboard-only: the sidebar lives inside the authenticated
         // AppShell layout. Public pages never render it, so keeping the
         // key off the wire for unauthenticated visits saves ~17 B per
