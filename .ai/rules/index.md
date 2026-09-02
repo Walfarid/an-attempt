@@ -6,6 +6,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | benchmarks/** | .ai/rules/benchmarks.md |
 | resources/js/components/CookieConsentBanner.vue | .ai/rules/components.md |
+| resources/js/components/editor/**, resources/js/pages/dashboard/Profile.vue, resources/js/pages/dashboard/Posts.vue, resources/js/pages/dashboard/Guides.vue, resources/js/pages/dashboard/PrivacyPolicy.vue | .ai/rules/editor.md |
 | config/cache.php | .ai/rules/config.md |
 | app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php, app/Http/Controllers/HomeController.php, routes/web.php | .ai/rules/controllers.md |
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
