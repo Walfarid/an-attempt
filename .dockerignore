@@ -54,5 +54,6 @@ frankenphp-worker.php
 *.md
 docker/
 !docker/zz-opcache.ini
+!docker/zz-upload.ini
 compose.yaml
 compose.prod.yaml
