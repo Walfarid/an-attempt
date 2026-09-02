@@ -5,6 +5,7 @@ import { ArrowLeft } from '@/components/site/icons';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
 import type { PublicGuide } from '@/data/portfolio';
 import PublicLayout from '@/layouts/PublicLayout.vue';
+import { formatDate } from '@/lib/utils';
 import { show as guideShow } from '@/routes/guides';
 
 defineProps<{
@@ -17,11 +18,7 @@ defineProps<{
 useScrollAnimations();
 
 function formatPublished(iso: string): string {
-    return new Date(iso).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
+    return formatDate(iso);
 }
 </script>
 

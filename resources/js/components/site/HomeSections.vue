@@ -25,6 +25,7 @@ import type {
     SkillCategory,
 } from '@/data/portfolio';
 import { formatDateRange } from '@/data/portfolio';
+import { formatDate } from '@/lib/utils';
 import { index as blogIndex, show as postShow } from '@/routes/posts';
 
 /**
@@ -489,16 +490,7 @@ function toggleCategory(category: string) {
                         :key="post.id"
                         :href="postShow.url({ post: post.slug })"
                         :title="post.title"
-                        :date="
-                            new Date(post.published_at).toLocaleDateString(
-                                'en-US',
-                                {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                },
-                            )
-                        "
+                        :date="formatDate(post.published_at)"
                         :description="post.teaser_text"
                         title-tag="h3"
                         title-class="text-base"

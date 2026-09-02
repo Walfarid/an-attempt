@@ -42,6 +42,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { processImage } from '@/composables/useImageProcessor';
 import type { Post } from '@/data/portfolio';
+import { formatDate } from '@/lib/utils';
 import postsRoute from '@/routes/dashboard/posts';
 import coverRoute from '@/routes/dashboard/posts/cover';
 
@@ -258,11 +259,7 @@ function publishLabel(post: Post): string {
 
     return new Date(post.published_at) > new Date()
         ? 'Scheduled'
-        : new Date(post.published_at).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-          });
+        : formatDate(post.published_at);
 }
 </script>
 

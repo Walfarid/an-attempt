@@ -42,6 +42,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { processImage } from '@/composables/useImageProcessor';
 import type { GuideListItem, PostOption } from '@/data/portfolio';
+import { formatDate } from '@/lib/utils';
 import guidesRoute from '@/routes/dashboard/guides';
 import coverRoute from '@/routes/dashboard/guides/cover';
 
@@ -247,11 +248,7 @@ function publishLabel(guide: GuideListItem): string {
 
     return new Date(guide.published_at) > new Date()
         ? 'Scheduled'
-        : new Date(guide.published_at).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-          });
+        : formatDate(guide.published_at);
 }
 </script>
 

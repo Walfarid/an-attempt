@@ -5,6 +5,7 @@ import { ArrowLeft } from '@/components/site/icons';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
 import type { PublicPost, PublicTag } from '@/data/portfolio';
 import PublicLayout from '@/layouts/PublicLayout.vue';
+import { formatDate } from '@/lib/utils';
 import { show as postShow } from '@/routes/posts';
 
 const { tag, posts } = defineProps<{
@@ -46,13 +47,7 @@ useScrollAnimations();
                 :href="postShow.url({ post: post.slug })"
                 :cover-url="post.cover_url"
                 :title="post.title"
-                :date="
-                    new Date(post.published_at).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                    })
-                "
+                :date="formatDate(post.published_at)"
                 :description="post.teaser_text"
                 :tags="post.tags"
             />
