@@ -26,7 +26,7 @@ function formatUpdated(iso: string): string {
     <Head title="Privacy" />
 
     <div
-        class="site d-dots-bg min-h-dvh antialiased selection:bg-(--accent) selection:text-(--paper)"
+        class="site d-dots-bg antialiased selection:bg-(--accent) selection:text-(--paper)"
     >
         <a
             href="#main"
@@ -37,7 +37,7 @@ function formatUpdated(iso: string): string {
 
         <SiteHeader />
 
-        <main id="main" class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20">
+        <main id="main" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
             <div class="mb-8" data-motion>
                 <p class="d-section mb-2">Legal</p>
                 <h1

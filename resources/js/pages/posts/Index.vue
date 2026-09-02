@@ -22,7 +22,7 @@ useScrollAnimations();
     <Head title="Writing" />
 
     <div
-        class="site d-dots-bg min-h-dvh antialiased selection:bg-(--accent) selection:text-(--paper)"
+        class="site d-dots-bg antialiased selection:bg-(--accent) selection:text-(--paper)"
     >
         <a
             href="#main"

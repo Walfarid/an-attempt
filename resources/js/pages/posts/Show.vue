@@ -65,7 +65,7 @@ useScrollAnimations();
     <Head :title="post.title" />
 
     <div
-        class="site d-dots-bg min-h-dvh antialiased selection:bg-(--accent) selection:text-(--paper)"
+        class="site d-dots-bg antialiased selection:bg-(--accent) selection:text-(--paper)"
     >
         <!-- Reading progress hairline -->
         <div

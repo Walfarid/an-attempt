@@ -320,9 +320,18 @@
 /* ---- Site-scoped styles (public site only) -------------------------- */
 
 .site {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
     font-family: var(--font-sans);
     background-color: var(--paper);
     color: var(--ink);
+}
+
+/* Grow the page content so the footer rests at the viewport bottom
+   on short pages and scrolls naturally on long ones. */
+.site > main {
+    flex: 1 0 auto;
 }
 
 .site :focus-visible {

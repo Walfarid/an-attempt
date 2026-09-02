@@ -103,7 +103,7 @@ useCountUp(siteRef);
 
     <div
         ref="siteRef"
-        class="site d-dots-bg min-h-dvh antialiased selection:bg-(--accent) selection:text-(--paper)"
+        class="site d-dots-bg antialiased selection:bg-(--accent) selection:text-(--paper)"
     >
         <!-- Skip link -->
         <a
