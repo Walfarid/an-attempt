@@ -18,7 +18,7 @@
 # platform-independent, so one build serves both target arches.
 FROM --platform=$BUILDPLATFORM dunglas/frankenphp:1.12.7-php8.4-bookworm AS vendor
 WORKDIR /app
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer@sha256:8fa35f42911ff8bbee92aa37d781de6799168d4a0535ac6991f1b250bc2e0245 /usr/bin/composer /usr/bin/composer # verified 2026-09-02 (Composer 2.10.3)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git unzip \
     && rm -rf /var/lib/apt/lists/*

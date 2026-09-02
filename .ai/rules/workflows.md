@@ -2,6 +2,8 @@
 paths:
   - .github/workflows/deploy.yml
   - .github/workflows/dast.yml
+  - .github/workflows/ci.yml
+  - Dockerfile
 ---
 
 # Workflows
@@ -9,5 +11,8 @@ paths:
 ## OCI SSH ingress must stay open for GitHub runners
 The walfa VM security list (ap-singapore-1, "walfa-app-sl") allows SSH 22 from 0.0.0.0/0 because GitHub's `actions` IP ranges (api.github.com/meta, 250+ CIDRs) exceed the security-list rule budget. Do NOT re-lock port 22 to a single IP — deploys die with `dial tcp ...:22: i/o timeout` (runners are silently dropped). sshd is key-only (PasswordAuthentication no). The VM public IP is ephemeral — if it changes after a reboot, update the DEPLOY_HOST secret.
 
-## DAST workflow runs on schedule only, not push
-DAST runs on schedule (nightly 03:30 UTC) and manual trigger only, not on push to main. The scan boots MariaDB + builds assets + runs migrations (5-10 min), duplicating ci.yml work. PRs already trigger DAST before merge; nightly catches regressions; manual trigger available for ad-hoc scans. Do NOT re-add push trigger without a compelling security reason.
+## DAST workflow triggers
+DAST runs on `pull_request` (every PR), nightly schedule (03:30 UTC), and manual trigger (`workflow_dispatch`). It does NOT run on push to main — that would duplicate ci.yml work. The scan boots MariaDB + builds assets + runs migrations (5-10 min). PRs trigger DAST before merge; nightly catches regressions on main; manual trigger available for ad-hoc scans. Do NOT re-add a push trigger without a compelling security reason.
+
+## Container images must be pinned to digests
+ALL container images in `.github/workflows/**` and `Dockerfile` must be pinned to their SHA-256 digest (e.g. `mariadb@sha256:abcdef...`) with a `# verified YYYY-MM-DD (ImageName X.Y.Z)` comment recording the resolution date and version. The `compose.yaml` dev file uses patch-version pins instead (e.g. `mariadb:12.3.3`) for readability — digests are not required there, but the version must still be the latest patch on the series. Dependabot's `docker` ecosystem keeps workflow and Dockerfile digests fresh. When bumping a pinned digest, re-resolve via `docker pull` + `docker inspect --format='{{index .RepoDigests 0}}'` and update the `# verified` date.

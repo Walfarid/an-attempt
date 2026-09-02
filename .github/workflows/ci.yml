@@ -118,7 +118,7 @@ jobs:
 
     services:
       mariadb:
-        image: mariadb:12.3
+        image: mariadb@sha256:dd9b303aed4f4890ed09f766d8ca9ddfd176c0c6f6267feff53b3192ec65a979 # verified 2026-09-02 (MariaDB 12.3.3)
         env:
           MARIADB_ROOT_PASSWORD: root
           MARIADB_DATABASE: walfa_testing

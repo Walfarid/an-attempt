@@ -8,7 +8,7 @@
 # Image tags: verified 2026-08-23 against the Docker Hub registry API
 # (hub.docker.com/v2/repositories/<repo>/tags). Per the project default of
 # LTS -> stable -> latest:
-#   - mariadb:12.3        current LTS series (12.3.2)
+#   - mariadb:12.3.3      current LTS series (patch-pinned, 12.3.3)
 #   - valkey:9.1          current stable line (9.1.1)
 #   - axllent/mailpit:v1.31.0  pinned full version (security-relevant SMTP)
 #
@@ -22,7 +22,7 @@ name: walfa
 
 services:
   mariadb:
-    image: mariadb:12.3
+    image: mariadb:12.3.3 # patch-pinned (dev readability; no digest in dev compose)
     container_name: walfa-mariadb
     restart: unless-stopped
     environment:

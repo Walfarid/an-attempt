@@ -20,4 +20,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | routes/web.php | .ai/rules/routes.md |
 | resources/js/components/site/** | .ai/rules/site.md |
 | tests/** | .ai/rules/tests.md |
-| .github/workflows/deploy.yml, .github/workflows/dast.yml | .ai/rules/workflows.md |
+| .github/workflows/deploy.yml, .github/workflows/dast.yml, .github/workflows/ci.yml, Dockerfile | .ai/rules/workflows.md |

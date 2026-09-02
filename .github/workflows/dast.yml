@@ -5,7 +5,7 @@
 # rules) over the public pages. Active scanning is intentionally not enabled:
 # the baseline profile is non-intrusive and safe to run on PRs and nightly.
 #
-# Versions verified 2026-08-23: ghcr.io/zaproxy/zaproxy stable image,
+# Versions verified 2026-09-02: ghcr.io/zaproxy/zaproxy 2.17.0 (digest-pinned),
 # actions/upload-artifact v7.
 
 name: DAST
@@ -30,7 +30,7 @@ jobs:
 
     services:
       mariadb:
-        image: mariadb:12.3
+        image: mariadb@sha256:dd9b303aed4f4890ed09f766d8ca9ddfd176c0c6f6267feff53b3192ec65a979 # verified 2026-09-02 (MariaDB 12.3.3)
         env:
           MARIADB_ROOT_PASSWORD: root
           MARIADB_DATABASE: walfa_dast
@@ -128,7 +128,7 @@ jobs:
         run: >
           docker run --rm --network host
           --volume "$PWD:/zap/wrk:rw"
-          ghcr.io/zaproxy/zaproxy:stable
+          ghcr.io/zaproxy/zaproxy@sha256:781a2bdaea47324e7bab583e2263f21d257b0aee61ed51521a5be45f5f5081ef # verified 2026-09-02 (ZAP 2.17.0)
           zap-baseline.py
           -t http://127.0.0.1:8080
           -c .zap/rules.tsv
