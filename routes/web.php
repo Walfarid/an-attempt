@@ -16,6 +16,7 @@ use App\Http\Controllers\Dashboard\SkillController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Middleware\CachePublicResponses;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
@@ -29,6 +30,10 @@ Route::get('posts', [BlogController::class, 'index'])
     ->middleware(CachePublicResponses::class)
     ->name('posts.index')
     ->withHead(title: 'Blog', description: 'Thoughts on software development, APIs, and deployment platforms.');
+Route::get('posts/tag/{tag}', [BlogController::class, 'tag'])
+    ->middleware(CachePublicResponses::class)
+    ->name('posts.tag')
+    ->where('tag', '[a-z0-9-]+');
 Route::get('posts/{post}', [BlogController::class, 'show'])
     ->middleware(CachePublicResponses::class)
     ->name('posts.show');
@@ -37,6 +42,24 @@ Route::get('privacy', [PrivacyController::class, 'show'])
     ->middleware(CachePublicResponses::class)
     ->name('privacy')
     ->withHead(title: 'Privacy', description: 'What this site collects, which third-party analytics it uses, and how to change your consent choice.');
+
+// Ezoic (ads) requires non-WordPress sites to point their ads.txt at Ezoic's
+// manager via a 301 redirect — https://support.ezoic.com/kb/article/ezoicads-getting-started-guide.
+// The route only exists while Ezoic ads are enabled; otherwise ads.txt falls
+// through to a normal 404.
+Route::get('ads.txt', function () {
+    $managerId = config('services.ezoic.adstxt_manager_id');
+
+    abort_if(
+        ! config('services.ezoic.enabled') || ! $managerId,
+        Response::HTTP_NOT_FOUND,
+    );
+
+    return redirect(
+        "https://srv.adstxtmanager.com/{$managerId}/".request()->getHost(),
+        Response::HTTP_MOVED_PERMANENTLY,
+    );
+})->name('ads.txt');
 
 Route::middleware([
     'auth',

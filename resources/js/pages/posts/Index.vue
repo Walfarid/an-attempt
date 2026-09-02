@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link } from '@inertiajs/vue3';
 import { ArrowLeft } from '@/components/site/icons';
+import PostTags from '@/components/site/PostTags.vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
@@ -80,6 +81,11 @@ useScrollAnimations();
                         >
                             {{ post.teaser_text }}
                         </p>
+                        <PostTags
+                            v-if="post.tags?.length"
+                            :tags="post.tags"
+                            class="mt-3"
+                        />
                     </Link>
                 </div>
             </InfiniteScroll>

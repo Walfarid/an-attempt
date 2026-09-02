@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Profile;
+use App\Models\Tag;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -11,6 +13,7 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Laravel\Head\Enums\OgType;
 use Laravel\Head\Facades\Head;
+use Laravel\Head\Facades\Schema;
 
 class BlogController extends Controller
 {
@@ -27,6 +30,7 @@ class BlogController extends Controller
                 Post::query()
                     ->select(['id', 'slug', 'title', 'excerpt', 'published_at'])
                     ->selectRaw('SUBSTRING(body, 1, 300) as body_preview')
+                    ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
                     ->published()
                     ->orderByDesc('published_at')
                     ->simplePaginate(10, ['*'], 'page')
@@ -82,11 +86,14 @@ class BlogController extends Controller
 
         $post = Post::query()
             ->where('slug', $slug)
-            ->select(['title', 'body', 'excerpt', 'cover_image_path', 'published_at', 'updated_at'])
+            // id is required for the tags eager load to match pivot rows;
+            // makeHidden below keeps it off the public wire.
+            ->select(['id', 'title', 'body', 'excerpt', 'cover_image_path', 'published_at', 'updated_at'])
             ->selectRaw(
                 $this->recentSql(DB::connection()->getDriverName()),
                 [now(), $slug],
             )
+            ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
             ->firstOrFail();
 
         abort_unless(
@@ -102,12 +109,22 @@ class BlogController extends Controller
 
         Head::title($post->title)
             ->description($post->excerpt ?? $post->teaser(25))
-            ->og(type: OgType::Article)
+            ->og(type: OgType::Article, image: $post->cover_url ?? url('/og-default.png'))
             ->canonical();
 
-        if ($post->cover_url) {
-            Head::ogImage($post->cover_url);
-        }
+        $authorName = Profile::query()->value('name') ?? 'Walfa';
+
+        Head::schema(
+            Schema::blogPosting()
+                ->headline($post->title)
+                ->description($post->excerpt ?? $post->teaser(25))
+                ->publishedAt($post->published_at)
+                ->modifiedAt($post->updated_at)
+                ->author(Schema::person()->name($authorName))
+                ->image($post->cover_url ?? url('/og-default.png'))
+                ->set('mainEntityOfPage', $request->url())
+                ->set('keywords', $post->tags->pluck('name')->all())
+        );
 
         /** @var list<array{id: int, slug: string, title: string}> $recent */
         $recent = json_decode($post->recent_json, true, 512, JSON_THROW_ON_ERROR);
@@ -116,7 +133,9 @@ class BlogController extends Controller
             'post' => tap($post, function (Post $p): void {
                 $p->append('cover_url');
                 $p->body_html = $p->bodyHtml();
-                $p->makeHidden(['body', 'cover_image_path', 'recent_json', 'excerpt', 'updated_at']);
+                // id (pivot matching) stays off the public wire, per the
+                // no-unused-IDs rule for public payloads.
+                $p->makeHidden(['id', 'body', 'cover_image_path', 'recent_json', 'excerpt', 'updated_at']);
             }),
             'recent' => $recent,
         ]);
@@ -127,6 +146,40 @@ class BlogController extends Controller
         $request->attributes->set('last_modified', $post->updated_at);
 
         return $response;
+    }
+
+    /**
+     * A tag landing page: the published posts carrying this tag,
+     * newest first, with the same teaser shape as the blog index.
+     */
+    public function tag(Request $request): InertiaResponse
+    {
+        $tag = Tag::query()
+            ->where('slug', (string) $request->route('tag'))
+            ->firstOrFail();
+
+        Head::title('Posts tagged "'.$tag->name.'"')
+            ->description('Articles tagged '.$tag->name.' — writing on software development, APIs, and deployment platforms.')
+            ->canonical();
+
+        return Inertia::render('posts/Tag', [
+            'tag' => ['id' => $tag->id, 'slug' => $tag->slug, 'name' => $tag->name],
+            'posts' => $tag->posts()
+                // posts.id is required for the tags eager load to match
+                // pivot rows; makeHidden below keeps it off the wire.
+                ->select(['posts.id', 'posts.slug', 'posts.title', 'posts.excerpt', 'posts.published_at'])
+                ->selectRaw('SUBSTRING(posts.body, 1, 300) as body_preview')
+                ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
+                ->published()
+                ->orderByDesc('posts.published_at')
+                ->get()
+                ->each(function (Post $post): void {
+                    $post->teaser_text = $post->teaser();
+                    // pivot and id stay off the public wire (the no-
+                    // unused-IDs rule for public payloads).
+                    $post->makeHidden(['id', 'excerpt', 'body_preview', 'pivot']);
+                }),
+        ]);
     }
 
     /**

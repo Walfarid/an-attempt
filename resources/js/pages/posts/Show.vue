@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { ArrowLeft, ArrowUpRight } from '@/components/site/icons';
+import PostAdSlot from '@/components/site/PostAdSlot.vue';
+import PostTags from '@/components/site/PostTags.vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
@@ -12,6 +14,27 @@ const { post, recent } = defineProps<{
     post: PublicPostDetail;
     recent: { id: number; slug: string; title: string }[];
 }>();
+
+const { ezoic_enabled: ezoicEnabled, ezoic_placeholder_id: placeholderId } =
+    usePage().props as {
+        ezoic_enabled?: boolean;
+        ezoic_placeholder_id?: number | string;
+    };
+
+/** Wide-screen side-column ad; hidden on narrow screens (inline slot takes over). */
+const gutterAd = computed(() =>
+    ezoicEnabled
+        ? {
+              id: Number(placeholderId ?? 101),
+              className: 'ezoic-gutter',
+          }
+        : null,
+);
+
+/** Narrow-screen ad at the end of the article. */
+const inlineAd = computed(() =>
+    ezoicEnabled ? { id: Number(placeholderId ?? 101) } : null,
+);
 
 function formatPublished(iso: string): string {
     return new Date(iso).toLocaleDateString('en-US', {
@@ -82,8 +105,14 @@ useScrollAnimations();
 
         <SiteHeader />
 
-        <main id="main" class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24">
-            <article data-motion>
+        <main id="main" class="px-4 py-16 sm:px-6 sm:py-24">
+            <!--
+                Wide screens (xl+): the article is centered and the ad sits
+                in a sticky right-hand gutter (post-layout CSS).
+                Narrow screens: only the inline slot below the article shows.
+            -->
+            <div class="post-layout">
+                <article data-motion class="w-full max-w-3xl">
                 <time class="d-label">
                     {{ formatPublished(post.published_at) }}
                 </time>
@@ -92,6 +121,12 @@ useScrollAnimations();
                 >
                     {{ post.title }}
                 </h1>
+
+                <PostTags
+                    v-if="post.tags?.length"
+                    :tags="post.tags"
+                    class="mt-5"
+                />
 
                 <img
                     v-if="post.cover_url"
@@ -107,6 +142,22 @@ useScrollAnimations();
                     v-html="post.body_html"
                 />
             </article>
+
+            <!-- Wide screens: sticky side gutter to the right of the article. -->
+            <PostAdSlot
+                v-if="gutterAd"
+                :id="gutterAd.id"
+                :class-name="gutterAd.className"
+            />
+        </div>
+
+        <!-- Narrow screens: the ad sits at the end of the article (outside
+             the post-layout grid, so it stays visible below xl). -->
+        <PostAdSlot
+            v-if="inlineAd"
+            :id="inlineAd.id"
+            class="mx-auto mt-10 max-w-3xl xl:hidden"
+        />
 
             <aside
                 v-if="recent.length"

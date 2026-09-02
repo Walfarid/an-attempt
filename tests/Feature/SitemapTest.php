@@ -2,6 +2,7 @@
 
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
+use App\Models\Tag;
 
 test('sitemap returns xml content', function () {
     $response = $this->get('/sitemap.xml');
@@ -44,4 +45,24 @@ test('sitemap includes privacy page', function () {
     $response->assertOk()
         ->assertSee(url('/privacy'))
         ->assertSee($privacy->updated_at->toW3cString());
+});
+
+test('sitemap includes tags used by published posts', function () {
+    $tag = Tag::factory()->create(['slug' => 'laravel']);
+    $post = Post::factory()->create();
+    $post->tags()->attach($tag);
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertSee(url('/posts/tag/laravel'));
+});
+
+test('sitemap excludes tags without published posts', function () {
+    $tag = Tag::factory()->create(['slug' => 'lonely']);
+    $post = Post::factory()->draft()->create();
+    $post->tags()->attach($tag);
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertDontSee('/posts/tag/lonely');
 });
