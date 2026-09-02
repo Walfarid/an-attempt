@@ -131,6 +131,64 @@ export type PublicPostDetail = {
     tags?: PublicTag[];
 };
 
+// Guide (dashboard editor) -------------------------------------------
+
+/** A full guide as loaded by the dashboard editor (body + linked post IDs). */
+export interface Guide {
+    id: number;
+    slug: string;
+    title: string;
+    body?: string;
+    teaser: string | null;
+    prerequisites: string | null;
+    estimated_time: string | null;
+    cover_url: string | null;
+    published_at: string | null;
+    /** Post IDs for the linking UI. Present on the dashboard show endpoint. */
+    posts?: number[];
+}
+
+/** A guide row on the dashboard table (no body). */
+export type GuideListItem = {
+    id: number;
+    slug: string;
+    title: string;
+    cover_url: string | null;
+    estimated_time: string | null;
+    published_at: string | null;
+};
+
+/** A post option in the dashboard related-posts picker. */
+export type PostOption = {
+    id: number;
+    title: string;
+};
+
+// Guide (public) ------------------------------------------------------
+
+/** A guide teaser on a public index page (no body). */
+export interface PublicGuide {
+    slug: string;
+    title: string;
+    teaser: string | null;
+    estimated_time: string | null;
+    cover_url: string | null;
+    published_at: string;
+}
+
+/** A rendered (or rendering) guide page. */
+export interface PublicGuideDetail {
+    title: string;
+    slug: string;
+    body_html: string;
+    teaser: string | null;
+    prerequisites: string | null;
+    estimated_time: string | null;
+    cover_url: string | null;
+    published_at: string;
+    posts: { id: number; slug: string; title: string; published_at: string }[];
+}
+
 export function formatDateRange(start: string, end: string | null): string {
     const fmt = (iso: string) =>
         new Date(iso).toLocaleDateString('en-US', {

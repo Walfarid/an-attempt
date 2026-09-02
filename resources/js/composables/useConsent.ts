@@ -4,8 +4,8 @@ export type ConsentChoice = 'accepted' | 'declined';
 
 /**
  * Module-level so the banner (mounted outside the Inertia root), the
- * privacy page's cookie settings and page components like PostAdSlot
- * share one visibility/consent state.
+ * privacy page's cookie settings and page components share one
+ * visibility/consent state.
  */
 const bannerVisible = ref(false);
 

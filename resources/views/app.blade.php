@@ -63,20 +63,6 @@
                 </script>
             @endif
 
-            {{--
-                Ezoic ads (single-post page only) — JavaScript standalone
-                integration: header script + ezstandalone command queue. The
-                Gatekeeper CMP privacy scripts are intentionally omitted: this
-                site runs its own consent banner, so ads load only after the
-                stored `consent` cookie is accepted (same gate as Clarity/GA).
-            --}}
-            @if ($page['component'] === 'posts/Show' && config('services.ezoic.enabled'))
-                <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
-                <script>
-                    window.ezstandalone = window.ezstandalone || {};
-                    ezstandalone.cmd = ezstandalone.cmd || [];
-                </script>
-            @endif
         @endif
     </head>
     <body class="font-sans antialiased">

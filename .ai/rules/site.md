@@ -10,6 +10,3 @@ PageDrawLoader.vue and useRouteTransition.ts must never statically import gsap (
 
 ## Eager boot chain: inline site icons, never @lucide/vue
 The public boot chain (Welcome, SiteHeader, SiteFooter, posts Index/Show) imports inline SVG icons from components/site/icons.ts, NOT @lucide/vue. A static lucide import anywhere in that chain drags the ~11 KB lucide chunk (with all HomeSections/dashboard icons) onto every public page's boot. Icon path data in icons.ts must mirror lucide exactly (24px viewBox, stroke-width 2, round caps/joins) — copy from the lucide chunk, never freehand. HomeSections + dashboard may keep @lucide/vue (lazy).
-
-## Ezoic showAds targets #ezoic-pub-ad-placeholder-{id}
-ezstandalone.showAds(id) injects the ad into the element with id="ezoic-pub-ad-placeholder-{id}" — no such div means no ad ever renders, regardless of adblock/consent/config. That div must stay unstyled and permanently in the DOM (Ezoic docs: styling it or reserving space causes empty gaps). Style the wrapper aside instead. Only one slot per placeholder ID per page.

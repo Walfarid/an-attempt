@@ -20,6 +20,7 @@ withDefaults(
             { href: '/#projects', label: 'Projects' },
             { href: '/#skills', label: 'Skills' },
             { href: '/posts', label: 'Writing', inertia: true },
+            { href: '/guides', label: 'Guides', inertia: true },
             { href: '/#contact', label: 'Contact' },
         ],
     },
@@ -49,10 +50,14 @@ const { url } = usePage();
 
 /**
  * Active nav state. Hash anchors on the landing page are scroll-driven,
- * so only real routes are marked (currently the Writing index).
+ * so only real routes are marked (currently Writing + Guides indexes).
  */
 function isActive(href: string) {
-    return href === '/posts' && url.startsWith('/posts');
+    if (href === '/posts' && url.startsWith('/posts')) {
+        return true;
+    }
+
+    return href === '/guides' && url.startsWith('/guides');
 }
 
 const mobileOpen = ref(false);

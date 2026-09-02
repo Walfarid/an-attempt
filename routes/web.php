@@ -4,6 +4,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\Dashboard\AnalyticsController;
 use App\Http\Controllers\Dashboard\EducationController;
 use App\Http\Controllers\Dashboard\ExperienceController;
+use App\Http\Controllers\Dashboard\GuideCoverController;
 use App\Http\Controllers\Dashboard\MediaController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\PostCoverController;
@@ -13,10 +14,10 @@ use App\Http\Controllers\Dashboard\ProjectController;
 use App\Http\Controllers\Dashboard\PublicationController;
 use App\Http\Controllers\Dashboard\ScreenshotController;
 use App\Http\Controllers\Dashboard\SkillController;
+use App\Http\Controllers\GuideController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrivacyController;
 use App\Http\Middleware\CachePublicResponses;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
@@ -38,28 +39,19 @@ Route::get('posts/{post}', [BlogController::class, 'show'])
     ->middleware(CachePublicResponses::class)
     ->name('posts.show');
 
+Route::get('guides', [GuideController::class, 'index'])
+    ->middleware(CachePublicResponses::class)
+    ->name('guides.index')
+    ->withHead(title: 'Guides', description: 'Step-by-step tutorials and how-to guides.');
+
+Route::get('guides/{guide}', [GuideController::class, 'show'])
+    ->middleware(CachePublicResponses::class)
+    ->name('guides.show');
+
 Route::get('privacy', [PrivacyController::class, 'show'])
     ->middleware(CachePublicResponses::class)
     ->name('privacy')
     ->withHead(title: 'Privacy', description: 'What this site collects, which third-party analytics it uses, and how to change your consent choice.');
-
-// Ezoic (ads) requires non-WordPress sites to point their ads.txt at Ezoic's
-// manager via a 301 redirect — https://support.ezoic.com/kb/article/ezoicads-getting-started-guide.
-// The route only exists while Ezoic ads are enabled; otherwise ads.txt falls
-// through to a normal 404.
-Route::get('ads.txt', function () {
-    $managerId = config('services.ezoic.adstxt_manager_id');
-
-    abort_if(
-        ! config('services.ezoic.enabled') || ! $managerId,
-        Response::HTTP_NOT_FOUND,
-    );
-
-    return redirect(
-        "https://srv.adstxtmanager.com/{$managerId}/".request()->getHost(),
-        Response::HTTP_MOVED_PERMANENTLY,
-    );
-})->name('ads.txt');
 
 Route::middleware([
     'auth',
@@ -80,6 +72,13 @@ Route::middleware([
 
     Route::put('dashboard/posts/{post}/cover', [PostCoverController::class, 'update'])->name('dashboard.posts.cover.update');
     Route::delete('dashboard/posts/{post}/cover', [PostCoverController::class, 'destroy'])->name('dashboard.posts.cover.destroy');
+
+    Route::resource('dashboard/guides', App\Http\Controllers\Dashboard\GuideController::class)
+        ->only(['index', 'show', 'store', 'update', 'destroy'])
+        ->names('dashboard.guides');
+
+    Route::put('dashboard/guides/{guide}/cover', [GuideCoverController::class, 'update'])->name('dashboard.guides.cover.update');
+    Route::delete('dashboard/guides/{guide}/cover', [GuideCoverController::class, 'destroy'])->name('dashboard.guides.cover.destroy');
 
     Route::resource('dashboard/media', MediaController::class)
         ->only(['index', 'store', 'destroy'])

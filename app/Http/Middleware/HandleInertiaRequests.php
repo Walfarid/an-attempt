@@ -25,23 +25,12 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $ezoicEnabled = config('services.ezoic.enabled')
-            && $request->route()?->getName() === 'posts.show';
-
         $shared = [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user()?->only(['name', 'email', 'avatar']),
             ],
-            // True only while Ezoic ads are enabled (config) AND the visitor
-            // is on the single-post page — the only page that may show ads.
-            'ezoic_enabled' => $ezoicEnabled,
-            // The Ezoic placement ID for the post-page ad slot. Only shared
-            // alongside ezoic_enabled so other pages carry no extra bytes.
-            'ezoic_placeholder_id' => $ezoicEnabled
-                ? config('services.ezoic.placeholder_id')
-                : null,
         ];
 
         // Dashboard-only: the sidebar lives inside the authenticated

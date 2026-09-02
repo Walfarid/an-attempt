@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Support\Markdown;
-use Database\Factories\PostFactory;
+use Database\Factories\GuideFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,26 +17,20 @@ use Illuminate\Support\Str;
  * @property int $id
  * @property string $slug
  * @property string $title
- * @property string|null $excerpt
- * @property string $body
+ * @property string|null $body
  * @property string|null $cover_image_path
  * @property Carbon|null $published_at
+ * @property string|null $teaser
+ * @property string|null $prerequisites
+ * @property string|null $estimated_time
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string $teaser_text list teaser, set before serialization by controllers
  * @property string $body_html Markdown body rendered to HTML, set before serialization
- * @property string|null $body_preview Substring of body for teaser computation
- * @property string $recent_json JSON array of recent posts ({id, slug, title}), set by the post page query
  */
-class Post extends Model
+class Guide extends Model
 {
-    /** @use HasFactory<PostFactory> */
+    /** @use HasFactory<GuideFactory> */
     use HasFactory;
-
-    /**
-     * @var list<string>
-     */
-    protected $appends = [];
 
     /**
      * @var list<string>
@@ -44,28 +38,13 @@ class Post extends Model
     protected $fillable = [
         'slug',
         'title',
-        'excerpt',
         'body',
         'cover_image_path',
         'published_at',
+        'teaser',
+        'prerequisites',
+        'estimated_time',
     ];
-
-    /**
-     * Regex patterns for stripping Markdown syntax from teasers.
-     *
-     * @var list<string>
-     */
-    private const TEASER_PATTERNS = [
-        '/^#{1,6}\s+/',
-        '/[*_`]{1,3}/',
-        '/!\[.*?\]\(.+?\)/',
-        '/\[(.+?)\]\(.+?\)/',
-    ];
-
-    /**
-     * @var list<string>
-     */
-    private const TEASER_REPLACEMENTS = ['$1', '', '', ''];
 
     protected function casts(): array
     {
@@ -75,7 +54,7 @@ class Post extends Model
     }
 
     /**
-     * Posts that are live for the public site.
+     * Guides that are live for the public site.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
@@ -103,23 +82,13 @@ class Post extends Model
     }
 
     /**
-     * The tags attached to this post.
+     * The posts associated with this guide.
      *
-     * @return BelongsToMany<Tag, $this>
+     * @return BelongsToMany<Post, $this>
      */
-    public function tags(): BelongsToMany
+    public function posts(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class);
-    }
-
-    /**
-     * The guides that include this post.
-     *
-     * @return BelongsToMany<Guide, $this>
-     */
-    public function guides(): BelongsToMany
-    {
-        return $this->belongsToMany(Guide::class);
+        return $this->belongsToMany(Post::class);
     }
 
     /**
@@ -131,25 +100,24 @@ class Post extends Model
     }
 
     /**
-     * The list teaser: the excerpt when set, otherwise a plain-text
-     * summary stripped of common Markdown syntax (avoids a full render).
-     *
-     * When body is not selected (e.g., in list queries), body_preview
-     * (a SUBSTRING of body) is used instead.
+     * The list teaser: the hand-written teaser when set, otherwise a
+     * plain-text summary of the body stripped of common Markdown syntax.
      */
     public function teaser(int $words = 30): string
     {
-        if ($this->excerpt !== null && $this->excerpt !== '') {
-            return $this->excerpt;
+        if ($this->teaser !== null && $this->teaser !== '') {
+            return $this->teaser;
         }
 
-        $body = $this->body ?? $this->body_preview;
-
-        if ($body === null || $body === '') {
+        if ($this->body === null || $this->body === '') {
             return '';
         }
 
-        $text = (string) preg_replace(self::TEASER_PATTERNS, self::TEASER_REPLACEMENTS, $body);
+        $text = (string) preg_replace(
+            ['/^#{1,6}\s+/', '/[*_`]{1,3}/', '/!\[.*?\]\(.+?\)/', '/\[(.+?)\]\(.+?\)/'],
+            ['$1', '', '', ''],
+            $this->body,
+        );
 
         return Str::words(trim($text), $words);
     }

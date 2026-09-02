@@ -61,3 +61,27 @@ https://walfa.my.id {
 http://walfa.my.id {
 	redir https://walfa.my.id{uri} permanent
 }
+
+# media.walfa.my.id — reverse proxy to the OCI Object Storage bucket.
+# Cloudflare CNAME: media.walfa.my.id → walfa.my.id (proxied).
+# Path rewrite: /<key> → /<bucket>/<key> on the S3-compatible endpoint.
+# The Origin CA cert must cover *.walfa.my.id (wildcard or SAN cert).
+https://media.walfa.my.id {
+	tls /certs/origin.pem /certs/origin.key
+
+	log {
+		output stdout
+		format json
+	}
+
+	route {
+		reverse_proxy {$AWS_ENDPOINT} {
+			header_up Host {upstream_hostport}
+			rewrite /{$AWS_BUCKET}{path}
+		}
+	}
+}
+
+http://media.walfa.my.id {
+	redir https://media.walfa.my.id{uri} permanent
+}

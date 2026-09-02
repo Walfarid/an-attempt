@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import {
     ArrowUpRight,
+    BookOpen,
     Briefcase,
     FileText,
     FolderGit2,
@@ -28,6 +29,7 @@ import {
 import { dashboard, home } from '@/routes';
 import educations from '@/routes/dashboard/educations';
 import experience from '@/routes/dashboard/experience';
+import guides from '@/routes/dashboard/guides';
 import media from '@/routes/dashboard/media';
 import posts from '@/routes/dashboard/posts';
 import privacy from '@/routes/dashboard/privacy';
@@ -52,6 +54,11 @@ const mainNavItems: NavItem[] = [
         title: 'Posts',
         href: posts.index.url(),
         icon: PenLine,
+    },
+    {
+        title: 'Guides',
+        href: guides.index.url(),
+        icon: BookOpen,
     },
     {
         title: 'Media',
