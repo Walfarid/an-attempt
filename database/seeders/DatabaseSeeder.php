@@ -79,12 +79,19 @@ class DatabaseSeeder extends Seeder
             'body' => <<<'MD'
                 # Privacy disclosure
 
-                This site is a personal portfolio run by an individual — no ad networks, no data brokers, no selling of data. Everything this site knows about you is described below.
+                This site is a personal portfolio run by an individual — no data brokers, no selling of data. Everything this site knows about you is described below.
 
                 ## What the site owner collects
 
                 - **Contact emails** — when you email the site owner through the "Send email" link, your email client handles delivery directly. No data is stored server-side.
                 - **First-party analytics** — the site keeps its own lightweight counters of page views and outbound-link clicks (page path, referrer, user-agent, coarse device type, approximate country from IP, and a non-reversible hash of the IP used only to count unique visitors). These are aggregate numbers, not personal profiles.
+
+                ## Advertising (Ezoic)
+
+                Article pages can show a single, non-intrusive ad slot served by **Ezoic** ([Ezoic Inc.](https://www.ezoic.com/)). Ezoic selects and serves the ad content, and may use cookies or similar technologies to personalise the ads you see. Ads and any Ezoic code load **only after you accept** the consent banner — nothing from Ezoic runs before that choice, and declining keeps them off entirely. If the slot has nothing to serve it stays empty.
+
+                - Ezoic privacy policy: [https://www.ezoic.com/privacy-policy/](https://www.ezoic.com/privacy-policy/)
+                - Ezoic's platform: [https://www.ezoic.com/](https://www.ezoic.com/)
 
                 ## Third-party analytics
 

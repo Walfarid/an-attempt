@@ -31,6 +31,10 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user()?->only(['name', 'email', 'avatar']),
             ],
+            // True only while Ezoic ads are enabled (config) AND the visitor
+            // is on the single-post page — the only page that may show ads.
+            'ezoic_enabled' => config('services.ezoic.enabled')
+                && $request->route()?->getName() === 'posts.show',
         ];
 
         // Dashboard-only: the sidebar lives inside the authenticated

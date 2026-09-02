@@ -571,3 +571,47 @@
         border-radius: 0 !important;
     }
 }
+
+@layer utilities {
+    /* Post page with a side ad gutter (Ezoic): the article stays centered
+       in a max-w-3xl column; on xl+ screens a sticky gutter ad sits in the
+       space to its right. On narrow screens only the inline slot (below the
+       article) is shown. Living in @layer utilities so these display rules
+       win over the component's own flex utility. */
+    .post-layout {
+        display: block;
+        margin-inline: auto;
+        max-width: 56rem; /* 896px = the centered article column */
+    }
+
+    .post-layout .ezoic-ad-slot,
+    .post-layout .ezoic-gutter {
+        display: none;
+    }
+
+    @media (min-width: 80rem) {
+        /* 1280px+ (xl): the FIRST child (article) gets the wide track,
+           the SECOND (ad gutter) the fixed 256px track. */
+        .post-layout {
+            max-width: 75rem; /* 1200px */
+            display: grid;
+            grid-template-columns: minmax(0, 56rem) 16rem;
+            gap: 3rem;
+            justify-content: center;
+        }
+
+        .post-layout .ezoic-ad-slot {
+            display: block;
+        }
+
+        .post-layout .ezoic-gutter {
+            width: 100%;
+            position: sticky;
+            top: 6rem;
+        }
+    }
+
+    .ezoic-gutter {
+        min-width: 0;
+    }
+}

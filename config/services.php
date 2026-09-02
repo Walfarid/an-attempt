@@ -49,4 +49,15 @@ return [
         'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
     ],
 
+    'ezoic' => [
+        // Non-intrusive Ezoic ads, limited to the single-post page. When
+        // disabled (default) the header scripts, the placeholder slot, and
+        // the ads.txt redirect are all omitted. The placeholder ID is
+        // generated in the Ezoic dashboard (Placeholders) — the number must
+        // match the dashboard placement, not an arbitrary value.
+        'enabled' => env('EZOIC_ENABLED', false),
+        'placeholder_id' => env('EZOIC_PLACEHOLDER_ID'),
+        'adstxt_manager_id' => env('EZOIC_ADSTXT_MANAGER_ID', '19390'),
+    ],
+
 ];
