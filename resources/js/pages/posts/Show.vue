@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref } from 'vue';
 import { ArrowLeft, ArrowUpRight } from '@/components/site/icons';
+import AdSlot from '@/components/site/AdSlot.vue';
 import PostTags from '@/components/site/PostTags.vue';
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
@@ -85,36 +86,44 @@ useScrollAnimations();
 
         <main id="main" class="px-4 py-16 sm:px-6 sm:py-24">
             <div class="post-layout">
-                <article data-motion class="w-full max-w-3xl">
-                    <time class="d-label">
-                        {{ formatPublished(post.published_at) }}
-                    </time>
-                    <h1
-                        class="mt-3 font-display text-[clamp(1.9rem,4.5vw,3rem)] leading-[1.08] font-bold tracking-tight text-balance"
-                    >
-                        {{ post.title }}
-                    </h1>
+                <div class="post-with-ad">
+                    <article data-motion class="w-full max-w-3xl">
+                        <time class="d-label">
+                            {{ formatPublished(post.published_at) }}
+                        </time>
+                        <h1
+                            class="mt-3 font-display text-[clamp(1.9rem,4.5vw,3rem)] leading-[1.08] font-bold tracking-tight text-balance"
+                        >
+                            {{ post.title }}
+                        </h1>
 
-                    <PostTags
-                        v-if="post.tags?.length"
-                        :tags="post.tags"
-                        class="mt-5"
-                    />
+                        <PostTags
+                            v-if="post.tags?.length"
+                            :tags="post.tags"
+                            class="mt-5"
+                        />
 
-                    <img
-                        v-if="post.cover_url"
-                        :src="post.cover_url"
-                        :alt="post.title"
-                        decoding="async"
-                        class="mt-8 aspect-video w-full border border-(--rule) object-cover"
-                    />
+                        <img
+                            v-if="post.cover_url"
+                            :src="post.cover_url"
+                            :alt="post.title"
+                            decoding="async"
+                            class="mt-8 aspect-video w-full border border-(--rule) object-cover"
+                        />
 
-                    <!-- eslint-disable-next-line vue/no-v-html — server-rendered sanitized Markdown -->
-                    <div
-                        class="prose-site mt-8 leading-relaxed"
-                        v-html="post.body_html"
-                    />
-                </article>
+                        <!-- eslint-disable-next-line vue/no-v-html — server-rendered sanitized Markdown -->
+                        <div
+                            class="prose-site mt-8 leading-relaxed"
+                            v-html="post.body_html"
+                        />
+                    </article>
+
+                    <div class="mt-8 lg:mt-0">
+                        <div class="lg:sticky lg:top-20">
+                            <AdSlot />
+                        </div>
+                    </div>
+                </div>
 
                 <aside
                     v-if="recent.length"
