@@ -17,6 +17,12 @@ class PostRequest extends FormRequest
     {
         $this->merge([
             'slug' => Str::slug((string) $this->input('slug', $this->input('title', ''))),
+            'tags' => collect((array) $this->input('tags', []))
+                ->map(fn ($tag) => mb_trim((string) $tag))
+                ->filter()
+                ->unique(fn (string $tag) => mb_strtolower($tag))
+                ->values()
+                ->all(),
         ]);
     }
 
@@ -39,6 +45,8 @@ class PostRequest extends FormRequest
             'excerpt' => ['nullable', 'string', 'max:300'],
             'body' => ['required', 'string', 'max:50000'],
             'published_at' => ['nullable', 'date'],
+            'tags' => ['nullable', 'array', 'max:10'],
+            'tags.*' => ['string', 'max:30'],
         ];
     }
 }

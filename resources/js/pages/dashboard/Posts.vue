@@ -10,6 +10,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import MarkdownEditor from '@/components/editor/MarkdownEditor.vue';
+import TagInput from '@/components/editor/TagInput.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import {
@@ -50,7 +51,27 @@ defineOptions({
     },
 });
 
-const { posts } = defineProps<{ posts: Post[] }>();
+const { posts, tagNames: tagNamesProp } = defineProps<{
+    posts: Post[];
+    tagNames: string[];
+}>();
+
+/** Editor suggestions: all tags ever used, deduped case-insensitively. */
+const tagSuggestions = computed(() => {
+    const seen = new Set<string>();
+
+    return tagNamesProp.filter((name) => {
+        const key = name.toLowerCase();
+
+        if (seen.has(key)) {
+            return false;
+        }
+
+        seen.add(key);
+
+        return true;
+    });
+});
 
 const form = useForm({
     title: '',
@@ -58,6 +79,7 @@ const form = useForm({
     excerpt: '',
     body: '',
     published_at: '',
+    tags: [] as string[],
 });
 
 const editingId = ref<number | null>(null);
@@ -117,6 +139,7 @@ async function startEdit(post: Post) {
         excerpt: post.excerpt ?? '',
         body: '',
         published_at: post.published_at?.slice(0, 16) ?? '',
+        tags: [],
     });
     form.reset();
     open.value = true;
@@ -131,6 +154,7 @@ async function startEdit(post: Post) {
         excerpt: fullPost.excerpt ?? '',
         body: fullPost.body,
         published_at: fullPost.published_at?.slice(0, 16) ?? '',
+        tags: fullPost.tags ?? [],
     });
     form.reset();
 }
@@ -325,6 +349,21 @@ function publishLabel(post: Post): string {
                                     class="d-sharp"
                                 />
                                 <InputError :message="form.errors.excerpt" />
+                            </div>
+                            <div class="relative grid gap-2 sm:col-span-2">
+                                <Label for="post-tags" class="d-label"
+                                    >Tags</Label
+                                >
+                                <TagInput
+                                    id="post-tags"
+                                    v-model="form.tags"
+                                    :suggestions="tagSuggestions"
+                                    class="d-sharp"
+                                />
+                                <p class="d-ink-soft text-xs">
+                                    Up to 10; Enter adds, Backspace removes.
+                                </p>
+                                <InputError :message="form.errors.tags" />
                             </div>
                             <div class="grid gap-2 sm:col-span-2">
                                 <Label for="post-body" class="d-label"

@@ -101,6 +101,8 @@ export type Post = {
     body?: string;
     cover_url: string | null;
     published_at: string | null;
+    /** Present on the dashboard show endpoint (editor consumes it). */
+    tags?: string[];
 };
 
 /** A post teaser on a public page (no body). */
@@ -110,6 +112,14 @@ export type PublicPost = {
     title: string;
     published_at: string;
     teaser_text?: string;
+    tags?: PublicTag[];
+};
+
+/** A public tag reference (pills on cards/pages). */
+export type PublicTag = {
+    id: number;
+    slug: string;
+    name: string;
 };
 
 /** A rendered post page. */
@@ -118,6 +128,7 @@ export type PublicPostDetail = {
     cover_url: string | null;
     published_at: string;
     body_html: string;
+    tags?: PublicTag[];
 };
 
 export function formatDateRange(start: string, end: string | null): string {
