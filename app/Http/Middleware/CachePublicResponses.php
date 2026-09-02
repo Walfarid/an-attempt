@@ -31,9 +31,15 @@ class CachePublicResponses
         $response = $next($request);
 
         if ($request->user() === null) {
+            // 3p script files download once; the HTML page is revalidated
+            // before reuse so a consent state change always produces the
+            // matching analytics markup. Half-hour TTLs were fixed
+            // (5b3901b4) — service workers kept serving the analytics
+            // variant to visitors who had declined, because the page
+            // itself was cacheable for max-age=60/extended SWR.
             $response->headers->set(
                 'Cache-Control',
-                "public, max-age={$this->maxAge}, stale-while-revalidate={$this->staleWhileRevalidate}",
+                'public, max-age=60, stale-while-revalidate=300, must-revalidate',
             );
 
             // Controllers may set a `last_modified` request attribute (a

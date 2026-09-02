@@ -11,7 +11,7 @@ test('public pages send shared cache headers for guests', function () {
     foreach (['/', '/posts', "/posts/{$post->slug}", '/privacy'] as $path) {
         $this->get($path)
             ->assertOk()
-            ->assertHeader('Cache-Control', 'max-age=60, public, stale-while-revalidate=300');
+            ->assertHeader('Cache-Control', 'max-age=60, must-revalidate, public, stale-while-revalidate=300');
     }
 });
 
