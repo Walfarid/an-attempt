@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from '@lucide/vue';
-import MarkdownEditor from '@/components/editor/MarkdownEditor.vue';
+import { defineAsyncComponent } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import privacyRoute from '@/routes/dashboard/privacy';
+
+const MarkdownEditor = defineAsyncComponent(
+    () => import('@/components/editor/MarkdownEditor.vue'),
+);
 
 defineOptions({
     layout: {

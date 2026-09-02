@@ -8,9 +8,12 @@ import {
     SquarePen,
     Trash2,
 } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
-import MarkdownEditor from '@/components/editor/MarkdownEditor.vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import PostPicker from '@/components/editor/PostPicker.vue';
+
+const MarkdownEditor = defineAsyncComponent(
+    () => import('@/components/editor/MarkdownEditor.vue'),
+);
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import {
