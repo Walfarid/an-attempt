@@ -14,9 +14,11 @@ export default defineConfig({
             fonts: [
                 bunny('Bricolage Grotesque', {
                     weights: [400, 700],
+                    subsets: ['latin', 'latin-ext'],
                 }),
                 bunny('JetBrains Mono', {
                     weights: [400, 600],
+                    subsets: ['latin', 'latin-ext'],
                 }),
             ],
         }),
