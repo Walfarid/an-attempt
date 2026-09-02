@@ -41,3 +41,48 @@ test('the ezoic_enabled flag is false off the single-post page', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page->where('ezoic_enabled', false));
 });
+
+test('the post page shares the placement id only while Ezoic ads are enabled', function () {
+    $post = Post::factory()->create();
+
+    config([
+        'services.ezoic.enabled' => true,
+        'services.ezoic.placeholder_id' => 148,
+    ]);
+
+    $this->get("/posts/{$post->slug}")
+        ->assertOk()
+        ->assertInertia(
+            fn ($page) => $page
+                ->where('ezoic_enabled', true)
+                ->where('ezoic_placeholder_id', 148),
+        );
+
+    config(['services.ezoic.enabled' => false]);
+
+    $this->get("/posts/{$post->slug}")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('ezoic_placeholder_id', null));
+});
+
+test('the Ezoic standalone scripts load on the post page only after consent', function () {
+    $post = Post::factory()->create();
+
+    config(['services.ezoic.enabled' => true]);
+
+    $this->get("/posts/{$post->slug}")
+        ->assertOk()
+        ->assertDontSee('ezojs.com');
+
+    // Plain cookie, like the banner's document.cookie write in the browser —
+    // 'consent' is exempt from encryption, so withCookie would double-wrap it.
+    $this->withUnencryptedCookie('consent', 'accepted')
+        ->get("/posts/{$post->slug}")
+        ->assertOk()
+        ->assertSee('ezojs.com');
+
+    $this->withUnencryptedCookie('consent', 'accepted')
+        ->get('/posts')
+        ->assertOk()
+        ->assertDontSee('ezojs.com');
+});

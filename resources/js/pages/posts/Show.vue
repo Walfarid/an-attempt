@@ -21,19 +21,14 @@ const { ezoic_enabled: ezoicEnabled, ezoic_placeholder_id: placeholderId } =
         ezoic_placeholder_id?: number | string;
     };
 
-/** Wide-screen side-column ad; hidden on narrow screens (inline slot takes over). */
-const gutterAd = computed(() =>
-    ezoicEnabled
-        ? {
-              id: Number(placeholderId ?? 101),
-              className: 'ezoic-gutter',
-          }
+/** The page's single ad slot (Ezoic placement ID). Rendered only when
+ * ads are enabled AND a placement ID is configured; the post-layout CSS
+ * places it in a sticky right gutter on xl+ and below the article on
+ * narrower screens — one slot, one placeholder ID, at any width. */
+const adSlot = computed(() =>
+    ezoicEnabled && placeholderId !== undefined && placeholderId !== null
+        ? { id: Number(placeholderId) }
         : null,
-);
-
-/** Narrow-screen ad at the end of the article. */
-const inlineAd = computed(() =>
-    ezoicEnabled ? { id: Number(placeholderId ?? 101) } : null,
 );
 
 function formatPublished(iso: string): string {
@@ -107,11 +102,15 @@ useScrollAnimations();
 
         <main id="main" class="px-4 py-16 sm:px-6 sm:py-24">
             <!--
-                Wide screens (xl+): the article is centered and the ad sits
-                in a sticky right-hand gutter (post-layout CSS).
-                Narrow screens: only the inline slot below the article shows.
+                Everything lives in the centered reading column
+                (post-layout CSS). On xl+ screens the ad sits in a sticky
+                gutter to the right of the article; below xl it stacks
+                under the article.
             -->
-            <div class="post-layout">
+            <div
+                class="post-layout"
+                :class="adSlot !== null && 'post-layout--gutter'"
+            >
                 <article data-motion class="w-full max-w-3xl">
                     <time class="d-label">
                         {{ formatPublished(post.published_at) }}
@@ -143,53 +142,41 @@ useScrollAnimations();
                     />
                 </article>
 
-                <!-- Wide screens: sticky side gutter to the right of the article. -->
-                <PostAdSlot
-                    v-if="gutterAd"
-                    :id="gutterAd.id"
-                    :class-name="gutterAd.className"
-                />
-            </div>
+                <!-- Ad slot: sticky gutter on xl+, end of article below. -->
+                <PostAdSlot v-if="adSlot" :id="adSlot.id" />
 
-            <!-- Narrow screens: the ad sits at the end of the article (outside
-             the post-layout grid, so it stays visible below xl). -->
-            <PostAdSlot
-                v-if="inlineAd"
-                :id="inlineAd.id"
-                class="mx-auto mt-10 max-w-3xl xl:hidden"
-            />
-
-            <aside
-                v-if="recent.length"
-                class="mx-auto mt-16 max-w-3xl border-t border-(--rule) pt-8"
-            >
-                <p class="d-label mb-4">Keep reading</p>
-                <ul class="space-y-2">
-                    <li v-for="item in recent" :key="item.id">
-                        <Link
-                            :href="postShow.url({ post: item.slug })"
-                            prefetch
-                            cache-for="10s"
-                            class="d-arrow-link inline-flex min-h-11 items-center gap-1.5 font-semibold no-underline transition-colors hover:text-(--accent)"
-                        >
-                            {{ item.title }}
-                            <ArrowUpRight
-                                class="d-arrow-icon size-4 shrink-0"
-                                aria-hidden="true"
-                            />
-                        </Link>
-                    </li>
-                </ul>
-            </aside>
-
-            <div class="mx-auto mt-10 max-w-3xl">
-                <Link
-                    href="/writing"
-                    class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold no-underline"
+                <aside
+                    v-if="recent.length"
+                    class="mt-16 border-t border-(--rule) pt-8"
                 >
-                    <ArrowLeft class="size-4" aria-hidden="true" />
-                    All posts
-                </Link>
+                    <p class="d-label mb-4">Keep reading</p>
+                    <ul class="space-y-2">
+                        <li v-for="item in recent" :key="item.id">
+                            <Link
+                                :href="postShow.url({ post: item.slug })"
+                                prefetch
+                                cache-for="10s"
+                                class="d-arrow-link inline-flex min-h-11 items-center gap-1.5 font-semibold no-underline transition-colors hover:text-(--accent)"
+                            >
+                                {{ item.title }}
+                                <ArrowUpRight
+                                    class="d-arrow-icon size-4 shrink-0"
+                                    aria-hidden="true"
+                                />
+                            </Link>
+                        </li>
+                    </ul>
+                </aside>
+
+                <div class="mt-10">
+                    <Link
+                        href="/writing"
+                        class="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold no-underline"
+                    >
+                        <ArrowLeft class="size-4" aria-hidden="true" />
+                        All posts
+                    </Link>
+                </div>
             </div>
         </main>
 

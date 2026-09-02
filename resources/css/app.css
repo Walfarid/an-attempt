@@ -610,3 +610,42 @@
         border-radius: 0 !important;
     }
 }
+
+@layer utilities {
+    /* Post page reading column + Ezoic ad slot placement. One slot, two
+       placements: below xl it stacks under the article inside the centered
+       max-w-3xl column; with the --gutter modifier (ads enabled) the xl+
+       page becomes a grid with the ad in a sticky right-hand gutter next
+       to the article. In @layer utilities so these display rules win over
+       the slot's own flex utility. */
+    .post-layout {
+        margin-inline: auto;
+        max-width: 48rem;
+    }
+
+    .post-layout > .ezoic-ad-slot {
+        margin-block-start: 2.5rem;
+    }
+
+    @media (min-width: 80rem) {
+        /* 1280px+ (xl): article track + 336px gutter track, centered as a
+           group. 336px fits the inner placeholder (track minus the slot's
+           border and padding) for both 300x250 and 336x280 demand. */
+        .post-layout--gutter {
+            display: grid;
+            grid-template-columns: minmax(0, 48rem) 21rem;
+            column-gap: 3rem;
+            justify-content: center;
+            max-width: none;
+        }
+
+        .post-layout--gutter > .ezoic-ad-slot {
+            grid-column: 2;
+            grid-row: 1;
+            position: sticky;
+            top: 6rem;
+            align-self: start;
+            margin-block-start: 0;
+        }
+    }
+}
