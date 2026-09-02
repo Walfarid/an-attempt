@@ -12,6 +12,10 @@ class HandleConsent
     /**
      * Handle an incoming request.
      *
+     * Reads the 'consent' cookie (accepted | declined) to determine whether
+     * analytics and AdSense scripts may load. The cookie is set by the
+     * client-side consent banner after the user makes a choice.
+     *
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response

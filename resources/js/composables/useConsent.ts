@@ -12,17 +12,6 @@ const bannerVisible = ref(false);
 /** The stored choice as reactive state ('accepted' | 'declined' | null). */
 const consent = ref<ConsentChoice | null>(null);
 
-const getStoredConsent = (): ConsentChoice | null => {
-    if (typeof document === 'undefined') {
-        return null;
-    }
-
-    const match = document.cookie.match(/(?:^|;\s*)consent=([^;]*)/);
-    const value = match?.[1];
-
-    return value === 'accepted' || value === 'declined' ? value : null;
-};
-
 const setCookie = (name: string, value: string, days = 365) => {
     if (typeof document === 'undefined') {
         return;
@@ -41,11 +30,36 @@ const clearCookie = (name: string) => {
     document.cookie = `${name}=;path=/;max-age=0;SameSite=Lax`;
 };
 
+const getStoredConsent = (): ConsentChoice | null => {
+    if (typeof document === 'undefined') {
+        return null;
+    }
+
+    const match = document.cookie.match(/(?:^|;\s*)consent=([^;]*)/);
+
+    return match?.[1] === 'accepted' || match?.[1] === 'declined'
+        ? (match[1] as ConsentChoice)
+        : null;
+};
+
+/** Push a Google Consent Mode v2 update via gtag. */
+const pushConsentUpdate = (state: 'granted' | 'denied') => {
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('consent', 'update', {
+            ad_storage: state,
+            ad_user_data: state,
+            ad_personalization: state,
+            analytics_storage: state,
+        });
+    }
+};
+
 export type UseConsentReturn = {
     bannerVisible: ReturnType<typeof ref<boolean>>;
     consent: ReturnType<typeof ref<ConsentChoice | null>>;
     checkConsent: () => void;
-    storeConsent: (choice: ConsentChoice) => void;
+    acceptAll: () => void;
+    declineAll: () => void;
     openCookieSettings: () => void;
 };
 
@@ -63,6 +77,20 @@ export function useConsent(): UseConsentReturn {
         bannerVisible.value = false;
     }
 
+    /** Accept all — update Consent Mode v2, persist, reload for server-side script inclusion. */
+    function acceptAll(): void {
+        pushConsentUpdate('granted');
+        storeConsent('accepted');
+        window.location.reload();
+    }
+
+    /** Decline all — update Consent Mode v2, persist, reload to keep scripts excluded. */
+    function declineAll(): void {
+        pushConsentUpdate('denied');
+        storeConsent('declined');
+        window.location.reload();
+    }
+
     /** Forget the stored choice and bring the banner back. */
     function openCookieSettings(): void {
         clearCookie('consent');
@@ -74,7 +102,8 @@ export function useConsent(): UseConsentReturn {
         bannerVisible,
         consent,
         checkConsent,
-        storeConsent,
+        acceptAll,
+        declineAll,
         openCookieSettings,
     };
 }
