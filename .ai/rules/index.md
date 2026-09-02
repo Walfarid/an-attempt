@@ -6,7 +6,8 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | benchmarks/** | .ai/rules/benchmarks.md |
 | resources/js/components/CookieConsentBanner.vue | .ai/rules/components.md |
-| app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php | .ai/rules/controllers.md |
+| config/cache.php | .ai/rules/config.md |
+| app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php, app/Http/Controllers/HomeController.php, routes/web.php | .ai/rules/controllers.md |
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
 | compose.prod.yaml, .env.example, vite.config.ts | .ai/rules/general.md |
 | app/Models/Guide.php, app/Http/Controllers/Dashboard/GuideController.php, app/Http/Controllers/Dashboard/GuideCoverController.php, app/Http/Controllers/GuideController.php, app/Http/Requests/Dashboard/GuideRequest.php, app/Http/Requests/Dashboard/UploadGuideCoverRequest.php, resources/js/pages/dashboard/Guides.vue, resources/js/pages/guides/** | .ai/rules/guides.md |
@@ -15,7 +16,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | database/migrations/** | .ai/rules/migrations.md |
 | resources/js/pages/Welcome.vue | .ai/rules/pages.md |
 | resources/js/pages/posts/*.vue | .ai/rules/posts.md |
-| app/Http/Controllers/HomeController.php (sitemap), tests/Feature/SitemapTest.php | .ai/rules/controllers.md |
 | app/Http/Requests/Dashboard/PostRequest.php | .ai/rules/requests-dashboard.md |
 | routes/web.php | .ai/rules/routes.md |
 | resources/js/components/site/** | .ai/rules/site.md |

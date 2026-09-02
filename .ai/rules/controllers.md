@@ -2,6 +2,7 @@
 paths:
   - app/Http/Controllers/BlogController.php
   - app/Http/Controllers/HomeController.php
+  - 'app/Http/Controllers/HomeController.php, routes/web.php'
 ---
 
 # Controllers
@@ -26,3 +27,9 @@ Head-derived content (meta descriptions) should pull numbers from the same aggre
 
 ## Sitemap: guides and tags are part of it; keep them in
 HomeController::sitemap must include the guides index, every published guide (Guide::published(), lastmod from updated_at), and tag pages of tags on published posts (Tag::used() — empty tags are soft-404s). Never remove guides/tags from the sitemap when adding a public content type; extend it instead (same pattern: listing + per-item URLs, priorities per type, Last-Modified header from max of all fetched updated_at). Pinned by tests/Feature/SitemapTest.php.
+
+## Profile name is cached; do not query it per request
+The post-show hot path reads the author name via Cache::remember('profile.name', now()->addHour(), ...). Never replace it with a direct Profile::query()->value() — a DB query per post view defeats the cache. If the underlying model or key changes, keep the Cache wrapper and invalidate the key from wherever Profile is written (currently Dashboard ProfileController::update does Cache::forget('profile.name')).
+
+## Sitemap: cached XML, 304 handling, and key invalidation contract
+sitemap() must keep its zero-query cache-hit path: it checks Cache::get('sitemap.xml') before running queries, serves 304 on fresh If-Modified-Since (isNotModified), and stores rendered XML + last_modified for 1h. Never remove the CachePublicResponses middleware from the sitemap route (routes/web.php) — it promotes last_modified to the Last-Modified header. Whenever a Dashboard write changes posts, guides, tags (via posts), or privacy policy, it MUST Cache::forget('sitemap.xml') and Cache::forget('sitemap.last_modified') (currently in Post/Guide/PrivacyPolicy dashboard controllers). New content types added to the sitemap must also update the last_modified cache entry.
