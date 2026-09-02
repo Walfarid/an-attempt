@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guide;
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +16,7 @@ class GuideController extends Controller
     /**
      * The public guides index: published guides, newest first.
      */
-    public function index(Request $request): Response
+    public function index(): Response
     {
         return Inertia::render('guides/Index', [
             // Inertia::scroll() registers the prop in page.scrollProps so the
@@ -64,6 +65,12 @@ class GuideController extends Controller
             \Illuminate\Http\Response::HTTP_NOT_FOUND,
         );
 
+        // Conditional request: if the browser has a fresh copy, skip the
+        // Markdown render and Inertia serialization entirely.
+        if ($this->isNotModified($request, $guide->updated_at)) {
+            abort(304);
+        }
+
         Head::title($guide->title)
             ->description($guide->teaser ?? strip_tags($guide->bodyHtml()))
             ->og(type: OgType::Article, image: $guide->cover_url ?? url('/og-default.png'))
@@ -79,7 +86,7 @@ class GuideController extends Controller
                 ->set('mainEntityOfPage', $request->url())
         );
 
-        return Inertia::render('guides/Show', [
+        $response = Inertia::render('guides/Show', [
             'guide' => tap($guide, function (Guide $g): void {
                 $g->append('cover_url');
                 $g->body_html = $g->bodyHtml();
@@ -88,5 +95,27 @@ class GuideController extends Controller
                 $g->makeHidden(['id', 'body', 'cover_image_path', 'updated_at']);
             }),
         ]);
+
+        // Pass the timestamp via request attribute so the CachePublicResponses
+        // middleware can promote it to a Last-Modified header on the Symfony
+        // response (Inertia's Response has no headers of its own).
+        $request->attributes->set('last_modified', $guide->updated_at);
+
+        return $response;
+    }
+
+    /**
+     * Check whether the request's If-Modified-Since header matches the
+     * given timestamp (second precision, per HTTP spec).
+     */
+    private function isNotModified(Request $request, CarbonInterface $lastModified): bool
+    {
+        $since = $request->header('If-Modified-Since');
+
+        if ($since === null) {
+            return false;
+        }
+
+        return $lastModified->startOfSecond()->timestamp <= strtotime($since);
     }
 }

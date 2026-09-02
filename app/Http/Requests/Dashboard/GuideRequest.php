@@ -33,6 +33,7 @@ class GuideRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
+                'alpha_dash',
                 Rule::unique('guides')->ignore($this->route('guide')),
             ],
             'body' => ['required', 'string'],
