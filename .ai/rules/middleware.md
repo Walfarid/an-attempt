@@ -15,3 +15,6 @@ CachePublicResponses middleware adds Cache-Control headers only for unauthentica
 
 ## Conditional shared props for auth-only data
 Shared Inertia props that are only consumed by dashboard/settings layouts (like `sidebarOpen`) should be conditionally included only when `$request->user() !== null`. Public pages never read them. The TypeScript type must be optional (`sidebarOpen?: boolean`) and the consuming component must default (`?? true`).
+
+## Consent-gated analytics markup: keep pages must-revalidate
+Middleware emits public, max-age=60, stale-while-revalidate=300, must-revalidate for guests. must-revalidate + SWR means an expired cached page is never reused stale when it could be revalidated — a consent cookie change (decline→accepted or vice versa) must produce the matching analytics markup on the next navigation. Without must-revalidate, CDN/browser could replay a stale analytics variant to a user who declined, causing the beacon/clarity console errors. The @fonts inline <style> in app.blade.php is not covered by the Vite preload dedup, so font preloads duplicate per page.

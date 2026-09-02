@@ -8,13 +8,15 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/components/CookieConsentBanner.vue | .ai/rules/components.md |
 | app/Http/Controllers/BlogController.php, app/Http/Controllers/HomeController.php | .ai/rules/controllers.md |
 | resources/js/pages/dashboard/** | .ai/rules/dashboard.md |
-| compose.prod.yaml, .env.example | .ai/rules/general.md |
+| compose.prod.yaml, .env.example, vite.config.ts | .ai/rules/general.md |
 | resources/js/lib/flashToast.ts | .ai/rules/lib.md |
 | app/Http/Middleware/TrackPageView.php, app/Http/Middleware/CachePublicResponses.php, app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
 | database/migrations/** | .ai/rules/migrations.md |
 | resources/js/pages/Welcome.vue | .ai/rules/pages.md |
 | resources/js/pages/posts/*.vue | .ai/rules/posts.md |
+| app/Http/Requests/Dashboard/PostRequest.php | .ai/rules/requests-dashboard.md |
 | routes/web.php | .ai/rules/routes.md |
 | resources/js/components/site/** | .ai/rules/site.md |
 | tests/** | .ai/rules/tests.md |
+| resources/views/app.blade.php | .ai/rules/views.md |
 | .github/workflows/deploy.yml, .github/workflows/dast.yml | .ai/rules/workflows.md |
