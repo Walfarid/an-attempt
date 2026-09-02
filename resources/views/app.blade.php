@@ -4,6 +4,22 @@
         <meta charset="utf-8">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- Google Consent Mode v2 — default all storage to denied before any
+             Google tags load. The CMP (our custom Vue banner) updates these
+             after the user makes a choice. See:
+             https://developers.google.com/tag-platform/security/guides/consent --}}
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'analytics_storage': 'denied',
+                'wait_for_update': 500
+            });
+        </script>
+
         @head
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
@@ -39,8 +55,18 @@
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head />
 
-        {{-- Analytics load only after an explicit, stored consent decision. --}}
+        {{-- Analytics: server-side gate (middleware reads the consent cookie).
+             When consent is granted, update Consent Mode v2 before GA4 loads. --}}
         @if (($consent ?? 'unset') === 'accepted')
+            <script>
+                gtag('consent', 'update', {
+                    'ad_storage': 'granted',
+                    'ad_user_data': 'granted',
+                    'ad_personalization': 'granted',
+                    'analytics_storage': 'granted'
+                });
+            </script>
+
             {{-- Microsoft Clarity — heatmaps, session recordings, click tracking --}}
             @if ($clarityId = config('services.clarity.id'))
                 <script>
@@ -56,13 +82,16 @@
             @if ($gaId = config('services.google.analytics_id'))
                 <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
                 <script>
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
                     gtag('js', new Date());
                     gtag('config', @json($gaId));
                 </script>
             @endif
 
+            {{-- Google AdSense — monetization, gated behind consent --}}
+            @if ($adClient = config('services.adsense.client_id'))
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adClient }}"
+                        crossorigin="anonymous"></script>
+            @endif
         @endif
     </head>
     <body class="font-sans antialiased">
