@@ -82,11 +82,7 @@ useScrollAnimations();
                 {{ post.title }}
             </h1>
 
-            <PostTags
-                v-if="post.tags?.length"
-                :tags="post.tags"
-                class="mt-5"
-            />
+            <PostTags v-if="post.tags?.length" :tags="post.tags" class="mt-5" />
 
             <img
                 v-if="post.cover_url"
@@ -107,10 +103,7 @@ useScrollAnimations();
             <AdSlot />
         </div>
 
-        <aside
-            v-if="recent.length"
-            class="mt-16 border-t border-(--rule) pt-8"
-        >
+        <aside v-if="recent.length" class="mt-16 border-t border-(--rule) pt-8">
             <p class="d-label mb-4">Keep reading</p>
             <ul class="space-y-2">
                 <li v-for="item in recent" :key="item.id">
