@@ -26,7 +26,9 @@ test('validation fails when file is missing', function () {
 });
 
 test('validation passes with an svg image', function () {
-    $file = UploadedFile::fake()->create('logo.svg', 100, 'image/svg+xml');
+    $tmp = tempnam(sys_get_temp_dir(), 'svg');
+    file_put_contents($tmp, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>');
+    $file = new UploadedFile($tmp, 'logo.svg', 'image/svg+xml', null, true);
 
     $validator = Validator::make(['file' => $file], $this->request->rules());
 

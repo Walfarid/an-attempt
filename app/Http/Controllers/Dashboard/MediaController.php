@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\StoreMediaRequest;
 use App\Models\Media;
+use App\Support\SvgSanitizer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,6 +47,21 @@ class MediaController extends Controller
         $file = $request->file('file');
         $extension = strtolower($file->getClientOriginalExtension());
         $path = $file->storeAs('uploads', Str::uuid().".{$extension}", 'media');
+
+        if ($file->getMimeType() === 'image/svg+xml') {
+            $content = Storage::disk('media')->get($path);
+            $sanitized = SvgSanitizer::sanitize($content ?? '');
+
+            if ($sanitized === '') {
+                Storage::disk('media')->delete($path);
+
+                throw ValidationException::withMessages([
+                    'file' => ['The :attribute field must be a valid SVG image.'],
+                ]);
+            }
+
+            Storage::disk('media')->put($path, $sanitized);
+        }
 
         $media = Media::create([
             'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),

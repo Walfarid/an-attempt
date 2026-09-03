@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Dashboard;
 
+use App\Support\SvgSanitizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\UploadedFile;
@@ -26,9 +27,27 @@ class StoreMediaRequest extends FormRequest
                         return;
                     }
 
+                    // Whitelist allowed extensions to block polyglot uploads
+                    // (e.g. shell.php carrying an image/svg+xml MIME).
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg'];
+                    $ext = strtolower($value->getClientOriginalExtension());
+
+                    if (! in_array($ext, $allowedExtensions, true)) {
+                        $fail('The :attribute field must be an image.');
+
+                        return;
+                    }
+
                     $clientMime = $value->getClientMimeType();
 
                     if ($clientMime === 'image/svg+xml') {
+                        $svgContent = file_get_contents($value->getPathname());
+                        $sanitized = SvgSanitizer::sanitize($svgContent ?: '');
+
+                        if ($sanitized === '') {
+                            $fail('The :attribute field must be a valid SVG image.');
+                        }
+
                         return;
                     }
 

@@ -137,3 +137,59 @@ test('store accepts file at exactly 4096 kilobytes', function () {
         'file' => UploadedFile::fake()->image('test.png')->size(4096),
     ])->assertCreated();
 });
+
+test('store sanitizes script tags from uploaded svg', function () {
+    Storage::fake('media');
+    $this->actingAs(User::factory()->create());
+
+    $tmp = tempnam(sys_get_temp_dir(), 'svg');
+    file_put_contents($tmp, '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script><rect width="1" height="1"/></svg>');
+    $file = new UploadedFile($tmp, 'test.svg', 'image/svg+xml', null, true);
+
+    $this->post('/dashboard/media', ['file' => $file])->assertCreated();
+
+    $media = Media::first();
+    $stored = Storage::disk('media')->get($media->path);
+
+    expect($stored)->not->toContain('<script>')
+        ->and($stored)->toContain('<rect');
+});
+
+test('store strips event handler attributes from uploaded svg', function () {
+    Storage::fake('media');
+    $this->actingAs(User::factory()->create());
+
+    $tmp = tempnam(sys_get_temp_dir(), 'svg');
+    file_put_contents($tmp, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" onload="alert(1)"/></svg>');
+    $file = new UploadedFile($tmp, 'test.svg', 'image/svg+xml', null, true);
+
+    $this->post('/dashboard/media', ['file' => $file])->assertCreated();
+
+    $media = Media::first();
+    $stored = Storage::disk('media')->get($media->path);
+
+    expect($stored)->not->toContain('onload')
+        ->and($stored)->toContain('<rect');
+});
+
+test('store rejects file with php extension and svg mime type', function () {
+    Storage::fake('media');
+    $this->actingAs(User::factory()->create());
+
+    $tmp = tempnam(sys_get_temp_dir(), 'php');
+    file_put_contents($tmp, '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>');
+    $file = new UploadedFile($tmp, 'shell.php', 'image/svg+xml', null, true);
+
+    $this->post('/dashboard/media', ['file' => $file])->assertInvalid('file');
+});
+
+test('store rejects malformed svg that is not valid xml', function () {
+    Storage::fake('media');
+    $this->actingAs(User::factory()->create());
+
+    $tmp = tempnam(sys_get_temp_dir(), 'svg');
+    file_put_contents($tmp, '<<< not valid xml >>>>');
+    $file = new UploadedFile($tmp, 'broken.svg', 'image/svg+xml', null, true);
+
+    $this->post('/dashboard/media', ['file' => $file])->assertInvalid('file');
+});
