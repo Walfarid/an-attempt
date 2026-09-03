@@ -10,7 +10,6 @@ import {
     MapPin,
     Sparkles,
 } from '@/components/site/icons';
-import PublicLayout from '@/layouts/PublicLayout.vue';
 import { useCountUp } from '@/composables/useCountUp';
 import { useHeroScene } from '@/composables/useHeroScene';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
@@ -23,6 +22,7 @@ import type {
     Skill,
     PublicPost,
 } from '@/data/portfolio';
+import PublicLayout from '@/layouts/PublicLayout.vue';
 
 // Below-the-fold sections (skills, experience, projects, writing, education)
 // live in their own chunk. The chunk is warmed after the first frame is

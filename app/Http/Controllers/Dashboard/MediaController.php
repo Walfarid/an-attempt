@@ -48,6 +48,12 @@ class MediaController extends Controller
         $extension = strtolower($file->getClientOriginalExtension());
         $path = $file->storeAs('uploads', Str::uuid().".{$extension}", 'media');
 
+        if ($path === false) {
+            throw ValidationException::withMessages([
+                'file' => ['The :attribute field could not be stored.'],
+            ]);
+        }
+
         if ($file->getMimeType() === 'image/svg+xml') {
             $content = Storage::disk('media')->get($path);
             $sanitized = SvgSanitizer::sanitize($content ?? '');
