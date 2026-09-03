@@ -22,6 +22,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/pages/posts/*.vue | .ai/rules/posts.md |
 | app/Http/Requests/Dashboard/PostRequest.php | .ai/rules/requests-dashboard.md |
 | routes/web.php | .ai/rules/routes.md |
+| app/Support/SvgSanitizer.php, tests/Unit/Support/SvgSanitizerTest.php | .ai/rules/svg.md |
 | resources/js/components/site/** | .ai/rules/site.md |
 | tests/** | .ai/rules/tests.md |
 | resources/js/types/** | .ai/rules/types.md |

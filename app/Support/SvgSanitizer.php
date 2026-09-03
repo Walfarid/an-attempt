@@ -53,10 +53,28 @@ class SvgSanitizer
             return '';
         }
 
+        if (preg_match('/<!DOCTYPE[^>]*\[.*<!ENTITY[^>]*SYSTEM/i', $svg)) {
+            return '';
+        }
+
         $internalErrors = libxml_use_internal_errors(true);
 
         $dom = new \DOMDocument;
-        $dom->loadXML($svg, LIBXML_NONET);
+        $loaded = $dom->loadXML($svg, LIBXML_NONET);
+
+        if (! $loaded || $dom->documentElement === null) {
+            libxml_clear_errors();
+            libxml_use_internal_errors($internalErrors);
+
+            return '';
+        }
+
+        if (strtolower($dom->documentElement->tagName) !== 'svg') {
+            libxml_clear_errors();
+            libxml_use_internal_errors($internalErrors);
+
+            return '';
+        }
 
         self::walkNodes($dom->documentElement);
 
@@ -126,14 +144,23 @@ class SvgSanitizer
 
             $value = strtolower(trim($attr->nodeValue ?? ''));
 
-            if (str_starts_with($value, 'javascript:') || str_starts_with($value, 'data:') || str_starts_with($value, 'vbscript:')) {
+            if (str_starts_with($value, 'javascript:') || str_starts_with($value, 'data:') || str_starts_with($value, 'vbscript:') || str_starts_with($value, 'js:')) {
                 $removeAttrs[] = $attr->nodeName;
 
                 continue;
             }
 
-            if (in_array($name, ['href', 'xlink:href']) && preg_match('/^\s*(javascript|data|vbscript):/i', $attr->nodeValue ?? '', $matches)) {
+            if (in_array($name, ['href', 'xlink:href']) && preg_match('/^\s*(javascript|data|vbscript|js):/i', $attr->nodeValue ?? '', $matches)) {
                 $removeAttrs[] = $attr->nodeName;
+
+                continue;
+            }
+
+            if ($tag === 'use' && in_array($name, ['href', 'xlink:href'], true)) {
+                $raw = trim($attr->nodeValue ?? '');
+                if ($raw !== '' && ! str_starts_with($raw, '#')) {
+                    $removeAttrs[] = $attr->nodeName;
+                }
             }
         }
 
