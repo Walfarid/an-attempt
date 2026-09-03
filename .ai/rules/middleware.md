@@ -11,7 +11,10 @@ paths:
 # Middleware
 
 ## Pageview tracking excludes Inertia background requests
-TrackPageView::shouldTrack returns false for partial reloads (X-Inertia-Partial-Component header) and prefetches ($request->prefetch(), i.e. the client's `Purpose: prefetch` header). Both are background data fetches — counting them double-counted every homepage visit (initial + deferred fetch) and invented views on link hover. Plain X-Inertia XHR navigations ARE still tracked (real page views). Pinned by tests/Feature/TrackPageViewTest.php.
+TrackPageView::shouldTrack returns false for partial reloads (X-Inertia-Partial-Component header) and prefetches ($request->prefetch(), i.e. the client's `Purpose: prefetch` header). Both are background data fetchs — counting them double-counted every homepage visit (initial + deferred fetch) and invented views on link hover. Plain X-Inertia XHR navigations ARE still tracked (real page views). Pinned by tests/Feature/TrackPageViewTest.php.
+
+## Pageview tracking excludes machine-facing static resources
+TrackPageView::shouldTrack returns false for favicon.ico, robots.txt, sitemap.xml, and ads.txt. These are fetched by crawlers, browsers, and ad verification bots — not real page views. Counting them would inflate analytics with bot traffic. Pinned by tests/Feature/TrackPageViewTest.php.
 
 ## Analytics writes are queued, never inline in terminate()
 TrackPageView::terminate dispatches an `App\Jobs\RecordPageView` job instead of INSERTing a PageView synchronously — under Octane/FrankenPHP the worker is blocked until terminate() returns, so an inline write added a per-request round trip to every public page. The job carries the captured request fields and writes on the `analytics` queue (compose.prod.yaml runs a dedicated `queue` worker). Never revert terminate() to a direct PageView::create(); keep the try/catch + Log::debug fallback so a dead queue never breaks the response. Pinned by tests/Feature/TrackPageViewTest.php (Queue::fake + assertPushed).

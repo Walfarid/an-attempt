@@ -74,7 +74,7 @@ class TrackPageView
             return false;
         }
 
-        if ($request->is('favicon.ico') || $request->is('robots.txt') || $request->is('sitemap.xml')) {
+        if ($request->is('favicon.ico') || $request->is('robots.txt') || $request->is('sitemap.xml') || $request->is('ads.txt')) {
             return false;
         }
 

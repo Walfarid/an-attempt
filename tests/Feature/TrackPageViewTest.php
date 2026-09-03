@@ -23,6 +23,14 @@ test('machine-facing resources are not recorded as page views', function () {
     expect(PageView::where('path', 'sitemap.xml')->count())->toBe(0);
 });
 
+test('ads.txt is not recorded as a page view', function () {
+    config(['services.ads.txt' => 'google.com, pub-123, DIRECT, f08c47fec0942fa0']);
+
+    $this->get('/ads.txt')->assertOk();
+
+    expect(PageView::where('path', 'ads.txt')->count())->toBe(0);
+});
+
 test('inertia partial reloads are not recorded as page views', function () {
     Profile::factory()->create();
 
