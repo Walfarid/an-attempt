@@ -180,14 +180,14 @@ test('page view tracking ignores dashboard pages', function () {
     ]);
 });
 
-test('click tracking rejects path over 500 characters', function () {
+test('click tracking rejects path over 255 characters', function () {
     $user = User::factory()->create();
 
     $this->withoutMiddleware(ThrottleRequests::class);
 
     $this->actingAs($user)
         ->post('/analytics/clicks', [
-            'path' => str_repeat('a', 501),
+            'path' => str_repeat('a', 256),
         ])
         ->assertInvalid('path');
 });
@@ -218,16 +218,39 @@ test('click tracking rejects label over 200 characters', function () {
         ->assertInvalid('label');
 });
 
-test('click tracking accepts path at exactly 500 characters', function () {
+test('click tracking accepts path at exactly 255 characters and persists it', function () {
     $user = User::factory()->create();
 
     $this->withoutMiddleware(ThrottleRequests::class);
 
     $this->actingAs($user)
         ->post('/analytics/clicks', [
-            'path' => str_repeat('a', 500),
+            'path' => str_repeat('a', 255),
         ])
         ->assertNoContent();
+
+    $this->assertDatabaseHas('clicks', [
+        'path' => str_repeat('a', 255),
+    ]);
+});
+
+test('click tracking truncates a user agent longer than 255 characters', function () {
+    $user = User::factory()->create();
+    $longAgent = str_repeat('M', 500);
+
+    $this->withoutMiddleware(ThrottleRequests::class);
+
+    $this->withHeaders(['User-Agent' => $longAgent])
+        ->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => '/test',
+        ])
+        ->assertNoContent();
+
+    $click = Click::first();
+    expect($click)->not->toBeNull()
+        ->and(mb_strlen($click->user_agent))->toBe(255)
+        ->and($click->user_agent)->toBe(str_repeat('M', 255));
 });
 
 test('click tracking accepts element and label at exactly 200 characters', function () {

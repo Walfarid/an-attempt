@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\RecordClick;
 use App\Models\Click;
 use App\Models\PageView;
+use App\Support\Analytics;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -87,7 +88,7 @@ class AnalyticsController extends Controller
     public function storeClick(Request $request): Response
     {
         $validated = $request->validate([
-            'path' => 'required|string|max:500',
+            'path' => 'required|string|max:255',
             'element' => 'nullable|string|max:200',
             'label' => 'nullable|string|max:200',
         ]);
@@ -97,8 +98,13 @@ class AnalyticsController extends Controller
                 'path' => $validated['path'],
                 'element' => $validated['element'] ?? null,
                 'label' => $validated['label'] ?? null,
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
+                // Raw IPs are never stored — only an HMAC digest keyed with
+                // the app key (see App\Support\Analytics::anonymizeIp).
+                'ip' => Analytics::anonymizeIp($request->ip()),
+                // clicks.user_agent is VARCHAR(255); trim unbounded UA strings
+                // before dispatch so the worker INSERT cannot silently fail
+                // at column width.
+                'user_agent' => $request->userAgent() !== null ? mb_substr($request->userAgent(), 0, 255) : null,
                 'user_id' => $request->user()?->id,
                 'clicked_at' => now(),
             ]);

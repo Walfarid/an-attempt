@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Jobs\RecordPageView;
+use App\Support\Analytics;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -36,9 +37,14 @@ class TrackPageView
         try {
             RecordPageView::dispatch([
                 'path' => $request->path(),
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'referrer' => $request->header('referer'),
+                // Raw IPs are never stored — only an HMAC digest keyed with
+                // the app key (see App\Support\Analytics::anonymizeIp).
+                'ip' => Analytics::anonymizeIp($request->ip()),
+                // page_views.user_agent and referrer are VARCHAR(255); trim
+                // unbounded strings before dispatch so the worker INSERT
+                // cannot silently fail at column width.
+                'user_agent' => $request->userAgent() !== null ? mb_substr($request->userAgent(), 0, 255) : null,
+                'referrer' => ($referer = $request->header('referer')) !== null ? mb_substr($referer, 0, 255) : null,
                 'user_id' => $request->user()?->id,
                 'viewed_at' => now(),
             ]);

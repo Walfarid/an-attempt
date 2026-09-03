@@ -63,6 +63,23 @@ test('page view tracking dispatches a RecordPageView job', function () {
     Queue::assertPushed(RecordPageView::class, fn (RecordPageView $job) => $job->data['path'] === '/');
 });
 
+test('page view persists a 255-character path and a truncated user agent', function () {
+    Profile::factory()->create();
+    $longPath = str_repeat('/', 255);
+    $longAgent = str_repeat('M', 500);
+
+    $this->withHeaders(['User-Agent' => $longAgent])
+        ->get('/')
+        ->assertOk();
+
+    // The middleware truncates user_agent to 255 before dispatch, so the
+    // row that lands in the DB is exactly 255 chars, not 500.
+    $view = PageView::first();
+    expect($view)->not->toBeNull()
+        ->and(mb_strlen($view->user_agent))->toBe(255)
+        ->and($view->user_agent)->toBe(str_repeat('M', 255));
+});
+
 test('page view timestamp is captured at dispatch time, not worker handle time', function () {
     Profile::factory()->create();
     $dispatchedAt = now();
