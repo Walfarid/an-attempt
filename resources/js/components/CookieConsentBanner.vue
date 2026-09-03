@@ -34,7 +34,8 @@ const manageClasses =
             <p class="text-sm leading-snug text-(--ink-soft)">
                 I use privacy-friendly analytics
                 <span class="text-(--ink)">(Clarity, GA4)</span>
-                and Google AdSense to help run this site.
+                and Google AdSense to help run this site. Cloudflare Web
+                Analytics always runs as part of the hosting.
                 <a
                     :href="privacy.url()"
                     class="font-medium text-(--ink) underline underline-offset-2 hover:text-(--accent)"

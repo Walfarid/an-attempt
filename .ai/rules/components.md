@@ -10,3 +10,6 @@ CookieConsentBanner boots eagerly in app.ts. It must NOT import ui/* components:
 
 ## Consent banner names all tracked services explicitly
 The consent banner mentions specific third-party services by name (Clarity, GA4, Google AdSense). When adding or removing tracked services, update the banner text to keep the disclosure accurate. The banner must not import ui/* components (see components.md).
+
+## Consent banner also discloses the always-on Cloudflare Web Analytics
+The banner adds "Cloudflare Web Analytics always runs as part of the hosting." to the service list, because Cloudflare RUM is not consent-gated. There is no client-side toggle for it; the disclosure lives in the privacy policy's "Always-on infrastructure" section. Keep this line in sync with the policy wording when either changes.

@@ -14,6 +14,10 @@ class RecordPageView implements ShouldQueue
 
     /**
      * @param  array{path: string, ip: string|null, user_agent: string|null, referrer: string|null, user_id: int|null, viewed_at?: CarbonInterface}  $data
+     *
+     * `ip` is an HMAC-SHA256 digest of the visitor's address — dispatch
+     * sites call App\Support\Analytics::anonymizeIp() and the raw address
+     * is never sent to the queue.
      */
     public function __construct(public array $data)
     {

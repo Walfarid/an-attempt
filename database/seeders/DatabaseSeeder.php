@@ -90,11 +90,11 @@ class DatabaseSeeder extends Seeder
                 ## What the site owner collects
 
                 - **Contact emails** — when you email the site owner through the "Send email" link, your email client handles delivery directly. No data is stored server-side.
-                - **First-party analytics** — the site keeps its own lightweight counters of page views and outbound-link clicks (page path, referrer, user-agent, coarse device type, approximate country from IP, and a non-reversible hash of the IP used only to count unique visitors). These are aggregate numbers, not personal profiles.
+                - **First-party analytics** — the site keeps its own lightweight counters of page views and outbound-link clicks (page path, referrer, user-agent, and an anonymized, one-way hash of your IP address that is used only to count unique visitors). The raw IP is never stored and the counters keep no personal profiles. Analytics rows are deleted automatically after 90 days.
 
                 ## Third-party analytics
 
-                These load **only after you accept** the consent banner. Nothing from either vendor runs before that choice.
+                These load **only after you accept** the consent banner. Nothing from any of these vendors runs before that choice.
 
                 ### Microsoft Clarity
 
@@ -112,6 +112,17 @@ class DatabaseSeeder extends Seeder
                 - Google privacy policy: [https://policies.google.com/privacy](https://policies.google.com/privacy)
                 - Browser add-on to opt out of Google Analytics: [https://tools.google.com/dlpage/gaoptout/](https://tools.google.com/dlpage/gaoptout/)
 
+                ### Google AdSense
+
+                Some content pages show ads served by Google AdSense. AdSense uses cookies and device identifiers to personalize ads, and it may share usage data with Google and its partners. The AdSense script loads only when you accept the consent banner; declining consent means no ad requests are made.
+
+                - How Google uses data: [https://policies.google.com/technologies/partner-sites](https://policies.google.com/technologies/partner-sites)
+                - Google Ads policies: [https://support.google.com/adsense/answer/48182](https://support.google.com/adsense/answer/48182)
+
+                ## Always-on infrastructure
+
+                Cloudflare serves this site, and its Web Analytics collects aggregate, non-personal usage data (page views, performance) on every visit — before any consent choice, because it is part of the hosting infrastructure rather than an advertising or marketing tool. It does not use cookies for this. You can read [Cloudflare's privacy policy](https://www.cloudflare.com/privacypolicy/).
+
                 ## Cookies set by this site
 
                 - **`laravel-session`** (2 hours) — signed session cookie that keeps you logged in to the dashboard. Marked HTTP-only, so scripts cannot read it.
@@ -122,11 +133,11 @@ class DatabaseSeeder extends Seeder
 
                 ## How consent works
 
-                On your first visit a small bar at the bottom of the page asks whether analytics may load. **Decline** (or simply ignoring it) means no Clarity or Google Analytics code is ever fetched or run. **Accept** stores the `consent` cookie and loads both tools on subsequent page loads. The choice is stored in a first-party cookie, never on a server, and can be changed at any time with the **Cookie settings** button on this page — clearing the stored choice brings the bar back.
+                On your first visit a small bar at the bottom of the page asks whether analytics and ads may load. **Decline** (or simply ignoring it) means no Clarity, Google Analytics, or AdSense code is ever fetched or run. **Accept** stores the `consent` cookie and loads the services described above on subsequent page loads. The choice is stored in a first-party cookie, never on a server, and can be changed at any time with the **Cookie settings** button on this page — clearing the stored choice brings the bar back.
 
                 ## Your choices
 
-                Because the analytics tools only run with your consent, declining is the simplest opt-out and can be reversed in either direction at any time.
+                Because the analytics and advertising tools only run with your consent, declining is the simplest opt-out and can be reversed in either direction at any time. Analytics rows in the site's own counters are deleted automatically after 90 days. Data collected through the contact form can be removed on request — reach out through the contact form and ask.
                 MD,
         ]);
     }

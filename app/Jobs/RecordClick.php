@@ -14,6 +14,10 @@ class RecordClick implements ShouldQueue
 
     /**
      * @param  array{path: string, element: string|null, label: string|null, ip: string|null, user_agent: string|null, user_id: int|null, clicked_at?: CarbonInterface}  $data
+     *
+     * `ip` is an HMAC-SHA256 digest of the visitor's address — dispatch
+     * sites call App\Support\Analytics::anonymizeIp() and the raw address
+     * is never sent to the queue.
      */
     public function __construct(public array $data)
     {
