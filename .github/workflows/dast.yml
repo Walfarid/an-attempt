@@ -115,7 +115,10 @@ jobs:
             # and every request logged by the server means the readiness probe
             # already reached it. /robots.txt is cheap and versioned (stable
             # 200); we require a real 200 so a 500 during boot is caught.
-            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/robots.txt)
+            # Probe `code` with || true: under `set -e`, a plain
+            # `code=$(curl ...)` aborts the step the first time curl
+            # returns non-zero (refused connection during boot = exit 7).
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/robots.txt) || true
             if [ "$code" = "200" ]; then
               echo "Application is up (HTTP 200)."
               exit 0
