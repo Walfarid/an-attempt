@@ -2,6 +2,7 @@
 paths:
   - app/Jobs/RecordPageView.php
   - app/Jobs/RecordClick.php
+  - 'app/Jobs/**'
 ---
 
 # Jobs
@@ -29,3 +30,6 @@ Both jobs read `viewed_at` / `clicked_at` from the payload with a `?? now()` fal
 
 ## IPs are anonymized at dispatch time; the payload contains a digest, not the address
 Both dispatch sites (`TrackPageView::terminate`, `AnalyticsController::storeClick`) call `App\Support\Analytics::anonymizeIp($request->ip())` before building the payload — the `ip` field in `$data` is an HMAC-SHA256 digest keyed with the app key, never the raw address. The jobs insert that digest into `page_views.ip` / `clicks.ip` as-is (VARCHAR(64)). Pinned by tests/Feature/TrackPageViewTest.php and tests/Feature/AnalyticsTest.php (`assertDatabaseHas` with the expected digest and `assertDatabaseMissing` for the raw address).
+
+## Analytics IPs are HMAC-SHA256 digests, never raw
+RecordPageView/RecordClick payloads carry 'ip' as an HMAC-SHA256 digest (App\Support\Analytics::anonymizeIp, keyed with app.key) — raw addresses are never persisted. A later migration resized ip columns to VARCHAR(64) to fit the 64-char digest; earlier raw-IP columns were VARCHAR(45). If you touch analytics writes: keep the digest, never revert to raw IPs, keep ip columns at 64 chars, and keep the ip resize migration and the anonymizeIp helper in sync with any new write path.
