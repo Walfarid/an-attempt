@@ -98,3 +98,27 @@ test('guides index exposes the newest guide update time and returns 304 when fre
     $this->get('/guides', ['If-Modified-Since' => $guide->updated_at->addSecond()->toRfc7231String()])->assertStatus(304);
     $this->get('/guides', ['If-Modified-Since' => $guide->updated_at->subSecond()->toRfc7231String()])->assertOk();
 });
+
+test('privacy page returns 304 when the cached copy is fresh', function () {
+    $policy = PrivacyPolicy::factory()->create();
+
+    // A header matching the policy's updated_at is still fresh...
+    $this->get('/privacy', [
+        'If-Modified-Since' => $policy->updated_at->toRfc7231String(),
+    ])->assertStatus(304);
+
+    // ...and so is one newer than it.
+    $this->get('/privacy', [
+        'If-Modified-Since' => $policy->updated_at->addSecond()->toRfc7231String(),
+    ])->assertStatus(304);
+});
+
+test('privacy page serves a fresh 200 when the cached copy is stale', function () {
+    $policy = PrivacyPolicy::factory()->create();
+
+    $this->get('/privacy', [
+        'If-Modified-Since' => $policy->updated_at->subSecond()->toRfc7231String(),
+    ])
+        ->assertOk()
+        ->assertHeader('Last-Modified', $policy->updated_at->toRfc7231String());
+});
