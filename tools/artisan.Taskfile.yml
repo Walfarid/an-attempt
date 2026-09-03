@@ -30,6 +30,10 @@ tasks:
     desc: Clear the cached configuration
     cmd: php artisan config:clear
 
+  wayfinder:
+    desc: Regenerate Wayfinder route/action bindings (gitignored, required before frontend checks)
+    cmd: php artisan wayfinder:generate --with-form --no-interaction
+
   schedule_work:
     desc: Run the Laravel task scheduler in the foreground (dev parity for the prod scheduler service)
     cmd: php artisan schedule:work

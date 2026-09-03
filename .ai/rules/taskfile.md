@@ -17,6 +17,11 @@ Top-level composite tasks use colon-separated kebab-case (`lint:check`, `types:c
 ## Always prefix vendor/bin invocations with `php`
 Run `php vendor/bin/pint`, `php vendor/bin/phpstan`, `php vendor/bin/rector` — never bare `vendor/bin/pint`. The `php` prefix works identically on Linux, macOS, and Windows, keeping tasks portable across dev machines.
 
+## CI parity: `task ci` must mirror `.github/workflows/ci.yml` gate-for-gate
+`task ci` exists so that green locally means green on GitHub. Its `cmds:` list must exercise every gate `ci.yml` enforces, in the same check order as far as services allow: Wayfinder binding regeneration (gitignored `@/routes` + `@/actions`, required before any frontend check), lint (Pint + ESLint + Prettier), types (PHPStan + vue-tsc), `npm:test` (vitest), `npm:audit` (`npm audit --audit=high`), `composer:audit` (`composer audit --locked`), `npm:build` (Vite), then `test` (Pest against MariaDB + Garage).
+Root `test` runs the full parallel-capable suite the same way CI's "Run test suite" step does (`php artisan test --parallel`; serial locally only when debugging). `test` never builds assets or regenerates Wayfinder bindings — CI builds those in prior steps and bindings/manifest may already exist locally, so keep `test` runnable with just `docker:up`.
+When adding a gate to `ci.yml`, add the matching root/namespace task in the same change — never land a CI-only gate. To verify parity, diff the step lists: every `run:` check in `ci.yml`'s `backend-static`, `frontend`, `tests`, and `sca-composer` jobs must have a counterpart in `task ci --dry` output. Known deliberate differences (document here when adding one): CI regenerates Wayfinder bindings + builds assets before testing (fresh runner); local `test` relies on `docker:up` + existing bindings/manifest. PHPStan runs `analyse --memory-limit=512M --no-progress` in both places — the flags were unified so a locally green run cannot fail CI on memory or output flags.
+
 ## ci task uses sequential cmds, not deps
 The `ci` task chains steps as `cmds:` (sequential) instead of `deps:` because deps would run checks concurrently. The checks must not start before `composer:setup` finishes populating `vendor/` and `node_modules/`. When adding a new CI step, append it to the `cmds:` list in order.
 

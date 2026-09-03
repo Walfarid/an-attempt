@@ -57,7 +57,7 @@ jobs:
         run: vendor/bin/pint --test --parallel
 
       - name: PHPStan / Larastan
-        run: vendor/bin/phpstan analyse --no-progress
+        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress
 
   frontend:
     name: Frontend checks and build

@@ -37,3 +37,11 @@ tasks:
   types_check:
     desc: Type-check the frontend (vue-tsc)
     cmd: npm run types:check
+
+  test:
+    desc: Run frontend unit tests (Vitest)
+    cmd: npm run test
+
+  audit:
+    desc: Audit locked JS dependencies (high severity and above)
+    cmd: npm audit --audit=high

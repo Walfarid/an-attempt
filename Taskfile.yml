@@ -115,12 +115,20 @@ tasks:
 
   # Sequential on purpose: deps would run these concurrently, and the checks
   # must not start before composer:setup has vendor/ and node_modules ready.
+  # This list must mirror the gates in .github/workflows/ci.yml one-for-one
+  # (see .ai/rules/taskfile.md "CI parity"): if CI gains a gate, add it here.
+  # Wayfinder bindings are regenerated first: they are gitignored, and every
+  # frontend check (ESLint, vue-tsc, vitest, build) imports @/routes + @/actions.
   ci:
     desc: Run the full CI pipeline (mirrors composer ci:check + frontend checks)
     cmds:
       - task: composer:setup
+      - task: artisan:wayfinder
       - task: lint:check
       - task: types:check
+      - task: npm:test
+      - task: npm:audit
+      - task: composer:audit
       - task: npm:build
       - task: test
 
