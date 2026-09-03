@@ -8,6 +8,7 @@ paths:
   - config/logging.php
   - config/mail.php
   - config/octane.php
+  - config/session.php
 ---
 
 # Config Files
@@ -25,7 +26,7 @@ Default connection is `sqlite` (overridden to MariaDB via `DB_URL` in prod). The
 `REDIS_CLIENT` must stay `phpredis` (not predis). `REDIS_PERSISTENT=true` in dev. Cache uses a separate Redis database (DB 1) from the default connection (DB 0) — the prefix `laravel-database-` is auto-applied by phpRedis. The redis config carries `max_retries` + decorrelated-jitter backoff; do not strip those.
 
 ## Session: json serialization, not php
-`serialization` is hardcoded `'json'`. Switching to `'php'` opens gadget-chain deserialization attacks if `APP_KEY` leaks. Cookie defaults: `http_only=true`, `same_site=lax`. Config default driver is `database` but `.env` overrides to `redis` — keep the `env()` call.
+`serialization` is hardcoded `'json'`. Switching to `'php'` opens gadget-chain deserialization attacks if `APP_KEY` leaks. Cookie defaults: `http_only=true`, `same_site=lax`. `secure` defaults to `env('APP_ENV') === 'production'` — the cookie is flagged Secure in production automatically, overridable via `SESSION_SECURE_COOKIE` env (set `false` for dev over HTTP). Uses `env('APP_ENV')` rather than `app()->isProduction()` because config files load before the container `env` binding is available (Larastan bootstrap relies on this). Config default driver is `database` but `.env` overrides to `redis` — keep the `env()` call.
 
 ## Auth: single web guard, WorkOS handles the rest
 Only one guard (`web`/session) and one provider (Eloquent `User::class`). No API guard. WorkOS SSO is the auth mechanism; do not add a second guard or provider without a clear reason. Password reset is 60 min / 60 s throttle — adequate for a single-admin site.

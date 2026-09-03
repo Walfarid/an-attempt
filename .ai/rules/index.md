@@ -11,7 +11,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | `bootstrap/app.php` | .ai/rules/bootstrap-app.md |
 | `resources/js/components/CookieConsentBanner.vue` | .ai/rules/components.md |
 | `resources/js/composables/**` | .ai/rules/composables.md |
-| `config/app.php`, `config/auth.php`, `config/contact.php`, `config/database.php`, `config/inertia.php`, `config/logging.php`, `config/mail.php`, `config/octane.php` | .ai/rules/config-files.md |
+| `config/app.php`, `config/auth.php`, `config/contact.php`, `config/database.php`, `config/inertia.php`, `config/logging.php`, `config/mail.php`, `config/octane.php`, `config/session.php` | .ai/rules/config-files.md |
 | `config/cache.php` | .ai/rules/config.md |
 | `database/migrations/**`, `app/Models/**`, `app/Enums/**` | .ai/rules/content-model.md |
 | `app/Http/Controllers/**`, `routes/web.php` | .ai/rules/controllers.md |
