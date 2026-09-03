@@ -40,6 +40,7 @@ class TrackPageView
                 'user_agent' => $request->userAgent(),
                 'referrer' => $request->header('referer'),
                 'user_id' => $request->user()?->id,
+                'viewed_at' => now(),
             ]);
         } catch (\Throwable $e) {
             Log::debug('Page view tracking failed', ['error' => $e->getMessage()]);

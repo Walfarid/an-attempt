@@ -73,6 +73,26 @@ test('click tracking dispatches a RecordClick job', function () {
         && $job->data['label'] === 'My First Post');
 });
 
+test('click timestamp is captured at dispatch time, not worker handle time', function () {
+    $user = User::factory()->create();
+    $dispatchedAt = now();
+
+    $this->travelTo($dispatchedAt, function () use ($user): void {
+        $this->actingAs($user)
+            ->post('/analytics/clicks', [
+                'path' => '/posts',
+                'element' => 'post-link',
+                'label' => 'My First Post',
+            ])
+            ->assertNoContent();
+    });
+
+    // Simulate queue lag: the worker processes the job a day later.
+    $this->travel(1)->days();
+
+    expect(Click::first()->clicked_at->timestamp)->toBe($dispatchedAt->timestamp);
+});
+
 test('click tracking requires path', function () {
     $user = User::factory()->create();
 

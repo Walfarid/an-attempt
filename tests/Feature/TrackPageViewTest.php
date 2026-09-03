@@ -62,3 +62,15 @@ test('page view tracking dispatches a RecordPageView job', function () {
 
     Queue::assertPushed(RecordPageView::class, fn (RecordPageView $job) => $job->data['path'] === '/');
 });
+
+test('page view timestamp is captured at dispatch time, not worker handle time', function () {
+    Profile::factory()->create();
+    $dispatchedAt = now();
+
+    $this->travelTo($dispatchedAt, fn () => $this->get('/')->assertOk());
+
+    // Simulate queue lag: the worker processes the job a day later.
+    $this->travel(1)->days();
+
+    expect(PageView::first()->viewed_at->timestamp)->toBe($dispatchedAt->timestamp);
+});

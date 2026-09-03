@@ -100,6 +100,7 @@ class AnalyticsController extends Controller
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'user_id' => $request->user()?->id,
+                'clicked_at' => now(),
             ]);
         } catch (\Throwable $e) {
             Log::debug('Click tracking failed', ['error' => $e->getMessage()]);
