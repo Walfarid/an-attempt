@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Guide;
 use App\Models\Post;
 use App\Models\PrivacyPolicy;
 use App\Models\Profile;
+use App\Models\Tag;
 
 test('public pages send shared cache headers for guests', function () {
     Profile::factory()->create();
@@ -53,4 +55,46 @@ test('the privacy page exposes the policy update time as Last-Modified', functio
     $this->get('/privacy')
         ->assertOk()
         ->assertHeader('Last-Modified', $policy->updated_at->toRfc7231String());
+});
+
+test('blog index exposes the newest post update time as Last-Modified and returns 304 when fresh', function () {
+    $post = Post::factory()->create(['published_at' => now()->subDay()]);
+
+    $response = $this->get('/posts')
+        ->assertOk()
+        ->assertHeader('Last-Modified', $post->updated_at->toRfc7231String());
+    $lastModified = $response->headers->get('Last-Modified');
+
+    $this->get('/posts', ['If-Modified-Since' => $lastModified])->assertStatus(304);
+    $this->get('/posts', ['If-Modified-Since' => $post->updated_at->addSecond()->toRfc7231String()])->assertStatus(304);
+    $this->get('/posts', ['If-Modified-Since' => $post->updated_at->subSecond()->toRfc7231String()])->assertOk();
+});
+
+test('blog tag page exposes the newest tagged post update time and returns 304 when fresh', function () {
+    $tag = Tag::factory()->create();
+    /** @var Post $post */
+    $post = Post::factory()->create(['published_at' => now()->subDay()]);
+    $post->tags()->attach($tag);
+
+    $response = $this->get("/posts/tag/{$tag->slug}")
+        ->assertOk()
+        ->assertHeader('Last-Modified', $post->updated_at->toRfc7231String());
+    $lastModified = $response->headers->get('Last-Modified');
+
+    $this->get("/posts/tag/{$tag->slug}", ['If-Modified-Since' => $lastModified])->assertStatus(304);
+    $this->get("/posts/tag/{$tag->slug}", ['If-Modified-Since' => $post->updated_at->addSecond()->toRfc7231String()])->assertStatus(304);
+    $this->get("/posts/tag/{$tag->slug}", ['If-Modified-Since' => $post->updated_at->subSecond()->toRfc7231String()])->assertOk();
+});
+
+test('guides index exposes the newest guide update time and returns 304 when fresh', function () {
+    $guide = Guide::factory()->create(['published_at' => now()->subDay()]);
+
+    $response = $this->get('/guides')
+        ->assertOk()
+        ->assertHeader('Last-Modified', $guide->updated_at->toRfc7231String());
+    $lastModified = $response->headers->get('Last-Modified');
+
+    $this->get('/guides', ['If-Modified-Since' => $lastModified])->assertStatus(304);
+    $this->get('/guides', ['If-Modified-Since' => $guide->updated_at->addSecond()->toRfc7231String()])->assertStatus(304);
+    $this->get('/guides', ['If-Modified-Since' => $guide->updated_at->subSecond()->toRfc7231String()])->assertOk();
 });

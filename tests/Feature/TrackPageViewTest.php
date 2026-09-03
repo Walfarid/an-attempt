@@ -1,8 +1,10 @@
 <?php
 
+use App\Jobs\RecordPageView;
 use App\Models\PageView;
 use App\Models\Post;
 use App\Models\Profile;
+use Illuminate\Support\Facades\Queue;
 
 test('page views are recorded for public pages', function () {
     Profile::factory()->create();
@@ -50,4 +52,13 @@ test('inertia spa navigations are still recorded as page views', function () {
     $this->withHeaders(inertiaHeaders())->get('/posts')->assertOk();
 
     expect(PageView::where('path', 'posts')->count())->toBe(1);
+});
+
+test('page view tracking dispatches a RecordPageView job', function () {
+    Queue::fake();
+    Profile::factory()->create();
+
+    $this->get('/')->assertOk();
+
+    Queue::assertPushed(RecordPageView::class, fn (RecordPageView $job) => $job->data['path'] === '/');
 });

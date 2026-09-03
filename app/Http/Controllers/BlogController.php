@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Profile;
 use App\Models\Tag;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,27 +22,37 @@ class BlogController extends Controller
     /**
      * The public blog index: published posts, newest first.
      */
-    public function index(): InertiaResponse
+    public function index(Request $request): InertiaResponse
     {
+        $posts = Post::query()
+            ->select(['id', 'slug', 'title', 'excerpt', 'cover_image_path', 'published_at'])
+            ->selectRaw('SUBSTRING(body, 1, 300) as body_preview')
+            ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
+            ->published()
+            ->orderByDesc('published_at')
+            ->simplePaginate(10, ['*'], 'page')
+            ->through(function (Post $post): Post {
+                $post->teaser_text = $post->teaser();
+                $post->append('cover_url')->makeHidden(['excerpt', 'body_preview', 'cover_image_path']);
+
+                return $post;
+            });
+
+        $lastModified = Post::query()
+            ->published()
+            ->max('updated_at');
+
+        if ($lastModified !== null && $this->isNotModified($request, Carbon::parse($lastModified))) {
+            abort(304);
+        }
+
+        $request->attributes->set('last_modified', $lastModified !== null ? Carbon::parse($lastModified) : null);
+
         return Inertia::render('posts/Index', [
             // Inertia::scroll() registers the prop in page.scrollProps so the
             // client <InfiniteScroll data="posts"> can read its metadata and
             // reset/merge correctly on paginated visits.
-            'posts' => Inertia::scroll(
-                Post::query()
-                    ->select(['id', 'slug', 'title', 'excerpt', 'cover_image_path', 'published_at'])
-                    ->selectRaw('SUBSTRING(body, 1, 300) as body_preview')
-                    ->with(['tags' => fn ($query) => $query->select(['tags.id', 'tags.slug', 'tags.name'])])
-                    ->published()
-                    ->orderByDesc('published_at')
-                    ->simplePaginate(10, ['*'], 'page')
-                    ->through(function (Post $post): Post {
-                        $post->teaser_text = $post->teaser();
-                        $post->append('cover_url')->makeHidden(['excerpt', 'body_preview', 'cover_image_path']);
-
-                        return $post;
-                    })
-            ),
+            'posts' => Inertia::scroll($posts),
         ]);
     }
 
@@ -158,6 +169,16 @@ class BlogController extends Controller
         $tag = Tag::query()
             ->where('slug', (string) $request->route('tag'))
             ->firstOrFail();
+
+        $lastModified = $tag->posts()
+            ->published()
+            ->max('posts.updated_at');
+
+        if ($lastModified !== null && $this->isNotModified($request, Carbon::parse($lastModified))) {
+            abort(304);
+        }
+
+        $request->attributes->set('last_modified', $lastModified !== null ? Carbon::parse($lastModified) : null);
 
         Head::title('Posts tagged "'.$tag->name.'"')
             ->description('Articles tagged '.$tag->name.' — writing on software development, APIs, and deployment platforms.')

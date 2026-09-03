@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\PageView;
+use App\Jobs\RecordPageView;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -23,6 +23,9 @@ class TrackPageView
 
     /**
      * Track the page view after the response has been sent.
+     *
+     * The write is dispatched to the queue so the Octane/FrankenPHP worker
+     * is never blocked on a synchronous INSERT inside terminate().
      */
     public function terminate(Request $request, Response $response): void
     {
@@ -31,14 +34,12 @@ class TrackPageView
         }
 
         try {
-            PageView::create([
+            RecordPageView::dispatch([
                 'path' => $request->path(),
-                'title' => null,
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'referrer' => $request->header('referer'),
                 'user_id' => $request->user()?->id,
-                'viewed_at' => now(),
             ]);
         } catch (\Throwable $e) {
             Log::debug('Page view tracking failed', ['error' => $e->getMessage()]);

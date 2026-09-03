@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Guide;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,24 +17,34 @@ class GuideController extends Controller
     /**
      * The public guides index: published guides, newest first.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $guides = Guide::query()
+            ->select(['id', 'slug', 'title', 'teaser', 'cover_image_path', 'estimated_time', 'published_at'])
+            ->published()
+            ->orderByDesc('published_at')
+            ->simplePaginate(12, ['*'], 'page')
+            ->through(function (Guide $guide): Guide {
+                $guide->append('cover_url')->makeHidden(['cover_image_path']);
+
+                return $guide;
+            });
+
+        $lastModified = Guide::query()
+            ->published()
+            ->max('updated_at');
+
+        if ($lastModified !== null && $this->isNotModified($request, Carbon::parse($lastModified))) {
+            abort(304);
+        }
+
+        $request->attributes->set('last_modified', $lastModified !== null ? Carbon::parse($lastModified) : null);
+
         return Inertia::render('guides/Index', [
             // Inertia::scroll() registers the prop in page.scrollProps so the
             // client <InfiniteScroll data="guides"> can read its metadata and
             // reset/merge correctly on paginated visits.
-            'guides' => Inertia::scroll(
-                Guide::query()
-                    ->select(['id', 'slug', 'title', 'teaser', 'cover_image_path', 'estimated_time', 'published_at'])
-                    ->published()
-                    ->orderByDesc('published_at')
-                    ->simplePaginate(12, ['*'], 'page')
-                    ->through(function (Guide $guide): Guide {
-                        $guide->append('cover_url')->makeHidden(['cover_image_path']);
-
-                        return $guide;
-                    })
-            ),
+            'guides' => Inertia::scroll($guides),
         ]);
     }
 
