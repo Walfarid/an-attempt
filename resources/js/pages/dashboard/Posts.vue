@@ -149,18 +149,31 @@ async function startEdit(post: Post) {
     open.value = true;
 
     // Lazy-load body from show endpoint
-    const response = await fetch(postsRoute.show.url(post.id));
-    const fullPost = await response.json();
+    try {
+        const response = await fetch(postsRoute.show.url(post.id));
 
-    form.defaults({
-        title: fullPost.title,
-        slug: fullPost.slug,
-        excerpt: fullPost.excerpt ?? '',
-        body: fullPost.body,
-        published_at: fullPost.published_at?.slice(0, 16) ?? '',
-        tags: fullPost.tags ?? [],
-    });
-    form.reset();
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const fullPost = await response.json();
+
+        form.defaults({
+            title: fullPost.title,
+            slug: fullPost.slug,
+            excerpt: fullPost.excerpt ?? '',
+            body: fullPost.body,
+            published_at: fullPost.published_at?.slice(0, 16) ?? '',
+            tags: fullPost.tags ?? [],
+        });
+        form.reset();
+    } catch {
+        open.value = false;
+        form.reset();
+        void import('vue-sonner').then(({ toast }) => {
+            toast.error('Could not load the full post. Please try again.');
+        });
+    }
 }
 
 function save() {

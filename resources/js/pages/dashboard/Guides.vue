@@ -136,20 +136,33 @@ async function startEdit(guide: GuideListItem) {
     open.value = true;
 
     // Lazy-load body + related posts from show endpoint
-    const response = await fetch(guidesRoute.show.url(guide.id));
-    const fullGuide = await response.json();
+    try {
+        const response = await fetch(guidesRoute.show.url(guide.id));
 
-    form.defaults({
-        title: fullGuide.title,
-        slug: fullGuide.slug,
-        teaser: fullGuide.teaser ?? '',
-        prerequisites: fullGuide.prerequisites ?? '',
-        estimated_time: fullGuide.estimated_time ?? '',
-        body: fullGuide.body ?? '',
-        published_at: fullGuide.published_at?.slice(0, 16) ?? '',
-        posts: fullGuide.posts ?? [],
-    });
-    form.reset();
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const fullGuide = await response.json();
+
+        form.defaults({
+            title: fullGuide.title,
+            slug: fullGuide.slug,
+            teaser: fullGuide.teaser ?? '',
+            prerequisites: fullGuide.prerequisites ?? '',
+            estimated_time: fullGuide.estimated_time ?? '',
+            body: fullGuide.body ?? '',
+            published_at: fullGuide.published_at?.slice(0, 16) ?? '',
+            posts: fullGuide.posts ?? [],
+        });
+        form.reset();
+    } catch {
+        open.value = false;
+        form.reset();
+        void import('vue-sonner').then(({ toast }) => {
+            toast.error('Could not load the full guide. Please try again.');
+        });
+    }
 }
 
 function save() {

@@ -19,7 +19,7 @@ else form.post(route.store.url(), options);
 To populate the form for editing, call `form.defaults({ …entity fields… })` then `form.reset()`. Do not assign fields directly — the defaults+reset pair is what synchronises Inertia's internal state and clears dirty tracking. Always `form.reset()` on successful save too.
 
 ## Two-phase edit for large bodies
-Posts and Guides exclude the Markdown body from the index listing. `startEdit()` opens the dialog immediately with list-view defaults, then `await fetch(route.show.url(id))` fills the body in a second `form.defaults()` + `form.reset()` call. Replicate this pattern for any entity whose body is too large for the index payload.
+Posts and Guides exclude the Markdown body from the index listing. `startEdit()` opens the dialog immediately with list-view defaults, then `await fetch(route.show.url(id))` fills the body in a second `form.defaults()` + `form.reset()` call. The fetch + JSON parse MUST be wrapped in try/catch: on failure, close the dialog (`open.value = false`), `form.reset()`, and surface an error via a lazy `import('vue-sonner')` → `toast.error(...)`. Always check `response.ok` before parsing. Replicate this pattern for any entity whose body is too large for the index payload.
 
 ## `form.transform()` for array ↔ textarea
 Experience (highlights) and Education (details) store arrays in the DB but expose a newline-separated textarea in the form. Register a `form.transform()` once after `useForm()` that splits lines, strips bullet prefixes, and filters blanks. On `startEdit`, join the array back with `\n`.
