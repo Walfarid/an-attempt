@@ -111,14 +111,22 @@ jobs:
           mkdir -p storage/logs
           php artisan serve --host=127.0.0.1 --port=8080 > storage/logs/dast-server.log 2>&1 &
           for i in $(seq 1 30); do
-            if curl -sf http://127.0.0.1:8080 > /dev/null; then
-              echo "Application is up."
+            # A plain 30s curl loop is not enough: cold boot can take longer,
+            # and every request logged by the server means the readiness probe
+            # already reached it. /robots.txt is cheap and versioned (stable
+            # 200); we require a real 200 so a 500 during boot is caught.
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/robots.txt)
+            if [ "$code" = "200" ]; then
+              echo "Application is up (HTTP 200)."
               exit 0
             fi
             sleep 1
           done
-          echo "Application failed to start:"
+          echo "Application failed to become ready (last status: ${code:-unreachable})."
+          echo "--- dast-server.log ---"
           cat storage/logs/dast-server.log
+          echo "--- laravel.log ---"
+          cat storage/logs/laravel.log 2>/dev/null || true
           exit 1
 
       # --network host lets the ZAP container reach the app on the runner's
