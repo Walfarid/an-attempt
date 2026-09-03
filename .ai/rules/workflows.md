@@ -16,3 +16,6 @@ DAST runs on `pull_request` (every PR), nightly schedule (03:30 UTC), and manual
 
 ## Container images must be pinned to digests
 ALL container images in `.github/workflows/**` and `Dockerfile` must be pinned to their SHA-256 digest (e.g. `mariadb@sha256:abcdef...`) with a `# verified YYYY-MM-DD (ImageName X.Y.Z)` comment recording the resolution date and version. The `compose.yaml` dev file uses patch-version pins instead (e.g. `mariadb:12.3.3`) for readability — digests are not required there, but the version must still be the latest patch on the series. Dependabot's `docker` ecosystem keeps workflow and Dockerfile digests fresh. When bumping a pinned digest, re-resolve via `docker pull` + `docker inspect --format='{{index .RepoDigests 0}}'` and update the `# verified` date.
+
+## Frontend gates in ci.yml: vitest and npm audit are mandatory
+The `frontend` job of `ci.yml` MUST keep the `npm run test` (vitest) and `npm audit --audit=high` steps between vue-tsc and the Vite build. Frontend unit tests live in `resources/js/**/*.test.ts` and are never run anywhere else; removing either step silently drops coverage or JS dependency advisories. The workflow list in AGENTS.md/README says FOUR workflows — there is no `tests.yml`; do not re-add references to it.

@@ -180,12 +180,11 @@ task docker:reset   # stop + delete volumes (destructive)
 
 ## CI/CD
 
-Five workflows in `.github/workflows/`, triggered on push to `main` (and PRs where noted).
+Four workflows in `.github/workflows/`, triggered on push to `main` (and PRs where noted).
 
 | Workflow | Runs |
 |----------|------|
-| `ci.yml` | Pint + PHPStan, ESLint + Prettier + vue-tsc + Vite build, Pest (MariaDB + Garage), `composer audit`, aggregate `ci-ok` job |
-| `tests.yml` | `composer setup` + `composer ci:check` (lint, types, PHPStan, full Pest suite) with MariaDB + Garage |
+| `ci.yml` | Pint + PHPStan, ESLint + Prettier + vue-tsc + vitest + `npm audit` + Vite build, Pest (MariaDB + Garage), `composer audit`, aggregate `ci-ok` job |
 | `security.yml` | gitleaks, zizmor, CodeQL (JS/TS), Semgrep (PHP), dependency review (PRs), OSV-Scanner (PR diff + full) |
 | `dast.yml` | Nightly OWASP ZAP baseline scan against a seeded app instance |
 | `deploy.yml` | Multi-arch buildx (amd64 + arm64) → OCIR, roll out on the app VM via docker compose + `octane:reload` |
@@ -198,7 +197,7 @@ Action versions are pinned to immutable commit SHAs with matching version commen
 
 Production runs as a container on an Oracle Cloud VM.
 
-- **Image**: multi-stage `Dockerfile` producing FrankenPHP (PHP 8.5) + Octane worker mode
+- **Image**: multi-stage `Dockerfile` producing FrankenPHP (PHP 8.4) + Octane worker mode — PHP stays pinned to 8.4 until the pinned Carbon release supports 8.5 in the image (see the Dockerfile header comment)
 - **Registry**: OCIR (secrets: `OCIR_*`, `DEPLOY_*` in repo settings)
 - **Rollout**: `docker compose pull && up -d`, `migrate --force`, cache warm, `octane:reload`
 - **Storage**: Oracle Cloud S3-compatible bucket (swap the `AWS_*`/`GARAGE_*` env block)

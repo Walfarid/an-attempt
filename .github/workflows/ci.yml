@@ -109,6 +109,12 @@ jobs:
       - name: vue-tsc (TypeScript)
         run: npm run types:check
 
+      - name: Vitest (frontend unit tests)
+        run: npm run test
+
+      - name: npm audit (known advisories in locked JS deps)
+        run: npm audit --audit=high
+
       - name: Vite production build
         run: npm run build
 

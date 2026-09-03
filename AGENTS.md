@@ -249,13 +249,13 @@ scoped under `dashboard/{entity}`.
   ones into files or workflows.
 - The Pest suite needs MariaDB (db `walfa_testing`, phpunit.xml) and Garage running —
   run `task docker:up` first, then `php artisan test --compact` (or `--filter=`).
-- CI runs Garage as a docker-in-job step sourcing creds from `.env`; keep `ci.yml`,
-  `tests.yml`, and `docker/garage/garage.toml` in sync.
+- CI runs Garage as a docker-in-job step sourcing creds from `.env`; keep `ci.yml` and
+  `docker/garage/garage.toml` in sync.
 
 ## CI/CD
 
-Five workflows: `ci.yml` (lint/static/build/tests/audit gate), `tests.yml` (composer
-setup + ci:check), `security.yml` (gitleaks, zizmor, CodeQL, Semgrep, dep-review, OSV),
+Four workflows: `ci.yml` (lint/static/build/tests/audit gate — includes vitest and
+`npm audit`), `security.yml` (gitleaks, zizmor, CodeQL, Semgrep, dep-review, OSV),
 `dast.yml` (nightly ZAP), `deploy.yml` (buildx multi-arch → OCIR → VM + octane:reload).
 Pin actions to immutable SHAs with a comment matching the exact tag; zizmor rejects
 mismatches. Verify version changes against current sources before pinning.
