@@ -36,7 +36,7 @@ class GuideController extends Controller
     /**
      * Lazy-load a single guide with body and linked post IDs for editing.
      *
-     * @return array{id: int, slug: string, title: string, body: string, teaser: string|null, prerequisites: string|null, estimated_time: string|null, cover_url: string|null, published_at: string|null, posts: array<int, int>}
+     * @return array{id: int, slug: string, title: string, body: string|null, teaser: string|null, prerequisites: string|null, estimated_time: string|null, cover_url: string|null, published_at: string|null, posts: array<int, int>}
      */
     public function show(Guide $guide): array
     {

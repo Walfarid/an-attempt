@@ -166,7 +166,7 @@ class HomeController extends Controller
     {
         $yearsActive = 0;
 
-        if ($profile->years_earliest !== null) {
+        if ($profile->years_earliest !== null && $profile->years_latest !== null) {
             $months = (strtotime($profile->years_latest) - strtotime($profile->years_earliest)) / (86400 * 30.44);
             $yearsActive = max(1, (int) round($months / 12));
         }
@@ -227,7 +227,7 @@ class HomeController extends Controller
             ['loc' => url('/'), 'priority' => '1.0'],
             ['loc' => url('/posts'), 'priority' => '0.8'],
             ['loc' => url('/guides'), 'priority' => '0.8'],
-            ['loc' => url('/privacy'), 'priority' => '0.5', 'lastmod' => $privacy->updated_at->toW3cString()],
+            ['loc' => url('/privacy'), 'priority' => '0.5', 'lastmod' => $privacy->updated_at?->toW3cString()],
         ];
 
         foreach ($tags as $tag) {
@@ -240,7 +240,7 @@ class HomeController extends Controller
         foreach ($posts as $post) {
             $urls[] = [
                 'loc' => route('posts.show', $post->slug),
-                'lastmod' => $post->updated_at->toW3cString(),
+                'lastmod' => $post->updated_at?->toW3cString(),
                 'priority' => '0.6',
             ];
         }
@@ -248,7 +248,7 @@ class HomeController extends Controller
         foreach ($guides as $guide) {
             $urls[] = [
                 'loc' => route('guides.show', $guide->slug),
-                'lastmod' => $guide->updated_at->toW3cString(),
+                'lastmod' => $guide->updated_at?->toW3cString(),
                 'priority' => '0.6',
             ];
         }

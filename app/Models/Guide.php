@@ -78,7 +78,7 @@ class Guide extends Model
      */
     public function bodyHtml(): string
     {
-        return Markdown::toHtml($this->body);
+        return Markdown::toHtml($this->body ?? '');
     }
 
     /**

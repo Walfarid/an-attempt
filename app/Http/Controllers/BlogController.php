@@ -115,7 +115,7 @@ class BlogController extends Controller
 
         // Conditional request: if the browser has a fresh copy, skip the
         // Markdown render and Inertia serialization entirely.
-        if ($this->isNotModified($request, $post->updated_at)) {
+        if ($post->updated_at !== null && $this->isNotModified($request, $post->updated_at)) {
             abort(304);
         }
 
@@ -131,7 +131,7 @@ class BlogController extends Controller
                 ->headline($post->title)
                 ->description($post->excerpt ?? $post->teaser(25))
                 ->publishedAt($post->published_at)
-                ->modifiedAt($post->updated_at)
+                ->modifiedAt($post->updated_at ?? now())
                 ->author(Schema::person()->name($authorName))
                 ->image($post->cover_url ?? url('/og-default.png'))
                 ->set('mainEntityOfPage', $request->url())

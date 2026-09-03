@@ -78,7 +78,7 @@ class GuideController extends Controller
 
         // Conditional request: if the browser has a fresh copy, skip the
         // Markdown render and Inertia serialization entirely.
-        if ($this->isNotModified($request, $guide->updated_at)) {
+        if ($guide->updated_at !== null && $this->isNotModified($request, $guide->updated_at)) {
             abort(304);
         }
 
@@ -92,7 +92,7 @@ class GuideController extends Controller
                 ->headline($guide->title)
                 ->description($guide->teaser ?? strip_tags($guide->bodyHtml()))
                 ->publishedAt($guide->published_at)
-                ->modifiedAt($guide->updated_at)
+                ->modifiedAt($guide->updated_at ?? now())
                 ->image($guide->cover_url ?? url('/og-default.png'))
                 ->set('mainEntityOfPage', $request->url())
         );

@@ -24,7 +24,7 @@ class PrivacyController extends Controller
         // Conditional request: if the browser has a fresh copy, skip the
         // Inertia serialization entirely — mirrors BlogController::show and
         // GuideController::show.
-        if ($this->isNotModified($request, $policy->updated_at)) {
+        if ($policy->updated_at !== null && $this->isNotModified($request, $policy->updated_at)) {
             abort(304);
         }
 
