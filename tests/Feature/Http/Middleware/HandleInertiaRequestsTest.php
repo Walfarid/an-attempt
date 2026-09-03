@@ -112,3 +112,51 @@ test('version method returns a string or null', function () {
 
     expect($version)->toBeString()->or->toBeNull();
 });
+
+test('adsense props are shared only when consent is accepted and configured', function () {
+    Profile::factory()->create();
+    config()->set('services.adsense.client_id', 'ca-pub-test');
+    config()->set('services.adsense.slot_id', '1234567890');
+
+    $this->withUnencryptedCookie('consent', 'accepted')->get('/')
+        ->assertInertia(fn ($page) => $page
+            ->where('adsenseClientId', 'ca-pub-test')
+            ->where('adsenseSlotId', '1234567890')
+        );
+});
+
+test('adsense props are absent without the consent cookie', function () {
+    Profile::factory()->create();
+    config()->set('services.adsense.client_id', 'ca-pub-test');
+    config()->set('services.adsense.slot_id', '1234567890');
+
+    $this->get('/')
+        ->assertInertia(fn ($page) => $page
+            ->missing('adsenseClientId')
+            ->missing('adsenseSlotId')
+        );
+});
+
+test('adsense props are absent when consent is declined', function () {
+    Profile::factory()->create();
+    config()->set('services.adsense.client_id', 'ca-pub-test');
+    config()->set('services.adsense.slot_id', '1234567890');
+
+    $this->withUnencryptedCookie('consent', 'declined')->get('/')
+        ->assertInertia(fn ($page) => $page
+            ->missing('adsenseClientId')
+            ->missing('adsenseSlotId')
+        );
+});
+
+test('adsense props are absent when consent is accepted but services are unconfigured', function () {
+    Profile::factory()->create();
+    config()->set('services.adsense.client_id', null);
+    config()->set('services.adsense.slot_id', null);
+
+    $this->withUnencryptedCookie('consent', 'accepted')->get('/')
+        ->assertInertia(fn ($page) => $page
+            ->missing('adsenseClientId')
+            ->missing('adsenseSlotId')
+        );
+});

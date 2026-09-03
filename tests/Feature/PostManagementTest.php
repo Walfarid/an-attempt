@@ -2,6 +2,8 @@
 
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 test('guests are redirected from the post pages', function () {
     $this->get('/dashboard/posts')->assertRedirect('/login');
@@ -91,4 +93,46 @@ test('posts require valid data', function () {
         'body' => '',
         'published_at' => 'not-a-date',
     ])->assertInvalid(['title', 'body', 'published_at']);
+});
+
+test('users can upload a post cover', function () {
+    Storage::fake('media');
+    $post = Post::factory()->create(['cover_image_path' => null]);
+    $this->actingAs(User::factory()->create());
+
+    $this->put("/dashboard/posts/{$post->id}/cover", [
+        'cover' => UploadedFile::fake()->image('cover.png'),
+    ])->assertRedirect(route('dashboard.posts.index'));
+
+    $post->refresh();
+
+    expect($post->cover_image_path)->not->toBeNull()
+        ->and(Storage::disk('media')->exists((string) $post->cover_image_path))->toBeTrue();
+});
+
+test('users can remove a post cover', function () {
+    Storage::fake('media');
+    $post = Post::factory()->create(['cover_image_path' => 'posts/cover-to-remove.png']);
+    Storage::disk('media')->put('posts/cover-to-remove.png', 'bytes');
+    $this->actingAs(User::factory()->create());
+
+    $this->delete("/dashboard/posts/{$post->id}/cover")
+        ->assertRedirect(route('dashboard.posts.index'));
+
+    $post->refresh();
+
+    expect($post->cover_image_path)->toBeNull()
+        ->and(Storage::disk('media')->exists('posts/cover-to-remove.png'))->toBeFalse();
+});
+
+test('deleting a post removes its cover file', function () {
+    Storage::fake('media');
+    $post = Post::factory()->create(['cover_image_path' => 'posts/cover.png']);
+    Storage::disk('media')->put('posts/cover.png', 'bytes');
+    $this->actingAs(User::factory()->create());
+
+    $this->delete("/dashboard/posts/{$post->id}")
+        ->assertRedirect(route('dashboard.posts.index'));
+
+    expect(Storage::disk('media')->exists('posts/cover.png'))->toBeFalse();
 });
