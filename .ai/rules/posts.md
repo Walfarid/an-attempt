@@ -13,3 +13,6 @@ The wide cards render `post.cover_url`. Both `BlogController::index()` and `Blog
 
 ## InfiniteScroll data= requires Inertia::scroll() server-side
 posts/Index.vue uses <InfiniteScroll data="posts">. The initial page object must carry scrollProps.posts — provided by wrapping the paginator in Inertia::scroll() (inertia-laravel 3.x). If the controller passes a raw paginator, @inertiajs/core throws "The page object does not contain a scroll prop named posts" on every /posts visit (console error, infinite scroll also breaks).
+
+## InfiniteScroll must provide a #loading slot
+Always provide a `#loading` template slot with a centered LoaderCircle (`animate-spin`) + sr-only text, so users get visual feedback while the next page fetches. Without the slot, InfiniteScroll renders nothing during pagination and the UX feels broken.
