@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { ArrowUpRight, Menu, Moon, Sun, X } from '@/components/site/icons';
 import { useAppearance } from '@/composables/useAppearance';
 import { dashboard, login } from '@/routes';
@@ -61,6 +61,14 @@ function isActive(href: string) {
 }
 
 const mobileOpen = ref(false);
+const mobileToggleRef = ref<HTMLButtonElement | null>(null);
+
+function closeMobile() {
+    mobileOpen.value = false;
+    void nextTick(() => {
+        mobileToggleRef.value?.focus();
+    });
+}
 </script>
 
 <template>
@@ -162,6 +170,7 @@ const mobileOpen = ref(false);
 
                 <!-- Mobile menu toggle -->
                 <button
+                    ref="mobileToggleRef"
                     type="button"
                     class="d-press inline-flex size-9 items-center justify-center border border-(--rule) bg-(--surface) md:hidden"
                     :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
@@ -181,6 +190,7 @@ const mobileOpen = ref(false);
                 v-if="mobileOpen"
                 id="mobile-nav"
                 class="border-t border-(--rule) bg-(--paper) md:hidden"
+                @keydown.esc="closeMobile"
             >
                 <ul class="flex flex-col px-4 py-3">
                     <li v-for="item in links" :key="item.href">

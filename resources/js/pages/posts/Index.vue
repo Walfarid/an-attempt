@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link } from '@inertiajs/vue3';
-import { LoaderCircle } from '@lucide/vue';
 import ContentCard from '@/components/site/ContentCard.vue';
 import { ArrowLeft } from '@/components/site/icons';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
@@ -53,9 +52,12 @@ useScrollAnimations();
                 />
             </div>
             <template #loading>
-                <div class="flex items-center justify-center py-8">
-                    <LoaderCircle
-                        class="size-5 animate-spin text-(--ink-soft)"
+                <div
+                    class="flex items-center justify-center gap-2 py-8"
+                    role="status"
+                >
+                    <span
+                        class="inline-block size-4 animate-spin rounded-full border-2 border-(--ink-soft)/30 border-t-(--ink-soft)"
                         aria-hidden="true"
                     />
                     <span class="sr-only">Loading more posts</span>
