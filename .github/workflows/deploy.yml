@@ -104,4 +104,10 @@ jobs:
             # Octane workers boot once; reload them so the fresh config cache
             # and routes take effect without a container restart.
             docker compose exec -T app php artisan octane:reload || true
+            # Wait for Octane workers to finish reloading, then verify the app
+            # is actually healthy before declaring deploy done.
+            sleep 5
+            echo "Running post-deploy health check..."
+            curl -sf --retry 3 --retry-delay 2 -H "Host: walfa.my.id" http://localhost/up > /dev/null
+            echo "Health check passed."
             docker image prune -f
