@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'benchmarks/**'
+  - .github/workflows/ci.yml
 ---
 
 # Benchmarks

@@ -1,8 +1,7 @@
 ---
 paths:
-  - app/Http/Controllers/BlogController.php
-  - app/Http/Controllers/HomeController.php
-  - 'app/Http/Controllers/HomeController.php, routes/web.php'
+  - 'app/Http/Controllers/**'
+  - routes/web.php
 ---
 
 # Controllers

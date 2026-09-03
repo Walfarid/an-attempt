@@ -1,6 +1,9 @@
 ---
 paths:
-  - 'compose.prod.yaml, routes/console.php, app/Models/PageView.php, app/Models/Click.php'
+  - compose.prod.yaml
+  - routes/console.php
+  - app/Models/PageView.php
+  - app/Models/Click.php
 ---
 
 # Models
