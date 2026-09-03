@@ -620,26 +620,4 @@
     }
 }
 
-@layer utilities {
-    .post-layout {
-        margin-inline: auto;
-        max-width: 48rem;
-    }
 
-    .post-with-ad {
-        display: block;
-    }
-}
-
-@media (min-width: 1024px) {
-    .post-layout {
-        max-width: 64rem;
-    }
-
-    .post-with-ad {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 10rem;
-        gap: 2rem;
-        align-items: start;
-    }
-}

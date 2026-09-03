@@ -10,8 +10,7 @@ import {
     MapPin,
     Sparkles,
 } from '@/components/site/icons';
-import SiteFooter from '@/components/site/SiteFooter.vue';
-import SiteHeader from '@/components/site/SiteHeader.vue';
+import PublicLayout from '@/layouts/PublicLayout.vue';
 import { useCountUp } from '@/composables/useCountUp';
 import { useHeroScene } from '@/composables/useHeroScene';
 import { useScrollAnimations } from '@/composables/useScrollAnimations';
@@ -101,21 +100,8 @@ useCountUp(siteRef);
         <meta name="twitter:description" :content="profile.headline" />
     </Head>
 
-    <div
-        ref="siteRef"
-        class="site d-dots-bg antialiased selection:bg-(--accent) selection:text-(--paper)"
-    >
-        <!-- Skip link -->
-        <a
-            href="#main"
-            class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:inline-flex focus:min-h-11 focus:border focus:border-(--ink) focus:bg-(--accent) focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-(--paper)"
-        >
-            Skip to main content
-        </a>
-
-        <SiteHeader />
-
-        <main id="main">
+    <PublicLayout mainClass="" :profile="profile">
+        <div ref="siteRef">
             <!-- HERO -->
             <section
                 id="hero"
@@ -342,8 +328,6 @@ useCountUp(siteRef);
                     </div>
                 </div>
             </section>
-        </main>
-
-        <SiteFooter :profile="profile" />
-    </div>
+        </div>
+    </PublicLayout>
 </template>

@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import SiteFooter from '@/components/site/SiteFooter.vue';
 import SiteHeader from '@/components/site/SiteHeader.vue';
+import type { Profile } from '@/data/portfolio';
 
 withDefaults(
     defineProps<{
         mainClass?: string;
+        profile?: Pick<Profile, 'github_url' | 'name'> | null;
     }>(),
     {
         mainClass: 'mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24',
+        profile: null,
     },
 );
 </script>
@@ -29,6 +32,6 @@ withDefaults(
             <slot />
         </main>
 
-        <SiteFooter />
+        <SiteFooter :profile="profile" />
     </div>
 </template>
