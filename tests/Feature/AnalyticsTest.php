@@ -1,11 +1,15 @@
 <?php
 
+use App\Jobs\RecordClick;
 use App\Models\Click;
 use App\Models\PageView;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Route;
+use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
 test('authenticated users can see the dashboard with analytics data', function () {
     $user = User::factory()->create();
@@ -52,6 +56,23 @@ test('click tracking endpoint stores click events', function () {
     ]);
 });
 
+test('click tracking dispatches a RecordClick job', function () {
+    Queue::fake();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/analytics/clicks', [
+            'path' => '/posts',
+            'element' => 'post-link',
+            'label' => 'My First Post',
+        ])
+        ->assertNoContent();
+
+    Queue::assertPushed(RecordClick::class, fn (RecordClick $job) => $job->data['path'] === '/posts'
+        && $job->data['element'] === 'post-link'
+        && $job->data['label'] === 'My First Post');
+});
+
 test('click tracking requires path', function () {
     $user = User::factory()->create();
 
@@ -62,10 +83,26 @@ test('click tracking requires path', function () {
         ->assertInvalid('path');
 });
 
-test('guests cannot access click tracking', function () {
+test('guests can post clicks anonymously and the click is recorded', function () {
+    Route::getRoutes()->refreshNameLookups();
+    $route = Route::getRoutes()->getByName('analytics.clicks.store');
+
+    expect($route)->not->toBeNull()
+        ->and($route->gatherMiddleware())->toContain('throttle:60,1')
+        ->and($route->gatherMiddleware())->not->toContain('auth', ValidateSessionWithWorkOS::class);
+
     $this->post('/analytics/clicks', [
-        'path' => '/',
-    ])->assertRedirect('/login');
+        'path' => '/posts',
+        'element' => 'post-link',
+        'label' => 'My First Post',
+    ])->assertNoContent();
+
+    $this->assertDatabaseHas('clicks', [
+        'path' => '/posts',
+        'element' => 'post-link',
+        'label' => 'My First Post',
+        'user_id' => null,
+    ]);
 });
 
 test('topPages uses LEFT JOIN so pages without clicks still appear with zero clicks', function () {

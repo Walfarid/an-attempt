@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RecordClick;
 use App\Models\Click;
 use App\Models\PageView;
 use Carbon\CarbonPeriod;
@@ -92,14 +93,13 @@ class AnalyticsController extends Controller
         ]);
 
         try {
-            Click::create([
+            RecordClick::dispatch([
                 'path' => $validated['path'],
                 'element' => $validated['element'] ?? null,
                 'label' => $validated['label'] ?? null,
                 'ip' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'user_id' => $request->user()?->id,
-                'clicked_at' => now(),
             ]);
         } catch (\Throwable $e) {
             Log::debug('Click tracking failed', ['error' => $e->getMessage()]);

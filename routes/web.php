@@ -67,14 +67,15 @@ Route::get('privacy', [PrivacyController::class, 'show'])
     ->name('privacy')
     ->withHead(title: 'Privacy', description: 'What this site collects, which third-party analytics it uses, and how to change your consent choice.');
 
+Route::post('analytics/clicks', [AnalyticsController::class, 'storeClick'])
+    ->middleware('throttle:60,1')
+    ->name('analytics.clicks.store');
+
 Route::middleware([
     'auth',
     ValidateSessionWithWorkOS::class,
 ])->group(function () {
     Route::get('dashboard', [AnalyticsController::class, 'index'])->name('dashboard');
-    Route::post('analytics/clicks', [AnalyticsController::class, 'storeClick'])
-        ->middleware('throttle:60,1')
-        ->name('analytics.clicks.store');
 
     Route::resource('dashboard/projects', ProjectController::class)
         ->only(['index', 'store', 'update', 'destroy'])
