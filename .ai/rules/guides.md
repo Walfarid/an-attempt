@@ -8,8 +8,6 @@ paths:
   - app/Http/Requests/Dashboard/UploadGuideCoverRequest.php
   - resources/js/pages/dashboard/Guides.vue
   - 'resources/js/pages/guides/**'
-  - 'app/Http/Controllers/Dashboard/**'
-  - app/Http/Controllers/Dashboard/AnalyticsController.php
 ---
 
 # Guides
@@ -17,11 +15,10 @@ paths:
 Guides are tutorial-style content with step-by-step markdown body, prerequisites, and estimated time. They parallel posts but are a separate content type with bidirectional cross-references (guide ↔ post via `guide_post` pivot).
 
 ## Content model
-- Slugs are the public identifier, integer IDs internal-only.
-- Nullable `published_at` = publish model (NULL = draft, future date = scheduled).
-- Cover images store paths on the `media` disk, never absolute URLs.
-- Dashboard CRUD is dialog-style: index/show/store/update/destroy only. One Form Request per entity.
-- Guide bodies are Markdown rendered via `App\Support\Markdown::toHtml()`. Step sections use `## Step N: Title` headings.
+Guides follow the general content-model conventions (slugs as public ID, nullable `published_at`
+for drafts, cover images stored as paths on the `media` disk, dialog-style dashboard CRUD with one
+Form Request per entity). Guide-specific additions:
+- Bodies are Markdown rendered via `App\Support\Markdown::toHtml()`. Step sections use `## Step N: Title` headings.
 
 ## Public pages
 - `/guides` listing: paginated, newest first, published only.

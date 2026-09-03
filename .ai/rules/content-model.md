@@ -1,6 +1,6 @@
 # Content Model
 
-Applies to: `database/migrations/**`, `app/Models/**`, `database/factories/**`, `app/Enums/**`
+Applies to: `database/migrations/**`, `app/Models/**`, `app/Enums/**`
 
 - The frontend types in `resources/js/data/portfolio.ts` (from the CV data) are the source of truth for portfolio entity shapes; backend tables mirror them. Currently: `profiles` (singleton), `skills`, `experiences`, `projects` (+ `project_screenshots` + `project_skill` pivot), `posts`, `education`, `publications`. `DatabaseSeeder` carries the resume content and is idempotent (natural keys + orphan cleanup) — re-running it after a resume update replaces the portfolio data in place.
 - `experiences` (NOT timeline_entries): role, company, location, started_at, ended_at (null = present), summary, highlights (JSON array).
@@ -10,5 +10,4 @@ Applies to: `database/migrations/**`, `app/Models/**`, `database/factories/**`, 
 - Slugs are the public identifier (`{project:slug}` binding); integer IDs stay internal/admin-only.
 - Screenshots/covers store paths on the `media` disk, never absolute URLs. Blog bodies are Markdown via `App\Support\Markdown`.
 - Cover URLs live in the `App\Models\Concerns\HasCoverImage` trait (a `coverUrl` Eloquent accessor). Any model with a `cover_image_path` column must `use HasCoverImage` — never redeclare `coverUrl()` inline. Post and Guide both use the trait.
-- Every content table gets a factory + seeder; factories are the default way tests create models.
 - Dashboard CRUD uses dialog-style UIs: resource controllers with only index/store/update/destroy (no create/edit pages). One Form Request per entity covers both store and update (e.g. `SkillRequest`); composite-unique rules use `$this->route('skill')` for ignore.

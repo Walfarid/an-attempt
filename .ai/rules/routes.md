@@ -13,3 +13,6 @@ The old "forge a redis session" recipe is outdated for this Laravel version. Cur
 
 ## ads.txt route contract: config-driven content, 404 when unset, tested in AdsTxtTest
 The /ads.txt route reads config('services.ads.txt') (env ADSTXT_CONTENT), serves it text/plain with a trailing newline behind CachePublicResponses, aborts 404 when empty. Tests live in tests/Feature/AdsTxtTest.php — keep the 200-with-content, 404-empty, and Cache-Control branches covered whenever this route changes (e.g. if content moves to storage or a controller).
+
+## analytics/clicks POST stays OUTSIDE the auth + ValidateSessionWithWorkOS group
+Dashboard routes are grouped with the `auth` and `validate-session.workos` middleware (ValidateSessionWithWorkOS); the anonymous analytics/clicks POST is NOT part of that group. It lives at the public /analytics/clicks route with throttle:60,1, runs when a guest posts directly to the endpoint with no login and no WorkOS session, and writes anonymous rows (user_id nullable) — page-view parity. The dashboard click-through-rate (CTR) aggregates over these click rows and depends on guests being able to record clicks. Keep this route public: reverting it inside the auth/session group breaks anonymous analytics and the dashboard CTR. Pinned by tests/Feature/AnalyticsTest.php.
