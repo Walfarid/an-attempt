@@ -12,11 +12,11 @@
         "php": "^8.5",
         "inertiajs/inertia-laravel": "^3.0",
         "laravel/framework": "^13.17",
-        "laravel/head": "^0.2.2",
+        "laravel/head": "^0.3.0",
         "laravel/octane": "^2.19",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "laravel/workos": "^0.6.0",
+        "laravel/workos": "^0.7.0",
         "league/commonmark": "^2.10",
         "league/flysystem-aws-s3-v3": "^3.35"
     },
